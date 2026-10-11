@@ -1,4 +1,4 @@
-import { techStack, siteConfig } from "../data/portfolio";
+import { techStack } from "../data/portfolio";
 import { ScrollReveal } from "./ScrollReveal";
 
 function TechIcon({ name }: { name: string }) {
@@ -30,7 +30,7 @@ function TechIcon({ name }: { name: string }) {
   };
   return (
     <div
-      className="w-10 h-10 rounded-lg flex items-center justify-center text-xs font-bold"
+      className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold shrink-0"
       style={{ backgroundColor: `${colors[name]}15`, color: colors[name] }}
     >
       {letters[name]}
@@ -50,50 +50,29 @@ export function TechStackSection() {
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
               Tools I Use
             </h2>
-            <p className="text-text-secondary max-w-xl mx-auto">
+            <p className="text-text-secondary max-w-xl mx-auto text-sm sm:text-base">
               I build my projects using modern technologies for faster, cleaner,
               and scalable web applications.
             </p>
           </div>
         </ScrollReveal>
 
-        <div className="grid lg:grid-cols-[1fr_2fr] gap-10 items-start">
-          {/* Left - Character */}
-          <ScrollReveal direction="left" className="hidden lg:flex flex-col items-center gap-4">
-            <div className="animate-float">
-              <img
-                src="/images/avatar.webp"
-                alt={siteConfig.name}
-                className="w-20 h-20 rounded-xl object-cover border border-border"
-              />
-            </div>
-            <div className="glow-border rounded-lg p-4 bg-bg-elevated text-center">
-              <p className="retro-font text-[7px] text-text-secondary leading-relaxed">
-                Always learning,
-                <br />
-                always building.
-              </p>
-            </div>
-          </ScrollReveal>
-
-          {/* Right - Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {techStack.map((tech, i) => (
-              <ScrollReveal key={tech.name} delay={i * 0.05}>
-                <div className="glow-border rounded-xl p-4 bg-bg-elevated hover:bg-bg-secondary hover:shadow-card-hover transition-all group">
-                  <div className="flex items-center gap-3 mb-2">
-                    <TechIcon name={tech.icon} />
-                    <span className="font-semibold text-sm text-text-main group-hover:text-primary transition-colors">
-                      {tech.name}
-                    </span>
-                  </div>
-                  <p className="text-xs text-text-secondary">
-                    {tech.description}
-                  </p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
+          {techStack.map((tech, i) => (
+            <ScrollReveal key={tech.name} delay={i * 0.04}>
+              <div className="glow-border rounded-xl p-4 bg-bg-elevated hover:bg-bg-secondary hover:shadow-card-hover transition-all group h-full">
+                <div className="flex items-center gap-3 mb-2">
+                  <TechIcon name={tech.icon} />
+                  <span className="font-semibold text-sm text-text-main group-hover:text-primary transition-colors">
+                    {tech.name}
+                  </span>
                 </div>
-              </ScrollReveal>
-            ))}
-          </div>
+                <p className="text-xs text-text-secondary">
+                  {tech.description}
+                </p>
+              </div>
+            </ScrollReveal>
+          ))}
         </div>
       </div>
     </section>
