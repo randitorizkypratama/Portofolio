@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { ChevronDown, Mail, MapPin, Code2, Database, Wrench } from "lucide-react";
+import { ChevronDown, Mail, Code2, Database, Wrench } from "lucide-react";
 import { siteConfig } from "../data/portfolio";
 import { GithubIcon, XIcon, LinkedinIcon } from "./SocialIcons";
 
@@ -24,7 +24,7 @@ export function HeroSection() {
     >
       <div className="absolute inset-0 bg-gradient-to-b from-bg-main via-bg-secondary to-bg-main" />
 
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 w-full py-16 lg:py-0">
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 w-full pt-24 pb-16 lg:pt-24 lg:pb-12">
         <div className="grid lg:grid-cols-[1fr_1.2fr] gap-8 items-center">
           {/* Left - Text */}
           <motion.div
@@ -33,10 +33,17 @@ export function HeroSection() {
             transition={{ duration: 0.6 }}
             className="text-shadow-hero"
           >
-            <div className="flex items-center gap-2 mb-4">
-              <MapPin size={12} className="text-gold" />
+            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-border bg-bg-elevated/60 backdrop-blur-sm mb-5">
+              <span className="relative flex h-2 w-2 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-xp opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-xp" />
+              </span>
               <span className="retro-font text-[7px] text-text-secondary">
-                {siteConfig.location} · {siteConfig.role}
+                {siteConfig.location}
+              </span>
+              <span className="w-px h-3 bg-border" />
+              <span className="retro-font text-[7px] text-gold">
+                {siteConfig.role}
               </span>
             </div>
 
