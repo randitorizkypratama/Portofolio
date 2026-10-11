@@ -77,4 +77,40 @@ export const sfx = {
     else if (tile === 1 || tile === 8) blip(210, 0.04, "square", 0.014);
     else blip(170, 0.05, "triangle", 0.02);
   },
+  /** Boss roar — descending saw sweep. */
+  roar: () => {
+    if (muted) return;
+    try {
+      const c = getAudioCtx();
+      if (!c) return;
+      const t = c.currentTime;
+      const o = c.createOscillator();
+      const g = c.createGain();
+      o.type = "sawtooth";
+      o.frequency.setValueAtTime(140, t);
+      o.frequency.exponentialRampToValueAtTime(48, t + 0.55);
+      g.gain.setValueAtTime(0.07, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
+      o.connect(g);
+      g.connect(c.destination);
+      o.start(t);
+      o.stop(t + 0.62);
+      blip(90, 0.3, "square", 0.03, 0.05);
+    } catch {
+      /* audio not available */
+    }
+  },
+  /** taking damage — low thud */
+  hit: () => {
+    blip(110, 0.12, "square", 0.05);
+    blip(70, 0.16, "triangle", 0.04, 0.04);
+  },
+  /** crit strike — bright slash */
+  crit: () => {
+    blip(1200, 0.05, "square", 0.04);
+    blip(900, 0.07, "square", 0.035, 0.05);
+    blip(600, 0.1, "square", 0.03, 0.1);
+  },
+  /** miss — dull miss sound */
+  miss: () => blip(160, 0.12, "triangle", 0.03),
 };

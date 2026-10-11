@@ -138,7 +138,7 @@ function PlayerSprite({ moving }: { moving: boolean }) {
 }
 
 // Detailed pixel-art NPC (16x16)
-function NPCSprite({ npc, isNearby }: { npc: NPC; isNearby: boolean }) {
+function NPCSprite({ npc, isNearby, enraged }: { npc: NPC; isNearby: boolean; enraged?: boolean }) {
   return (
     <div className="absolute flex items-center justify-center" style={{ width: TILE_SIZE, height: TILE_SIZE }}>
       <EntityShadow size={npc.id === "boss-dragon" ? 28 : npc.type === "quest" ? 22 : 18} />
@@ -310,7 +310,7 @@ function NPCSprite({ npc, isNearby }: { npc: NPC; isNearby: boolean }) {
             width="48"
             height="48"
             viewBox="0 0 24 24"
-            className="pet-bounce"
+            className={enraged ? "enraged-sprite" : "pet-bounce"}
             style={{ imageRendering: "pixelated", position: "relative", zIndex: 1, overflow: "visible" }}
           >
             {/* Horns */}
@@ -377,6 +377,73 @@ function NPCSprite({ npc, isNearby }: { npc: NPC; isNearby: boolean }) {
   );
 }
 
+interface BattleTiming {
+  pos: number;
+  dir: number;
+  center: number;
+  width: number;
+  atk: number;
+}
+
+interface BattleState {
+  hp: number;
+  playerHp: number;
+  log: string[];
+  phase: "fight" | "victory" | "gameover";
+  enraged: boolean;
+  taunt25: boolean;
+  timing: BattleTiming | null;
+}
+
+const BATTLE_ATTACKS = [
+  { name: "STACK OVERFLOW SLASH", min: 13, max: 22, critMult: 2, line: "404 feelings not found!" },
+  { name: "COFFEE BURST", min: 10, max: 18, critMult: 2, line: "The dragon is jittering!" },
+  { name: "RUBBER DUCK", min: 8, max: 14, critMult: 3, line: "Explains its bugs to the duck... confusion +10!" },
+];
+
+const DRAGON_MOVES = [
+  { name: "DEBUG BREATH", line: "Debug breath scorches your armor!" },
+  { name: "DEADLINE RUSH", line: "Deadline rush slams into you!" },
+  { name: "STACK TRACE TAIL", line: "Stack trace tail whip!" },
+];
+const DRAGON_ENRAGE_MOVE = { name: "MERGE CONFLICT", line: "MERGE CONFLICT! Your branches clash violently!" };
+
+const CONFETTI_COLORS = ["#d4a847", "#5bb8c9", "#c0392b", "#27ae60", "#f0e6d2", "#9b59b6"];
+
+const pushLog = (log: string[], line: string): string[] => [...log, line].slice(-3);
+
+function BossDragonMini({ enraged }: { enraged: boolean }) {
+  return (
+    <svg
+      width="44"
+      height="44"
+      viewBox="0 0 24 24"
+      style={{ imageRendering: "pixelated", overflow: "visible" }}
+      className={enraged ? "enraged-sprite" : undefined}
+    >
+      <rect x="13" y="1" width="2" height="3" fill="#f5b041" />
+      <rect x="18" y="1" width="2" height="3" fill="#f5b041" />
+      <rect x="12" y="4" width="9" height="5" fill="#c0392b" />
+      <rect x="12" y="4" width="9" height="1" fill="#a93226" />
+      <rect x="17" y="5" width="2" height="2" fill="#f1c40f" />
+      <rect x="18" y="5" width="1" height="1" fill="#1a2438" />
+      <rect x="20" y="7" width="3" height="2" fill="#c0392b" />
+      <rect x="22" y="6" width="2" height="1" fill="#f39c12" />
+      <rect x="23" y="7" width="1" height="1" fill="#e67e22" />
+      <rect x="2" y="5" width="4" height="6" fill="#922b21" />
+      <rect x="1" y="4" width="3" height="4" fill="#7b241c" />
+      <rect x="6" y="9" width="12" height="8" fill="#c0392b" />
+      <rect x="6" y="9" width="12" height="1" fill="#a93226" />
+      <rect x="9" y="13" width="7" height="4" fill="#e74c3c" />
+      <rect x="7" y="17" width="3" height="3" fill="#922b21" />
+      <rect x="14" y="17" width="3" height="3" fill="#922b21" />
+      <rect x="18" y="15" width="3" height="2" fill="#c0392b" />
+      <rect x="20" y="13" width="2" height="3" fill="#a93226" />
+      <rect x="21" y="11" width="1" height="3" fill="#c0392b" />
+    </svg>
+  );
+}
+
 export function RPGWorld() {
   const [playerPos, setPlayerPos] = useState<Position>(START_POS);
   const [direction, setDirection] = useState<Direction>("down");
@@ -410,11 +477,14 @@ export function RPGWorld() {
       return false;
     }
   });
-  const [battle, setBattle] = useState<{
-    hp: number;
-    log: string;
-    phase: "fight" | "victory";
-  } | null>(null);
+  const [battle, setBattle] = useState<BattleState | null>(null);
+  const [dragonDefeated, setDragonDefeated] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("pq_dragon_defeated") === "1";
+    } catch {
+      return false;
+    }
+  });
 
   const moveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const keysRef = useRef<Set<string>>(new Set());
@@ -448,11 +518,16 @@ export function RPGWorld() {
   const visitorsRef = useRef<number | null>(null);
   const periodRef = useRef(period);
   const bossAwakeRef = useRef(bossAwake);
+  const battleRef = useRef<BattleState | null>(null);
+  const dragonDefeatedRef = useRef(dragonDefeated);
+  const viewportFrameRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { fishingRef.current = fishing; }, [fishing]);
   useEffect(() => { visitorsRef.current = visitors; }, [visitors]);
   useEffect(() => { periodRef.current = period; }, [period]);
   useEffect(() => { bossAwakeRef.current = bossAwake; }, [bossAwake]);
+  useEffect(() => { battleRef.current = battle; }, [battle]);
+  useEffect(() => { dragonDefeatedRef.current = dragonDefeated; }, [dragonDefeated]);
 
   /** NPCs with night positions applied; optionally include the boss. */
   const makeActiveList = (night: boolean, includeBoss: boolean): NPC[] => {
@@ -462,8 +537,143 @@ export function RPGWorld() {
         ...n,
         position: night && n.nightPosition ? n.nightPosition : n.position,
       }));
-    if (includeBoss && bossAwakeRef.current) list.push(bossDragon);
+    if (includeBoss && bossAwakeRef.current && !dragonDefeatedRef.current) {
+      list.push(bossDragon);
+    }
     return list;
+  };
+
+  const shake = (ms = 450) => {
+    const el = viewportFrameRef.current;
+    if (!el) return;
+    el.classList.remove("battle-shake");
+    void el.offsetWidth;
+    el.classList.add("battle-shake");
+    window.setTimeout(() => el.classList.remove("battle-shake"), ms);
+  };
+
+  const dragonCounter = () => {
+    const b = battleRef.current;
+    if (!b || b.phase !== "fight") return;
+    const pool = b.enraged
+      ? [...DRAGON_MOVES, DRAGON_ENRAGE_MOVE, DRAGON_ENRAGE_MOVE]
+      : DRAGON_MOVES;
+    const mv = pool[Math.floor(Math.random() * pool.length)];
+    const playerHp = b.playerHp - 1;
+    sfx.hit();
+    shake();
+    if (playerHp <= 0) {
+      setBattle({
+        ...b,
+        playerHp: 0,
+        timing: null,
+        phase: "gameover",
+        log: pushLog(b.log, `${mv.name}! ${mv.line} GAME OVER — eaten by a semicolon.`),
+      });
+      sfx.miss();
+    } else {
+      setBattle({
+        ...b,
+        playerHp,
+        timing: null,
+        log: pushLog(b.log, `${mv.name}! ${mv.line} (-1 ♥)`),
+      });
+    }
+  };
+
+  const judgeStrike = () => {
+    const b = battleRef.current;
+    if (!b || !b.timing || b.phase !== "fight") return;
+    const t = b.timing;
+    const atk = BATTLE_ATTACKS[t.atk];
+    const dist = Math.abs(t.pos - t.center);
+    const hit = dist <= t.width / 2;
+    const crit = dist <= t.width * 0.35;
+
+    if (!hit) {
+      sfx.miss();
+      setBattle({
+        ...b,
+        timing: null,
+        log: pushLog(b.log, `${atk.name} — you hit a semicolon wall. MISS!`),
+      });
+      window.setTimeout(dragonCounter, 800);
+      return;
+    }
+
+    const dmg = Math.round(
+      (atk.min + Math.floor(Math.random() * (atk.max - atk.min + 1))) *
+        (crit ? atk.critMult : 1)
+    );
+    const hp = Math.max(0, b.hp - dmg);
+    if (crit) { sfx.crit(); shake(350); } else { sfx.advance(); }
+
+    if (hp <= 0) {
+      localStorage.setItem("pq_dragon_defeated", "1");
+      setDragonDefeated(true);
+      setBattle({
+        ...b,
+        hp: 0,
+        timing: null,
+        phase: "victory",
+        log: pushLog(b.log, `${atk.name}${crit ? " CRIT!" : ""} -${dmg} HP. The dragon explodes into semicolons...`),
+      });
+      notifyNewly(track("dragon"));
+      showToast("BOSS DEFEATED — THE END...?");
+      sfx.achievement();
+      window.setTimeout(() => setBattle(null), 6000);
+      return;
+    }
+
+    let enraged = b.enraged;
+    let taunt25 = b.taunt25;
+    const extra: string[] = [];
+    if (!enraged && hp <= 50) {
+      enraged = true;
+      extra.push("ENRAGE! The dragon glows crimson — MERGE CONFLICT unlocked!");
+      sfx.roar();
+      shake(600);
+    } else if (!taunt25 && hp <= 25) {
+      taunt25 = true;
+      extra.push('Dragon: "25% left and it still compiles? Impossible..."');
+    }
+    setBattle({
+      ...b,
+      hp,
+      enraged,
+      taunt25,
+      timing: null,
+      log: pushLog(
+        pushLog(b.log, `${atk.name}${crit ? " CRIT!" : ""} -${dmg} HP. ${atk.line}`),
+        extra[0] ?? ""
+      ).filter(Boolean),
+    });
+    window.setTimeout(dragonCounter, 900);
+  };
+
+  const startAttack = (i: number) => {
+    const b = battleRef.current;
+    if (!b || b.phase !== "fight" || b.timing) return;
+    sfx.advance();
+    const center = 22 + Math.floor(Math.random() * 56);
+    setBattle({
+      ...b,
+      timing: { pos: 0, dir: 1, center, width: 18, atk: i },
+    });
+  };
+
+  const retryBattle = () => {
+    sfx.roar();
+    shake(600);
+    setBattle({
+      hp: 100,
+      playerHp: 3,
+      log: ["The Debug Dragon rises again... RRAAAWR!", "Round two — time your strikes!"],
+      phase: "fight",
+      enraged: false,
+      taunt25: false,
+      timing: null,
+    });
   };
 
   useEffect(() => { dialogueRef.current = dialogue; }, [dialogue]);
@@ -573,6 +783,12 @@ export function RPGWorld() {
   }, []);
 
   const doInteract = useCallback(() => {
+    // Boss battle: judge a timing strike
+    const bt = battleRef.current;
+    if (bt && bt.phase === "fight" && bt.timing) {
+      judgeStrike();
+      return;
+    }
     // Fishing: hook or cancel
     if (fishingRef.current && !fishingRef.current.done) {
       const f = fishingRef.current;
@@ -622,7 +838,20 @@ export function RPGWorld() {
     if (entity) {
       sfx.interact();
       if (entity.id === "boss-dragon") {
-        setBattle({ hp: 100, log: entity.dialogue[1] ?? entity.dialogue[0], phase: "fight" });
+        sfx.roar();
+        shake(600);
+        setBattle({
+          hp: 100,
+          playerHp: 3,
+          log: [
+            "RRAAAWR! The Debug Dragon blocks the plaza!",
+            "Time the STRIKE bar in the green — gold core = CRIT!",
+          ],
+          phase: "fight",
+          enraged: false,
+          taunt25: false,
+          timing: null,
+        });
         return;
       }
       let lines = entity.dialogue;
@@ -720,6 +949,7 @@ export function RPGWorld() {
       if (key === "escape") {
         e.preventDefault();
         if (hasDialogue) { sfx.close(); setDialogue(null); return; }
+        if (battleRef.current) { sfx.close(); setBattle(null); return; }
         if (hasMenu) { sfx.close(); setShowMenu(false); return; }
         sfx.open();
         setShowMenu(true);
@@ -820,42 +1050,24 @@ export function RPGWorld() {
     advanceDialogueRef.current = handleDialogueAdvance;
   }, [handleDialogueAdvance]);
 
-  const attacks = [
-    { name: "STACK OVERFLOW SLASH", min: 18, max: 32, line: "Critical hit! 404 feelings not found." },
-    { name: "COFFEE BURST", min: 14, max: 38, line: "Caffeinated damage! The dragon is jittering." },
-    { name: "RUBBER DUCK", min: 10, max: 26, line: "The dragon explains its bugs to the duck... confusion +10." },
-  ];
-
-  const doAttack = (i: number) => {
-    if (!battle || battle.phase !== "fight") return;
-    const a = attacks[i];
-    const dmg = a.min + Math.floor(Math.random() * (a.max - a.min + 1));
-    const hp = Math.max(0, battle.hp - dmg);
-    sfx.advance();
-    if (hp <= 0) {
-      setBattle({
-        hp: 0,
-        log: "The Debug Dragon explodes into harmless semicolons... THE END...?",
-        phase: "victory",
+  // Boss battle timing bar — marker bounces like the fishing minigame
+  useEffect(() => {
+    if (!battle || battle.phase !== "fight" || !battle.timing) return;
+    let raf = 0;
+    const tick = () => {
+      setBattle((cur) => {
+        if (!cur || !cur.timing || cur.phase !== "fight") return cur;
+        let { pos, dir } = cur.timing;
+        pos += dir * 2.4;
+        if (pos >= 100) { pos = 100; dir = -1; }
+        if (pos <= 0) { pos = 0; dir = 1; }
+        return { ...cur, timing: { ...cur.timing, pos, dir } };
       });
-      notifyNewly(track("dragon"));
-      showToast("BOSS DEFEATED — THE END...?");
-      sfx.achievement();
-      window.setTimeout(() => setBattle(null), 4000);
-    } else {
-      const quips = [
-        "RRAWR! Have you tried turning it off and on again?",
-        "*dragon commits a bug on purpose*",
-        "Your code compiles... THIS TIME.",
-        "*debug breath incoming*",
-      ];
-      setBattle({
-        hp,
-        log: `${a.line} (-${dmg} HP) ${quips[Math.floor(Math.random() * quips.length)]}`,
-        phase: "fight",
-      });
-    }
-  };
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [battle?.phase, battle?.timing != null]);
 
   const offsetX = Math.max(0, Math.min(playerPos.x - Math.floor(VIEWPORT_TILES_X / 2), MAP_WIDTH - VIEWPORT_TILES_X));
   const offsetY = Math.max(0, Math.min(playerPos.y - Math.floor(VIEWPORT_TILES_Y / 2), MAP_HEIGHT - VIEWPORT_TILES_Y));
@@ -884,6 +1096,7 @@ export function RPGWorld() {
     <div className="flex flex-col items-center">
       {/* Scaled game viewport (fits mobile screens) */}
       <div
+        ref={viewportFrameRef}
         className="relative mx-auto"
         style={{ width: viewportWidth * scale, height: viewportHeight * scale }}
       >
@@ -919,7 +1132,11 @@ export function RPGWorld() {
           if (nx < -TILE_SIZE || ny < -TILE_SIZE || nx > viewportWidth || ny > viewportHeight) return null;
           return (
             <div key={npc.id} style={{ position: "absolute", left: nx, top: ny }}>
-              <NPCSprite npc={npc} isNearby={nearbyEntity?.id === npc.id} />
+              <NPCSprite
+                npc={npc}
+                isNearby={nearbyEntity?.id === npc.id}
+                enraged={!!(battle?.enraged && npc.id === "boss-dragon")}
+              />
             </div>
           );
         })}
@@ -1165,38 +1382,142 @@ export function RPGWorld() {
         )}
       </AnimatePresence>
 
-      {/* Boss battle */}
+      {/* Boss battle — JRPG-style battle box */}
       <AnimatePresence>
         {battle && (
-          <motion.div className="dialogue-box rounded-lg p-4 mt-3 max-w-md w-full"
-            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}>
-            <div className="flex items-center justify-between mb-2">
-              <span className="pixel-font text-[9px] text-hp">🐉 DEBUG DRAGON</span>
+          <motion.div
+            className="dialogue-box rounded-lg p-4 mt-3 max-w-md w-full relative overflow-hidden"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+          >
+            {/* Victory confetti */}
+            {battle.phase === "victory" &&
+              Array.from({ length: 22 }).map((_, i) => (
+                <span
+                  key={i}
+                  className="confetti-bit"
+                  style={{
+                    left: `${(i * 37) % 100}%`,
+                    background: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+                    animationDelay: `${(i % 8) * 0.12}s`,
+                    animationDuration: `${1.2 + (i % 5) * 0.2}s`,
+                  }}
+                />
+              ))}
+
+            {/* Dragon name + HP */}
+            <div className="flex items-center justify-between mb-1">
+              <span className="pixel-font text-[9px] text-hp">
+                🐉 DEBUG DRAGON
+                {battle.enraged && (
+                  <span className="retro-font text-[6px] text-red-400 ml-2 animate-pulse">
+                    (ENRAGED)
+                  </span>
+                )}
+              </span>
               <span className="retro-font text-[6px] text-hp">{battle.hp}/100 HP</span>
             </div>
             <div className="h-3 bg-bg-main border-2 border-border rounded-sm overflow-hidden mb-2">
               <div
-                className="h-full bg-gradient-to-r from-hp to-red-400 transition-[width] duration-300"
+                className={
+                  battle.enraged
+                    ? "h-full bg-gradient-to-r from-orange-500 to-hp transition-[width] duration-300"
+                    : "h-full bg-gradient-to-r from-hp to-red-400 transition-[width] duration-300"
+                }
                 style={{ width: `${battle.hp}%` }}
               />
             </div>
-            <p className="text-sm text-cream leading-relaxed mb-3">{battle.log}</p>
-            {battle.phase === "victory" ? (
-              <p className="retro-font text-[8px] text-gold text-center animate-blink">
-                THE END...?
-              </p>
-            ) : (
+
+            {/* Sprites facing off */}
+            <div
+              className="flex items-end justify-between px-6 py-2 bg-bg-main/50 border border-border rounded mb-2"
+              style={{ minHeight: 68 }}
+            >
+              <BossDragonMini enraged={battle.enraged} />
+              <PlayerSprite moving={false} />
+            </div>
+
+            {/* Player hearts */}
+            <div className="flex items-center justify-between mb-2">
+              <span className="retro-font text-[5px] text-text-secondary">HERO</span>
+              <span className="retro-font text-[8px] text-hp tracking-widest">
+                {"♥".repeat(battle.playerHp)}
+                {"♡".repeat(Math.max(0, 3 - battle.playerHp))}
+              </span>
+            </div>
+
+            {/* Battle log — last 3 lines */}
+            <div className="space-y-0.5 mb-2 min-h-[42px] bg-bg-main/40 border border-border/60 rounded p-2">
+              {battle.log.map((l, i) => (
+                <p key={`${i}-${l.slice(0, 8)}`} className="text-xs text-cream leading-snug">
+                  {l}
+                </p>
+              ))}
+            </div>
+
+            {/* Actions */}
+            {battle.phase === "fight" && !battle.timing && (
               <div className="grid grid-cols-3 gap-2">
-                {attacks.map((a, i) => (
+                {BATTLE_ATTACKS.map((a, i) => (
                   <button
                     key={a.name}
-                    onClick={() => doAttack(i)}
+                    onClick={() => startAttack(i)}
                     className="game-btn text-[5px] py-2 leading-tight"
                   >
                     {a.name}
                   </button>
                 ))}
               </div>
+            )}
+            {battle.phase === "fight" && battle.timing && (
+              <div>
+                <div className="relative h-5 bg-bg-main border-2 border-border rounded-sm overflow-hidden mb-1">
+                  <div
+                    className="absolute inset-y-0 bg-xp/25 border-x border-xp/60"
+                    style={{
+                      left: `${battle.timing.center - battle.timing.width / 2}%`,
+                      width: `${battle.timing.width}%`,
+                    }}
+                  >
+                    <div
+                      className="absolute inset-y-0 left-1/2 -translate-x-1/2 bg-xp/60 border-x border-xp"
+                      style={{ width: "35%" }}
+                    />
+                  </div>
+                  <div
+                    className="absolute inset-y-0 w-1 bg-gold"
+                    style={{
+                      left: `calc(${battle.timing.pos}% - 2px)`,
+                      boxShadow: "0 0 6px #d4a847",
+                    }}
+                  />
+                </div>
+                <p className="retro-font text-[5px] text-text-secondary text-center mb-1.5">
+                  PRESS E / TAP STRIKE IN THE GREEN — GOLD CORE = CRIT ×2
+                </p>
+                <button onClick={judgeStrike} className="game-btn w-full text-[7px] py-2">
+                  STRIKE!
+                </button>
+              </div>
+            )}
+            {battle.phase === "gameover" && (
+              <div className="grid grid-cols-2 gap-2">
+                <button onClick={retryBattle} className="game-btn text-[7px] py-2">
+                  RETRY
+                </button>
+                <button
+                  onClick={() => setBattle(null)}
+                  className="retro-font text-[7px] text-text-secondary hover:text-cream px-3 py-2 border border-border rounded transition-colors"
+                >
+                  FLEE
+                </button>
+              </div>
+            )}
+            {battle.phase === "victory" && (
+              <p className="retro-font text-[8px] text-gold text-center animate-blink">
+                THE END...?
+              </p>
             )}
           </motion.div>
         )}
