@@ -235,3 +235,38 @@ h1, h2, h3 {
 .press-start {
   animation: blink 1.2s step-end infinite;
 }
+
+/* Pixel Quest World — tile & entity animations */
+@keyframes water-anim {
+  0%, 100% { background-position: 0 0; }
+  50% { background-position: -32px 0; }
+}
+
+.tile-water {
+  animation: water-anim 1.5s steps(1, end) infinite;
+}
+
+@keyframes firefly {
+  0%, 100% { transform: translate(0, 0); opacity: 0.15; }
+  30% { transform: translate(6px, -10px); opacity: 0.9; }
+  60% { transform: translate(-4px, -18px); opacity: 0.3; }
+  80% { transform: translate(3px, -8px); opacity: 0.75; }
+}
+
+.firefly {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 1px;
+  pointer-events: none;
+  animation: firefly 5s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1px); }
+}
+
+.player-idle {
+  animation: breathe 2.6s ease-in-out infinite;
+}

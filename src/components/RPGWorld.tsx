@@ -14,44 +14,54 @@ import {
   type Position,
   type NPC,
 } from "../game/entities";
+import { tileBackground } from "../game/tileArt";
 
 const VIEWPORT_TILES_X = 17;
 const VIEWPORT_TILES_Y = 13;
 const START_POS: Position = { x: 14, y: 9 };
 
-// Pixel art tile renderer using CSS
-function TileSprite({ type }: { type: number }) {
-  const styles: Record<number, { bg: string; pattern?: string; detail?: React.ReactNode }> = {
-    0: { bg: "#4a7c4a", pattern: "radial-gradient(circle, #5a8c5a 1px, transparent 1px)" },
-    1: { bg: "#9c8b6e" },
-    2: { bg: "#1a5276", pattern: "repeating-linear-gradient(90deg, transparent, transparent 8px, rgba(255,255,255,0.03) 8px, rgba(255,255,255,0.03) 16px)" },
-    3: { bg: "#2d5a3d", detail: <span style={{ fontSize: 20, lineHeight: 1 }}>🌲</span> },
-    4: { bg: "#6b4a2a" },
-    5: { bg: "#4a4a6a", pattern: "repeating-linear-gradient(0deg, transparent, transparent 4px, rgba(0,0,0,0.15) 4px, rgba(0,0,0,0.15) 5px)" },
-    6: { bg: "#4a7c4a", detail: <span style={{ fontSize: 14, lineHeight: 1 }}>🌸</span> },
-    7: { bg: "#4a7c4a", detail: <span style={{ fontSize: 16, lineHeight: 1 }}>📜</span> },
-    8: { bg: "#4a7c4a", detail: <span style={{ fontSize: 16, lineHeight: 1 }}>🪨</span> },
-    9: { bg: "#7a6a4a", pattern: "repeating-linear-gradient(90deg, #6b5b3a 0px, #6b5b3a 4px, #7a6a4a 4px, #7a6a4a 8px)" },
-  };
-  const s = styles[type] || { bg: "#333" };
+const FIREFLIES = [
+  { left: "8%", top: "18%", delay: 0, duration: 5.5, color: "#ffd94a" },
+  { left: "22%", top: "70%", delay: 1.2, duration: 6.5, color: "#5bb8c9" },
+  { left: "40%", top: "30%", delay: 2.4, duration: 5, color: "#ffd94a" },
+  { left: "58%", top: "78%", delay: 0.6, duration: 7, color: "#ffd94a" },
+  { left: "72%", top: "22%", delay: 3.1, duration: 6, color: "#5bb8c9" },
+  { left: "88%", top: "55%", delay: 1.8, duration: 5.8, color: "#ffd94a" },
+];
+
+// Pixel-art tile renderer (SVG data-URI backgrounds)
+function TileSprite({ type, x, y }: { type: number; x: number; y: number }) {
+  const bg = tileBackground(type, x, y);
   return (
     <div
-      className="flex items-center justify-center select-none"
+      className={type === 2 ? "tile-water select-none" : "select-none"}
       style={{
         width: TILE_SIZE,
         height: TILE_SIZE,
-        backgroundColor: s.bg,
-        backgroundImage: s.pattern || "none",
-        backgroundSize: type === 0 ? "8px 8px" : undefined,
-        lineHeight: 1,
+        backgroundImage: bg.backgroundImage,
+        backgroundSize: bg.backgroundSize,
+        imageRendering: "pixelated",
       }}
-    >
-      {s.detail || null}
-    </div>
+    />
   );
 }
 
-// CSS pixel art player character
+function EntityShadow({ size = 20 }: { size?: number }) {
+  return (
+    <div
+      className="absolute left-1/2 -translate-x-1/2 rounded-[50%] pointer-events-none"
+      style={{
+        bottom: 3,
+        width: size,
+        height: size * 0.4,
+        background: "rgba(10, 18, 12, 0.35)",
+        filter: "blur(1px)",
+      }}
+    />
+  );
+}
+
+// Detailed pixel-art player (16x16, outlined, shaded)
 function PlayerSprite({ moving }: { moving: boolean }) {
   return (
     <div
@@ -63,97 +73,164 @@ function PlayerSprite({ moving }: { moving: boolean }) {
         transition: "transform 0.08s",
       }}
     >
-      <svg width="28" height="28" viewBox="0 0 16 16" style={{ imageRendering: "pixelated" }}>
+      <EntityShadow size={18} />
+      <svg
+        width="30"
+        height="30"
+        viewBox="0 0 16 16"
+        className={moving ? "" : "player-idle"}
+        style={{ imageRendering: "pixelated", position: "relative", zIndex: 1 }}
+      >
         {/* Hair */}
-        <rect x="5" y="1" width="6" height="3" fill="#2c2c2c" />
-        <rect x="4" y="2" width="1" height="2" fill="#2c2c2c" />
-        <rect x="11" y="2" width="1" height="2" fill="#2c2c2c" />
+        <rect x="5" y="1" width="6" height="1" fill="#2a2a38" />
+        <rect x="4" y="2" width="8" height="2" fill="#2a2a38" />
+        <rect x="6" y="1" width="3" height="1" fill="#45455c" />
+        <rect x="4" y="4" width="1" height="2" fill="#2a2a38" />
+        <rect x="11" y="4" width="1" height="2" fill="#2a2a38" />
         {/* Face */}
-        <rect x="5" y="4" width="6" height="4" fill="#f0c8a0" />
-        {/* Eyes */}
-        <rect x="6" y="5" width="1" height="1" fill="#1a1a2e" />
-        <rect x="9" y="5" width="1" height="1" fill="#1a1a2e" />
-        {/* Mouth */}
-        <rect x="7" y="7" width="2" height="1" fill="#d4a080" />
-        {/* Body (hoodie) */}
-        <rect x="4" y="8" width="8" height="5" fill="#2a2a4e" />
-        <rect x="6" y="9" width="4" height="3" fill="#d4a847" rx="0" />
-        {/* Arms */}
-        <rect x="3" y="9" width="1" height="4" fill="#2a2a4e" />
-        <rect x="12" y="9" width="1" height="4" fill="#2a2a4e" />
+        <rect x="5" y="4" width="6" height="3" fill="#f0c8a0" />
+        <rect x="5" y="6" width="6" height="1" fill="#e0b088" />
+        {/* Bangs */}
+        <rect x="5" y="4" width="6" height="1" fill="#2a2a38" />
+        <rect x="5" y="5" width="1" height="1" fill="#2a2a38" />
+        <rect x="10" y="5" width="1" height="1" fill="#2a2a38" />
+        {/* Eyes + blush */}
+        <rect x="6" y="5" width="1" height="1" fill="#1a2438" />
+        <rect x="9" y="5" width="1" height="1" fill="#1a2438" />
+        <rect x="5" y="6" width="1" height="1" fill="#f0a088" />
+        <rect x="10" y="6" width="1" height="1" fill="#f0a088" />
+        {/* Neck + scarf */}
+        <rect x="7" y="7" width="2" height="1" fill="#e0b088" />
+        <rect x="5" y="7" width="6" height="1" fill="#d4a847" />
+        <rect x="5" y="8" width="6" height="1" fill="#b88e35" />
+        <rect x="11" y="8" width="1" height="2" fill="#d4a847" />
+        {/* Hoodie */}
+        <rect x="4" y="8" width="8" height="1" fill="#2f2f5a" />
+        <rect x="4" y="9" width="8" height="4" fill="#3d3d72" />
+        <rect x="3" y="9" width="1" height="4" fill="#3d3d72" />
+        <rect x="12" y="9" width="1" height="4" fill="#33335e" />
+        <rect x="6" y="11" width="4" height="2" fill="#33335e" />
+        <rect x="7" y="10" width="2" height="2" fill="#d4a847" />
         {/* Hands */}
         <rect x="3" y="13" width="1" height="1" fill="#f0c8a0" />
-        <rect x="12" y="13" width="1" height="1" fill="#f0c8a0" />
+        <rect x="12" y="13" width="1" height="1" fill="#e0b088" />
         {/* Legs */}
-        <rect x="5" y="13" width="2" height="2" fill="#1a1a3e" />
-        <rect x="9" y="13" width="2" height="2" fill="#1a1a3e" />
+        <rect x="5" y="13" width="2" height="2" fill="#25253f" />
+        <rect x="9" y="13" width="2" height="2" fill="#25253f" />
+        <rect x="7" y="13" width="2" height="1" fill="#1e1e30" />
         {/* Shoes */}
-        <rect x="5" y="15" width="2" height="1" fill="#333" />
-        <rect x="9" y="15" width="2" height="1" fill="#333" />
+        <rect x="5" y="15" width="2" height="1" fill="#5c3a1e" />
+        <rect x="9" y="15" width="2" height="1" fill="#5c3a1e" />
       </svg>
     </div>
   );
 }
 
-// NPC sprite with pixel art style
+// Detailed pixel-art NPC (16x16)
 function NPCSprite({ npc, isNearby }: { npc: NPC; isNearby: boolean }) {
-  const spriteColors: Record<string, { body: string; accent: string; head: string }> = {
-    "sign-welcome": { body: "#8b7355", accent: "#6b5b3a", head: "#a09070" },
-    "npc-guide": { body: "#4a2a6a", accent: "#d4a847", head: "#e0c8a0" },
-    "quest-kpop": { body: "#6b4a2a", accent: "#d4a847", head: "#8b7355" },
-    "quest-dueldex": { body: "#6b4a2a", accent: "#d4a847", head: "#8b7355" },
-    "quest-family": { body: "#6b4a2a", accent: "#d4a847", head: "#8b7355" },
-    "npc-skills": { body: "#4a4a6a", accent: "#c0392b", head: "#f0c8a0" },
-  };
-  const c = spriteColors[npc.id] || { body: "#4a4a6a", accent: "#d4a847", head: "#f0c8a0" };
-
   return (
     <div className="absolute flex items-center justify-center" style={{ width: TILE_SIZE, height: TILE_SIZE }}>
+      <EntityShadow size={npc.type === "quest" ? 22 : 18} />
+
       {/* Quest marker */}
       {npc.type === "quest" && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 retro-font text-[8px] text-gold animate-blink z-10">!</div>
+        <div
+          className="absolute -top-3 left-1/2 -translate-x-1/2 retro-font text-[9px] text-gold animate-blink z-10"
+          style={{ textShadow: "0 0 6px rgba(212,168,71,0.9)" }}
+        >
+          !
+        </div>
       )}
-      {/* Glow when nearby */}
+
+      {/* Gold corner brackets when nearby */}
       {isNearby && (
-        <div className="absolute inset-0 rounded-sm z-0" style={{ boxShadow: "0 0 10px rgba(212,168,71,0.6)", border: "2px solid rgba(212,168,71,0.5)" }} />
+        <div className="absolute inset-0 z-20 pointer-events-none">
+          <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-gold" />
+          <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-gold" />
+          <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-gold" />
+          <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-gold" />
+        </div>
       )}
-      {/* NPC pixel sprite */}
-      <svg width="24" height="24" viewBox="0 0 12 12" style={{ imageRendering: "pixelated", position: "relative", zIndex: 1 }}>
+
+      <svg
+        width="30"
+        height="30"
+        viewBox="0 0 16 16"
+        style={{ imageRendering: "pixelated", position: "relative", zIndex: 1 }}
+      >
         {npc.type === "quest" ? (
           <>
-            {/* Sign/board */}
-            <rect x="1" y="1" width="10" height="8" fill={c.body} rx="0" />
-            <rect x="2" y="2" width="8" height="6" fill={c.accent} rx="0" />
-            <rect x="5" y="9" width="2" height="3" fill="#5c3a1e" />
+            {/* Legs */}
+            <rect x="3" y="11" width="2" height="4" fill="#6b4a2a" />
+            <rect x="11" y="11" width="2" height="4" fill="#6b4a2a" />
+            <rect x="4" y="11" width="1" height="4" fill="#543a20" />
+            <rect x="12" y="11" width="1" height="4" fill="#543a20" />
+            {/* Board frame */}
+            <rect x="2" y="1" width="12" height="11" fill="#5c3a1e" />
+            <rect x="3" y="2" width="10" height="9" fill="#a5794a" />
+            <rect x="3" y="2" width="10" height="1" fill="#c08a4a" />
+            {/* Parchment */}
+            <rect x="4" y="3" width="8" height="7" fill="#f0e0b8" />
+            <rect x="5" y="4" width="6" height="1" fill="#b09060" />
+            <rect x="5" y="6" width="5" height="1" fill="#b09060" />
+            <rect x="5" y="8" width="4" height="1" fill="#b09060" />
+            {/* Gold seal */}
+            <rect x="10" y="8" width="2" height="2" fill="#d4a847" />
           </>
         ) : npc.id === "npc-guide" ? (
           <>
             {/* Wizard hat */}
-            <rect x="4" y="0" width="4" height="2" fill={c.body} />
-            <rect x="5" y="0" width="2" height="1" fill={c.accent} />
+            <rect x="6" y="0" width="4" height="1" fill="#5b3d9e" />
+            <rect x="5" y="1" width="6" height="1" fill="#5b3d9e" />
+            <rect x="4" y="2" width="8" height="2" fill="#5b3d9e" />
+            <rect x="4" y="4" width="8" height="1" fill="#4a2f85" />
+            <rect x="7" y="1" width="1" height="1" fill="#ffd94a" />
+            <rect x="9" y="3" width="1" height="1" fill="#ffd94a" />
             {/* Head */}
-            <rect x="4" y="2" width="4" height="3" fill={c.head} />
-            <rect x="5" y="3" width="1" height="1" fill="#1a1a2e" />
-            <rect x="7" y="3" width="1" height="1" fill="#1a1a2e" />
-            {/* Body */}
-            <rect x="3" y="5" width="6" height="5" fill={c.body} />
-            <rect x="5" y="6" width="2" height="3" fill={c.accent} />
+            <rect x="5" y="5" width="6" height="3" fill="#f0c8a0" />
+            <rect x="5" y="7" width="6" height="1" fill="#e0b088" />
+            <rect x="6" y="6" width="1" height="1" fill="#1a2438" />
+            <rect x="9" y="6" width="1" height="1" fill="#1a2438" />
             {/* Beard */}
-            <rect x="5" y="4" width="2" height="2" fill="#ddd" />
+            <rect x="5" y="8" width="6" height="2" fill="#e8e8f0" />
+            <rect x="6" y="10" width="4" height="1" fill="#d0d0e0" />
+            {/* Robe */}
+            <rect x="4" y="10" width="8" height="5" fill="#5b3d9e" />
+            <rect x="10" y="10" width="2" height="5" fill="#4a2f85" />
+            <rect x="7" y="10" width="2" height="4" fill="#d4a847" />
+            {/* Staff */}
+            <rect x="13" y="4" width="1" height="11" fill="#8b6239" />
+            <rect x="13" y="2" width="1" height="2" fill="#5bb8c9" />
+            <rect x="12" y="3" width="3" height="1" fill="#3d8ba0" />
           </>
         ) : (
           <>
-            {/* Warrior head */}
-            <rect x="4" y="1" width="4" height="1" fill={c.accent} />
-            <rect x="4" y="2" width="4" height="3" fill={c.head} />
-            <rect x="5" y="3" width="1" height="1" fill="#1a1a2e" />
-            <rect x="7" y="3" width="1" height="1" fill="#1a1a2e" />
-            {/* Body */}
-            <rect x="3" y="5" width="6" height="5" fill={c.body} />
-            <rect x="5" y="6" width="2" height="2" fill={c.accent} />
+            {/* Headband */}
+            <rect x="4" y="2" width="8" height="2" fill="#c0392b" />
+            <rect x="4" y="3" width="8" height="1" fill="#a93226" />
+            <rect x="12" y="4" width="1" height="2" fill="#c0392b" />
+            {/* Head */}
+            <rect x="5" y="4" width="6" height="3" fill="#f0c8a0" />
+            <rect x="5" y="6" width="6" height="1" fill="#e0b088" />
+            <rect x="6" y="5" width="1" height="1" fill="#1a2438" />
+            <rect x="9" y="5" width="1" height="1" fill="#1a2438" />
+            {/* Armor body */}
+            <rect x="4" y="7" width="8" height="6" fill="#6e7a87" />
+            <rect x="10" y="7" width="2" height="6" fill="#5c6874" />
+            <rect x="6" y="8" width="4" height="3" fill="#9aa5b1" />
+            <rect x="7" y="9" width="2" height="1" fill="#c0c9d4" />
+            <rect x="5" y="12" width="6" height="1" fill="#d4a847" />
+            {/* Arms */}
+            <rect x="3" y="8" width="1" height="4" fill="#6e7a87" />
+            <rect x="12" y="8" width="1" height="4" fill="#5c6874" />
+            {/* Legs */}
+            <rect x="5" y="13" width="2" height="2" fill="#3a4550" />
+            <rect x="9" y="13" width="2" height="2" fill="#3a4550" />
             {/* Sword */}
-            <rect x="10" y="3" width="1" height="6" fill="#aaa" />
-            <rect x="9" y="6" width="3" height="1" fill={c.accent} />
+            <rect x="14" y="2" width="1" height="8" fill="#d0d8e0" />
+            <rect x="14" y="2" width="1" height="2" fill="#eef2f6" />
+            <rect x="13" y="9" width="3" height="1" fill="#d4a847" />
+            <rect x="14" y="10" width="1" height="2" fill="#5c3a1e" />
           </>
         )}
       </svg>
@@ -313,7 +390,12 @@ export function RPGWorld() {
       <div
         ref={containerRef}
         className="relative overflow-hidden rounded-lg border-2 border-border focus:outline-none focus:border-gold/50"
-        style={{ width: viewportWidth, height: viewportHeight, imageRendering: "pixelated" }}
+        style={{
+          width: viewportWidth,
+          height: viewportHeight,
+          imageRendering: "pixelated",
+          boxShadow: "0 0 0 1px rgba(212,168,71,0.15), 0 8px 32px rgba(0,0,0,0.55), inset 0 0 48px rgba(8,12,20,0.3)",
+        }}
         tabIndex={0}
         onClick={() => containerRef.current?.focus()}
       >
@@ -322,7 +404,7 @@ export function RPGWorld() {
           {Array.from({ length: MAP_HEIGHT }).map((_, y) => (
             <div key={y} className="flex">
               {Array.from({ length: MAP_WIDTH }).map((_, x) => (
-                <TileSprite key={`${x}-${y}`} type={mapData[y]?.[x] ?? 0} />
+                <TileSprite key={`${x}-${y}`} type={mapData[y]?.[x] ?? 0} x={x} y={y} />
               ))}
             </div>
           ))}
@@ -343,6 +425,48 @@ export function RPGWorld() {
         {/* Player */}
         <div className="absolute" style={{ left: (playerPos.x - offsetX) * TILE_SIZE, top: (playerPos.y - offsetY) * TILE_SIZE }}>
           <PlayerSprite moving={moving} />
+        </div>
+
+        {/* Atmosphere: warm light + vignette + scanlines */}
+        <div
+          className="absolute inset-0 pointer-events-none z-[15]"
+          style={{
+            background:
+              "radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(8,12,20,0.55) 100%)",
+          }}
+        />
+        <div
+          className="absolute inset-0 pointer-events-none z-[15]"
+          style={{
+            background: "linear-gradient(160deg, rgba(255,220,140,0.07) 0%, transparent 40%)",
+          }}
+        />
+        <div className="scanlines absolute inset-0 pointer-events-none z-[15]" />
+
+        {/* Fireflies */}
+        <div className="absolute inset-0 pointer-events-none z-[16] overflow-hidden">
+          {FIREFLIES.map((f, i) => (
+            <span
+              key={i}
+              className="firefly"
+              style={{
+                left: f.left,
+                top: f.top,
+                background: f.color,
+                boxShadow: `0 0 6px 1px ${f.color}aa`,
+                animationDelay: `${f.delay}s`,
+                animationDuration: `${f.duration}s`,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Pixel corner accents on viewport frame */}
+        <div className="absolute inset-0 pointer-events-none z-30">
+          <div className="absolute top-0 left-0 w-3 h-3 border-t-[3px] border-l-[3px] border-gold/70" />
+          <div className="absolute top-0 right-0 w-3 h-3 border-t-[3px] border-r-[3px] border-gold/70" />
+          <div className="absolute bottom-0 left-0 w-3 h-3 border-b-[3px] border-l-[3px] border-gold/70" />
+          <div className="absolute bottom-0 right-0 w-3 h-3 border-b-[3px] border-r-[3px] border-gold/70" />
         </div>
 
         {/* Interaction prompt */}
