@@ -25,7 +25,7 @@ export function getDayPeriod(hour: number = new Date().getHours()): DayPeriod {
   }
   return {
     id: "night",
-    overlay: "linear-gradient(180deg, rgba(12,24,64,0.30) 0%, rgba(6,12,40,0.40) 100%)",
+    overlay: "linear-gradient(180deg, rgba(16,30,70,0.14) 0%, rgba(8,14,44,0.20) 100%)",
     night: true,
   };
 }

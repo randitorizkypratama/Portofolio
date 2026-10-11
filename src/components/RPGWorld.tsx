@@ -105,7 +105,7 @@ function EntityShadow({ size = 20 }: { size?: number }) {
   );
 }
 
-// Detailed pixel-art player (16x16, outlined, shaded)
+// Detailed pixel-art player (32x32, 16-bit shaded)
 function PlayerSprite({ moving }: { moving: boolean }) {
   return (
     <div
@@ -117,54 +117,77 @@ function PlayerSprite({ moving }: { moving: boolean }) {
         transition: "transform 0.08s",
       }}
     >
-      <EntityShadow size={18} />
+      <EntityShadow size={22} />
       <svg
-        width="30"
-        height="30"
-        viewBox="0 0 16 16"
+        width="32"
+        height="32"
+        viewBox="0 0 32 32"
         className={moving ? "" : "player-idle"}
         style={{ imageRendering: "pixelated", position: "relative", zIndex: 1 }}
       >
         {/* Hair */}
-        <rect x="5" y="1" width="6" height="1" fill="#2a2a38" />
-        <rect x="4" y="2" width="8" height="2" fill="#2a2a38" />
-        <rect x="6" y="1" width="3" height="1" fill="#45455c" />
-        <rect x="4" y="4" width="1" height="2" fill="#2a2a38" />
-        <rect x="11" y="4" width="1" height="2" fill="#2a2a38" />
+        <rect x="9" y="3" width="14" height="6" fill="#2a2a38" />
+        <rect x="10" y="2" width="12" height="2" fill="#2a2a38" />
+        <rect x="11" y="2" width="6" height="1" fill="#45455c" />
+        <rect x="10" y="4" width="3" height="1" fill="#45455c" />
+        <rect x="18" y="5" width="2" height="1" fill="#45455c" />
+        <rect x="21" y="3" width="2" height="2" fill="#1a1a28" />
+        {/* Side hair */}
+        <rect x="9" y="6" width="2" height="4" fill="#2a2a38" />
+        <rect x="21" y="6" width="2" height="4" fill="#1e1e2c" />
         {/* Face */}
-        <rect x="5" y="4" width="6" height="3" fill="#f0c8a0" />
-        <rect x="5" y="6" width="6" height="1" fill="#e0b088" />
+        <rect x="11" y="7" width="10" height="6" fill="#f0c8a0" />
+        <rect x="11" y="11" width="10" height="2" fill="#e0b088" />
         {/* Bangs */}
-        <rect x="5" y="4" width="6" height="1" fill="#2a2a38" />
-        <rect x="5" y="5" width="1" height="1" fill="#2a2a38" />
-        <rect x="10" y="5" width="1" height="1" fill="#2a2a38" />
-        {/* Eyes + blush */}
-        <rect x="6" y="5" width="1" height="1" fill="#1a2438" />
-        <rect x="9" y="5" width="1" height="1" fill="#1a2438" />
-        <rect x="5" y="6" width="1" height="1" fill="#f0a088" />
-        <rect x="10" y="6" width="1" height="1" fill="#f0a088" />
-        {/* Neck + scarf */}
-        <rect x="7" y="7" width="2" height="1" fill="#e0b088" />
-        <rect x="5" y="7" width="6" height="1" fill="#d4a847" />
-        <rect x="5" y="8" width="6" height="1" fill="#b88e35" />
-        <rect x="11" y="8" width="1" height="2" fill="#d4a847" />
+        <rect x="11" y="7" width="10" height="2" fill="#2a2a38" />
+        <rect x="11" y="9" width="2" height="1" fill="#2a2a38" />
+        <rect x="19" y="9" width="2" height="1" fill="#2a2a38" />
+        {/* Eyes with glint */}
+        <rect x="13" y="9" width="2" height="2" fill="#1a2438" />
+        <rect x="17" y="9" width="2" height="2" fill="#1a2438" />
+        <rect x="13" y="9" width="1" height="1" fill="#e8f0ff" />
+        <rect x="17" y="9" width="1" height="1" fill="#e8f0ff" />
+        {/* Blush */}
+        <rect x="11" y="11" width="2" height="1" fill="#f0a088" />
+        <rect x="19" y="11" width="2" height="1" fill="#f0a088" />
+        {/* Neck */}
+        <rect x="14" y="13" width="4" height="2" fill="#e0b088" />
+        {/* Scarf */}
+        <rect x="10" y="14" width="12" height="3" fill="#d4a847" />
+        <rect x="10" y="14" width="12" height="1" fill="#e8c86a" />
+        <rect x="10" y="16" width="12" height="1" fill="#b88e35" />
+        <rect x="22" y="16" width="2" height="4" fill="#d4a847" />
+        <rect x="22" y="16" width="1" height="4" fill="#e8c86a" />
+        <rect x="22" y="19" width="2" height="1" fill="#b88e35" />
         {/* Hoodie */}
-        <rect x="4" y="8" width="8" height="1" fill="#2f2f5a" />
-        <rect x="4" y="9" width="8" height="4" fill="#3d3d72" />
-        <rect x="3" y="9" width="1" height="4" fill="#3d3d72" />
-        <rect x="12" y="9" width="1" height="4" fill="#33335e" />
-        <rect x="6" y="11" width="4" height="2" fill="#33335e" />
-        <rect x="7" y="10" width="2" height="2" fill="#d4a847" />
+        <rect x="8" y="17" width="16" height="2" fill="#2f2f5a" />
+        <rect x="8" y="18" width="16" height="8" fill="#3d3d72" />
+        <rect x="6" y="19" width="2" height="6" fill="#3d3d72" />
+        <rect x="24" y="19" width="2" height="6" fill="#33335e" />
+        <rect x="8" y="24" width="16" height="2" fill="#33335e" />
+        <rect x="10" y="17" width="12" height="1" fill="#4a4a88" />
+        {/* Pocket + drawstrings */}
+        <rect x="12" y="22" width="8" height="3" fill="#33335e" />
+        <rect x="12" y="22" width="8" height="1" fill="#2f2f5a" />
+        <rect x="14" y="18" width="1" height="3" fill="#e8e8f0" />
+        <rect x="17" y="18" width="1" height="3" fill="#e8e8f0" />
+        <rect x="14" y="21" width="1" height="1" fill="#d4a847" />
+        <rect x="17" y="21" width="1" height="1" fill="#d4a847" />
         {/* Hands */}
-        <rect x="3" y="13" width="1" height="1" fill="#f0c8a0" />
-        <rect x="12" y="13" width="1" height="1" fill="#e0b088" />
+        <rect x="6" y="25" width="2" height="2" fill="#f0c8a0" />
+        <rect x="24" y="25" width="2" height="2" fill="#e0b088" />
         {/* Legs */}
-        <rect x="5" y="13" width="2" height="2" fill="#25253f" />
-        <rect x="9" y="13" width="2" height="2" fill="#25253f" />
-        <rect x="7" y="13" width="2" height="1" fill="#1e1e30" />
+        <rect x="10" y="26" width="4" height="3" fill="#25253f" />
+        <rect x="18" y="26" width="4" height="3" fill="#25253f" />
+        <rect x="12" y="26" width="2" height="3" fill="#1e1e30" />
+        <rect x="20" y="26" width="2" height="3" fill="#1e1e30" />
         {/* Shoes */}
-        <rect x="5" y="15" width="2" height="1" fill="#5c3a1e" />
-        <rect x="9" y="15" width="2" height="1" fill="#5c3a1e" />
+        <rect x="9" y="29" width="5" height="2" fill="#5c3a1e" />
+        <rect x="18" y="29" width="5" height="2" fill="#5c3a1e" />
+        <rect x="9" y="29" width="5" height="1" fill="#7a5430" />
+        <rect x="18" y="29" width="5" height="1" fill="#7a5430" />
+        <rect x="9" y="31" width="5" height="1" fill="#3a2510" />
+        <rect x="18" y="31" width="5" height="1" fill="#3a2510" />
       </svg>
     </div>
   );
@@ -207,8 +230,8 @@ function NPCSprite({
       )}
 
       <svg
-        width="30"
-        height="30"
+        width="32"
+        height="32"
         viewBox="0 0 16 16"
         className="npc-idle"
         style={{
@@ -393,7 +416,7 @@ function NPCSprite({
           </svg>
         ) : npc.type === "chest" ? (
           opened ? (
-            <svg width="30" height="30" viewBox="0 0 16 16" style={{ imageRendering: "pixelated", position: "relative", zIndex: 1 }}>
+            <svg width="32" height="32" viewBox="0 0 16 16" style={{ imageRendering: "pixelated", position: "relative", zIndex: 1 }}>
               <rect x="1" y="2" width="14" height="2" fill="#a5794a" />
               <rect x="2" y="4" width="12" height="9" fill="#8b5a2b" />
               <rect x="3" y="5" width="10" height="5" fill="#2a1a0a" />
@@ -402,7 +425,7 @@ function NPCSprite({
               <rect x="7" y="9" width="2" height="3" fill="#d4a847" />
             </svg>
           ) : (
-            <svg width="30" height="30" viewBox="0 0 16 16" style={{ imageRendering: "pixelated", position: "relative", zIndex: 1 }}>
+            <svg width="32" height="32" viewBox="0 0 16 16" style={{ imageRendering: "pixelated", position: "relative", zIndex: 1 }}>
               <rect x="2" y="4" width="12" height="3" fill="#a5794a" />
               <rect x="2" y="4" width="12" height="1" fill="#c08a4a" />
               <rect x="2" y="7" width="12" height="6" fill="#8b5a2b" />
@@ -412,7 +435,7 @@ function NPCSprite({
             </svg>
           )
         ) : npc.type === "shrine" ? (
-          <svg width="30" height="30" viewBox="0 0 16 16" style={{ imageRendering: "pixelated", position: "relative", zIndex: 1 }}>
+          <svg width="32" height="32" viewBox="0 0 16 16" style={{ imageRendering: "pixelated", position: "relative", zIndex: 1 }}>
             <rect x="3" y="13" width="10" height="2" fill="#6e7a87" />
             <rect x="4" y="12" width="8" height="1" fill="#8a97a4" />
             <rect x="5" y="3" width="6" height="9" fill="#9aa5b1" />
@@ -445,8 +468,8 @@ function NPCSprite({
           </svg>
         ) : npc.type === "pumpkin" ? (
           <svg
-            width="30"
-            height="30"
+            width="32"
+            height="32"
             viewBox="0 0 16 16"
             className="pumpkin-sprite"
             style={{ imageRendering: "pixelated", position: "relative", zIndex: 1 }}
@@ -1529,25 +1552,38 @@ export function RPGWorld() {
           }}
         >
           <svg
-            width="26"
-            height="20"
-            viewBox="0 0 16 12"
+            width="28"
+            height="22"
+            viewBox="0 0 24 18"
             className="pet-bounce"
             style={{ imageRendering: "pixelated", marginBottom: 2 }}
           >
-            <rect x="5" y="2" width="6" height="1" fill="#5ec26a" />
-            <rect x="3" y="3" width="10" height="1" fill="#5ec26a" />
-            <rect x="2" y="4" width="12" height="5" fill="#5ec26a" />
-            <rect x="1" y="8" width="14" height="2" fill="#5ec26a" />
-            <rect x="2" y="10" width="12" height="1" fill="#3a8f48" />
-            <rect x="4" y="3" width="4" height="1" fill="#8de08a" />
-            <rect x="3" y="4" width="3" height="1" fill="#8de08a" />
-            <rect x="3" y="8" width="10" height="1" fill="#3a8f48" />
-            <rect x="5" y="5" width="2" height="2" fill="#ffffff" />
-            <rect x="9" y="5" width="2" height="2" fill="#ffffff" />
-            <rect x="6" y="6" width="1" height="1" fill="#1a2438" />
-            <rect x="10" y="6" width="1" height="1" fill="#1a2438" />
-            <rect x="7" y="8" width="2" height="1" fill="#2a6a2a" />
+            <rect x="8" y="1" width="8" height="1" fill="#2d7a38" />
+            <rect x="5" y="2" width="14" height="1" fill="#2d7a38" />
+            <rect x="4" y="3" width="16" height="2" fill="#5ec26a" />
+            <rect x="3" y="5" width="18" height="7" fill="#5ec26a" />
+            <rect x="2" y="12" width="20" height="3" fill="#5ec26a" />
+            <rect x="3" y="15" width="18" height="1" fill="#3a8f48" />
+            <rect x="6" y="3" width="7" height="1" fill="#a8e8a0" />
+            <rect x="5" y="4" width="5" height="1" fill="#a8e8a0" />
+            <rect x="4" y="5" width="2" height="1" fill="#8de08a" />
+            <rect x="4" y="13" width="16" height="2" fill="#3a8f48" />
+            <rect x="3" y="14" width="18" height="1" fill="#2d7a38" />
+            <rect x="8" y="7" width="3" height="3" fill="#ffffff" />
+            <rect x="14" y="7" width="3" height="3" fill="#ffffff" />
+            <rect x="9" y="8" width="2" height="2" fill="#1a2438" />
+            <rect x="15" y="8" width="2" height="2" fill="#1a2438" />
+            <rect x="9" y="8" width="1" height="1" fill="#e8f0ff" />
+            <rect x="15" y="8" width="1" height="1" fill="#e8f0ff" />
+            <rect x="5" y="10" width="2" height="1" fill="#f0a0a0" />
+            <rect x="18" y="10" width="2" height="1" fill="#f0a0a0" />
+            <rect x="11" y="11" width="3" height="1" fill="#2a6a2a" />
+            <rect x="10" y="10" width="1" height="1" fill="#2a6a2a" />
+            <rect x="14" y="10" width="1" height="1" fill="#2a6a2a" />
+            <rect x="4" y="16" width="4" height="2" fill="#5ec26a" />
+            <rect x="16" y="16" width="4" height="2" fill="#5ec26a" />
+            <rect x="4" y="17" width="4" height="1" fill="#3a8f48" />
+            <rect x="16" y="17" width="4" height="1" fill="#3a8f48" />
           </svg>
         </div>
 
@@ -1557,19 +1593,19 @@ export function RPGWorld() {
           style={{ background: period.overlay, transition: "background 2s ease" }}
         />
 
-        {/* Night lighting — player lantern + village lamps */}
+        {/* Night lighting — player lantern + village lamps (soft, bright enough to explore) */}
         {period.night && (
           <>
             <div
               className="absolute inset-0 pointer-events-none z-[14]"
               style={{
                 background: [
-                  `radial-gradient(circle 95px at ${(playerPos.x - offsetX) * TILE_SIZE + TILE_SIZE / 2}px ${(playerPos.y - offsetY) * TILE_SIZE + TILE_SIZE / 2}px, rgba(6,10,26,0) 30%, rgba(6,10,26,0.4) 100%)`,
+                  `radial-gradient(circle 140px at ${(playerPos.x - offsetX) * TILE_SIZE + TILE_SIZE / 2}px ${(playerPos.y - offsetY) * TILE_SIZE + TILE_SIZE / 2}px, rgba(6,10,26,0) 45%, rgba(6,10,26,0.18) 100%)`,
                   ...LAMPS.map(
                     (l) =>
-                      `radial-gradient(circle 70px at ${(l.x - offsetX) * TILE_SIZE + TILE_SIZE / 2}px ${(l.y - offsetY) * TILE_SIZE + TILE_SIZE / 2}px, rgba(6,10,26,0) 20%, rgba(6,10,26,0.4) 100%)`
+                      `radial-gradient(circle 110px at ${(l.x - offsetX) * TILE_SIZE + TILE_SIZE / 2}px ${(l.y - offsetY) * TILE_SIZE + TILE_SIZE / 2}px, rgba(6,10,26,0) 35%, rgba(6,10,26,0.18) 100%)`
                   ),
-                  "rgba(6,10,26,0.4)",
+                  "rgba(6,10,26,0.18)",
                 ].join(", "),
                 transition: GLIDE,
               }}
@@ -1580,7 +1616,7 @@ export function RPGWorld() {
               style={{
                 background: LAMPS.map(
                   (l) =>
-                    `radial-gradient(circle 52px at ${(l.x - offsetX) * TILE_SIZE + TILE_SIZE / 2}px ${(l.y - offsetY) * TILE_SIZE + TILE_SIZE / 2}px, rgba(255,190,90,0.16), transparent 70%)`
+                    `radial-gradient(circle 60px at ${(l.x - offsetX) * TILE_SIZE + TILE_SIZE / 2}px ${(l.y - offsetY) * TILE_SIZE + TILE_SIZE / 2}px, rgba(255,200,110,0.20), transparent 70%)`
                 ).join(", "),
                 transition: GLIDE,
               }}
