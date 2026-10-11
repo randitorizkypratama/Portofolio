@@ -25,39 +25,41 @@ export interface Project {
   description: string;
   tags: string[];
   color: string;
+  url: string;
+  repo?: string;
+  status: "completed" | "in-progress";
 }
 
 export const projects: Project[] = [
   {
-    title: "Kpop Photocard Tracker",
+    title: "HIBIKISHOP PC",
     slug: "kpop-photocard-tracker",
     description:
-      "Web app untuk mencari dan melacak photocard K-Pop dengan database lengkap.",
-    tags: ["TanStack Start", "React", "Tailwind CSS"],
+      "K-Pop photocard database — explore album PCs, POBs, lucky draws, and special photocards by group, member, album, and market reference.",
+    tags: ["React", "TanStack", "Tailwind CSS"],
     color: "#C04BFF",
+    url: "https://kpop-tracker-six.vercel.app/",
+    status: "completed",
   },
   {
-    title: "Portfolio Website",
-    slug: "portfolio-website",
+    title: "DuelDex",
+    slug: "dueldex",
     description:
-      "Personal website dengan tema game 8-bit, modern, dan interaktif.",
-    tags: ["React", "Motion", "Tailwind CSS"],
-    color: "#795CFF",
-  },
-  {
-    title: "Game Mini Project",
-    slug: "game-mini-project",
-    description:
-      "Mini game berbasis web dengan mekanik sederhana dan visual pixel art.",
-    tags: ["React", "Canvas", "Tailwind CSS"],
+      "Card game deck builder — explore cards, build smarter decks, and strategize your next duel.",
+    tags: ["React", "Tailwind CSS", "Lucide"],
     color: "#35D9F2",
+    url: "https://dueldex-web.onrender.com/",
+    status: "completed",
   },
   {
-    title: "Anime Gallery",
-    slug: "anime-gallery",
-    description: "Gallery gambar anime dengan fitur search dan kategori.",
-    tags: ["React", "Tailwind CSS", "Lucide React"],
-    color: "#FF6B9D",
+    title: "Family Tree",
+    slug: "family-tree",
+    description:
+      "Interactive family tree application for creating, editing, and visualizing family relationships and genealogy.",
+    tags: ["Nuxt", "Vue", "Tailwind CSS"],
+    color: "#27ae60",
+    url: "https://family-tree-delta-peach.vercel.app/",
+    status: "completed",
   },
 ];
 

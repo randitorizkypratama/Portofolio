@@ -41,37 +41,35 @@ export function ContactSection() {
     <section id="contact" className="py-20 sm:py-28">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <ScrollReveal>
-          <div className="glow-border rounded-2xl bg-bg-elevated p-6 sm:p-10 relative overflow-hidden">
-            {/* Decorative pixel elements */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full" />
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-cyan/5 rounded-tr-full" />
+          <div className="dialogue-box rounded-lg p-6 sm:p-10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gold/3 rounded-bl-full" />
 
             <div className="grid lg:grid-cols-2 gap-10 relative">
               {/* Left */}
               <div>
-                <span className="retro-font text-[10px] text-primary block mb-3">
-                  Get In Touch
+                <span className="retro-font text-[8px] text-gold block mb-3">
+                  ✦ MESSAGE BOARD ✦
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-bold mb-4">
+                <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-cream">
                   Let's Build Something{" "}
-                  <span className="gradient-text">Great!</span>
+                  <span className="text-gold">Great!</span>
                 </h2>
-                <p className="text-text-secondary mb-8">
+                <p className="text-text-secondary mb-8 text-sm">
                   {siteConfig.contactDescription}
                 </p>
 
-                {/* Decorative elements */}
+                {/* Decorative */}
                 <div className="hidden lg:flex items-end gap-4 mt-auto">
                   <motion.img
                     src="/images/avatar.webp"
                     alt=""
                     aria-hidden="true"
-                    className="w-12 h-12 rounded-lg object-cover border border-border"
-                    animate={{ y: [0, -5, 0] }}
+                    className="w-12 h-12 rounded-lg border-2 border-border"
+                    animate={{ y: [0, -4, 0] }}
                     transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
                   />
-                  <div className="glow-border rounded-lg p-3 bg-bg-secondary">
-                    <p className="retro-font text-[7px] text-cyan">
+                  <div className="game-border rounded-lg p-3">
+                    <p className="retro-font text-[6px] text-cyan">
                       Thanks for visiting!
                     </p>
                   </div>
@@ -79,9 +77,9 @@ export function ContactSection() {
                     src="/images/decoration.webp"
                     alt=""
                     aria-hidden="true"
-                    className="w-16 h-16 object-contain opacity-60"
+                    className="w-14 h-14 object-contain opacity-50"
                     loading="lazy"
-                    animate={{ y: [0, -4, 0], rotate: [0, 2, -2, 0] }}
+                    animate={{ y: [0, -3, 0], rotate: [0, 2, -2, 0] }}
                     transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                   />
                 </div>
@@ -90,85 +88,76 @@ export function ContactSection() {
               {/* Right - Form */}
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div>
-                  <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-text-secondary mb-1.5"
-                  >
-                    Name
+                  <label htmlFor="name" className="retro-font text-[6px] text-text-secondary block mb-1.5">
+                    NAME
                   </label>
                   <input
                     id="name"
                     type="text"
                     placeholder="Your name"
                     {...register("name")}
-                    className="w-full px-4 py-2.5 bg-bg-main border border-border rounded-lg text-sm text-text-main placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-colors"
+                    className="w-full px-3 py-2 bg-bg-main border-2 border-border rounded text-sm text-cream placeholder:text-text-secondary/40 focus:outline-none focus:border-gold/50 transition-colors"
                   />
                   {errors.name && (
-                    <p className="mt-1 text-xs text-red-400">
+                    <p className="mt-1 retro-font text-[6px] text-hp">
                       {errors.name.message}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-text-secondary mb-1.5"
-                  >
-                    Email
+                  <label htmlFor="email" className="retro-font text-[6px] text-text-secondary block mb-1.5">
+                    EMAIL
                   </label>
                   <input
                     id="email"
                     type="email"
                     placeholder="your@email.com"
                     {...register("email")}
-                    className="w-full px-4 py-2.5 bg-bg-main border border-border rounded-lg text-sm text-text-main placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-colors"
+                    className="w-full px-3 py-2 bg-bg-main border-2 border-border rounded text-sm text-cream placeholder:text-text-secondary/40 focus:outline-none focus:border-gold/50 transition-colors"
                   />
                   {errors.email && (
-                    <p className="mt-1 text-xs text-red-400">
+                    <p className="mt-1 retro-font text-[6px] text-hp">
                       {errors.email.message}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="message"
-                    className="block text-sm font-medium text-text-secondary mb-1.5"
-                  >
-                    Message
+                  <label htmlFor="message" className="retro-font text-[6px] text-text-secondary block mb-1.5">
+                    MESSAGE
                   </label>
                   <textarea
                     id="message"
                     rows={4}
                     placeholder="Your message..."
                     {...register("message")}
-                    className="w-full px-4 py-2.5 bg-bg-main border border-border rounded-lg text-sm text-text-main placeholder:text-text-secondary/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-colors resize-none"
+                    className="w-full px-3 py-2 bg-bg-main border-2 border-border rounded text-sm text-cream placeholder:text-text-secondary/40 focus:outline-none focus:border-gold/50 transition-colors resize-none"
                   />
                   {errors.message && (
-                    <p className="mt-1 text-xs text-red-400">
+                    <p className="mt-1 retro-font text-[6px] text-hp">
                       {errors.message.message}
                     </p>
                   )}
                 </div>
 
                 {submitted ? (
-                  <div className="flex items-center gap-2 text-sm text-green-400">
-                    <CheckCircle size={16} />
-                    Opening your email client...
+                  <div className="flex items-center gap-2 retro-font text-[7px] text-xp">
+                    <CheckCircle size={14} />
+                    Message sent!
                   </div>
                 ) : (
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors text-sm"
+                    className="game-btn w-full flex items-center justify-center gap-2 text-[8px] disabled:opacity-50"
                   >
                     {isSubmitting ? (
-                      <Loader2 size={16} className="animate-spin" />
+                      <Loader2 size={14} className="animate-spin" />
                     ) : (
-                      <Send size={16} />
+                      <Send size={14} />
                     )}
-                    Send Message
+                    SEND MESSAGE
                   </button>
                 )}
               </form>

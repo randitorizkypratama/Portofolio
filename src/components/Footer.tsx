@@ -12,18 +12,18 @@ const socialIcons = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-bg-secondary/50">
+    <footer className="border-t-2 border-border bg-bg-secondary/50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
             <motion.img
               src="/images/avatar.webp"
               alt={siteConfig.name}
-              className="w-6 h-6 rounded-md object-cover"
+              className="w-6 h-6 rounded object-cover border border-border"
               whileHover={{ rotate: 10, scale: 1.1 }}
               transition={{ duration: 0.2 }}
             />
-            <span className="retro-font text-[8px] text-text-main">
+            <span className="pixel-font text-[8px] text-gold">
               {siteConfig.name}
             </span>
           </div>
@@ -33,7 +33,7 @@ export function Footer() {
               <a
                 key={link.href}
                 href={link.href}
-                className="text-sm text-text-secondary hover:text-text-main transition-colors"
+                className="retro-font text-[6px] text-text-secondary hover:text-cream transition-colors"
               >
                 {link.label}
               </a>
@@ -48,17 +48,17 @@ export function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={label}
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-text-secondary hover:text-primary hover:bg-primary/5 transition-all"
+                className="w-7 h-7 flex items-center justify-center rounded border border-border text-text-secondary hover:text-gold hover:border-gold/40 transition-all"
               >
-                <Icon size={16} />
+                <Icon size={13} />
               </a>
             ))}
           </div>
         </div>
 
         <div className="mt-8 pt-6 border-t border-border text-center">
-          <p className="text-xs text-text-secondary">
-            &copy; {new Date().getFullYear()} {siteConfig.name}. Crafted with pixels and passion.
+          <p className="retro-font text-[6px] text-text-secondary">
+            © {new Date().getFullYear()} {siteConfig.name} · Crafted with pixels and passion
           </p>
         </div>
       </div>

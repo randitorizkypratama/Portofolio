@@ -17,7 +17,7 @@ export function AboutSection() {
           {/* Left - Workspace Image */}
           <ScrollReveal direction="left">
             <motion.div
-              className="relative rounded-xl overflow-hidden border border-border"
+              className="relative rounded-lg overflow-hidden border-2 border-border"
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.3 }}
             >
@@ -27,7 +27,7 @@ export function AboutSection() {
                 className="w-full h-auto"
                 loading="lazy"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-bg-main/40 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-bg-main/50 via-transparent to-transparent" />
             </motion.div>
           </ScrollReveal>
 
@@ -37,32 +37,32 @@ export function AboutSection() {
               <motion.img
                 src="/images/avatar.webp"
                 alt={siteConfig.name}
-                className="w-8 h-8 rounded-md object-cover"
+                className="w-9 h-9 rounded object-cover border-2 border-border"
                 animate={{ y: [0, -3, 0] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
               />
-              <span className="retro-font text-[10px] text-primary">
-                About Me
+              <span className="retro-font text-[8px] text-gold">
+                ✦ ABOUT ME ✦
               </span>
             </div>
 
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 text-cream">
               Turning Ideas into{" "}
-              <span className="gradient-text">Interactive</span>{" "}
+              <span className="text-gold">Interactive</span>{" "}
               Experiences
             </h2>
 
-            <p className="text-text-secondary leading-relaxed mb-8">
+            <p className="text-text-secondary leading-relaxed mb-8 text-sm">
               {siteConfig.aboutDescription}
             </p>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2">
               {chips.map(({ icon: Icon, label }) => (
                 <div
                   key={label}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-bg-elevated text-sm text-text-secondary"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded border-2 border-border bg-bg-elevated text-xs text-text-secondary"
                 >
-                  <Icon size={14} className="text-primary" />
+                  <Icon size={12} className="text-gold" />
                   {label}
                 </div>
               ))}

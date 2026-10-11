@@ -1,3 +1,4 @@
+import { useState, useCallback } from "react";
 import { createRootRoute, createRoute } from "@tanstack/react-router";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
@@ -7,23 +8,35 @@ import { TechStackSection } from "../components/TechStackSection";
 import { ProjectsSection } from "../components/ProjectsSection";
 import { ContactSection } from "../components/ContactSection";
 import { SectionDivider } from "../components/SectionDivider";
+import { StartScreen } from "../components/StartScreen";
 
 function RootLayout() {
+  const [started, setStarted] = useState(false);
+
+  const handleStart = useCallback(() => {
+    setStarted(true);
+  }, []);
+
   return (
     <div className="min-h-screen bg-bg-main">
-      <Header />
-      <main>
-        <HeroSection />
-        <SectionDivider />
-        <AboutSection />
-        <SectionDivider />
-        <TechStackSection />
-        <SectionDivider />
-        <ProjectsSection />
-        <SectionDivider />
-        <ContactSection />
-      </main>
-      <Footer />
+      <StartScreen onStart={handleStart} />
+      {started && (
+        <>
+          <Header />
+          <main>
+            <HeroSection />
+            <SectionDivider />
+            <AboutSection />
+            <SectionDivider />
+            <ProjectsSection />
+            <SectionDivider />
+            <TechStackSection />
+            <SectionDivider />
+            <ContactSection />
+          </main>
+          <Footer />
+        </>
+      )}
     </div>
   );
 }
