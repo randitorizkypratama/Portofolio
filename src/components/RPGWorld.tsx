@@ -1,26 +1,39 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { TILE_SIZE, MAP_WIDTH, MAP_HEIGHT, isWalkable, tileMap as mapData } from "../game/tileMap";
-import { npcs, getNearbyEntity, type Direction, type Position, type NPC } from "../game/entities";
+import {
+  TILE_SIZE,
+  MAP_WIDTH,
+  MAP_HEIGHT,
+  isWalkable,
+  tileMap as mapData,
+} from "../game/tileMap";
+import {
+  npcs,
+  getNearbyEntity,
+  type Direction,
+  type Position,
+  type NPC,
+} from "../game/entities";
 
 const VIEWPORT_TILES_X = 17;
 const VIEWPORT_TILES_Y = 13;
 const START_POS: Position = { x: 14, y: 9 };
 
+const TILE_STYLES: Record<number, { emoji: string; bg: string }> = {
+  0: { emoji: "", bg: "#3a6b35" },
+  1: { emoji: "", bg: "#8b7355" },
+  2: { emoji: "", bg: "#1a5276" },
+  3: { emoji: "🌲", bg: "#1a4a2e" },
+  4: { emoji: "", bg: "#5c3a1e" },
+  5: { emoji: "", bg: "#3a3a5c" },
+  6: { emoji: "🌸", bg: "#3a6b35" },
+  7: { emoji: "📜", bg: "#3a6b35" },
+  8: { emoji: "🪨", bg: "#3a6b35" },
+  9: { emoji: "", bg: "#6b5b3a" },
+};
+
 function TileSprite({ type }: { type: number }) {
-  const tiles: Record<number, { emoji: string; bg: string }> = {
-    0: { emoji: "", bg: "#3a6b35" },
-    1: { emoji: "", bg: "#8b7355" },
-    2: { emoji: "", bg: "#1a5276" },
-    3: { emoji: "🌲", bg: "#1a4a2e" },
-    4: { emoji: "", bg: "#5c3a1e" },
-    5: { emoji: "", bg: "#3a3a5c" },
-    6: { emoji: "🌸", bg: "#3a6b35" },
-    7: { emoji: "📜", bg: "#3a6b35" },
-    8: { emoji: "🪨", bg: "#3a6b35" },
-    9: { emoji: "", bg: "#6b5b3a" },
-  };
-  const tile = tiles[type] || { emoji: "?", bg: "#333" };
+  const tile = TILE_STYLES[type] || { emoji: "?", bg: "#333" };
   return (
     <div
       className="flex items-center justify-center select-none"
@@ -56,10 +69,13 @@ function PlayerSprite({ moving }: { moving: boolean }) {
 
 export function RPGWorld() {
   const [playerPos, setPlayerPos] = useState<Position>(START_POS);
-  const [, setDirection] = useState<Direction>("down");
+  const [direction, setDirection] = useState<Direction>("down");
   const [moving, setMoving] = useState(false);
   const [nearbyEntity, setNearbyEntity] = useState<NPC | null>(null);
-  const [dialogue, setDialogue] = useState<{ npc: NPC; lineIndex: number } | null>(null);
+  const [dialogue, setDialogue] = useState<{
+    npc: NPC;
+    lineIndex: number;
+  } | null>(null);
   const [showMenu, setShowMenu] = useState(false);
   const [visitLink, setVisitLink] = useState<string | null>(null);
 
@@ -68,75 +84,118 @@ export function RPGWorld() {
   const containerRef = useRef<HTMLDivElement>(null);
   const interactCooldownRef = useRef(false);
 
-  // Use refs for state that the event handler needs but shouldn't cause re-registration
+  // Refs for current state — read inside event handlers without stale closures
   const dialogueRef = useRef(dialogue);
   const showMenuRef = useRef(showMenu);
-  useEffect(() => { dialogueRef.current = dialogue; }, [dialogue]);
-  useEffect(() => { showMenuRef.current = showMenu; }, [showMenu]);
+  const playerPosRef = useRef(playerPos);
+  const directionRef = useRef(direction);
 
-  const movePlayer = useCallback((dx: number, dy: number, dir: Direction) => {
-    setDirection(dir);
-    setPlayerPos((prev) => {
-      const newX = prev.x + dx;
-      const newY = prev.y + dy;
-      if (isWalkable(newX, newY)) {
-        setMoving(true);
-        if (moveTimerRef.current) clearTimeout(moveTimerRef.current);
-        moveTimerRef.current = setTimeout(() => setMoving(false), 100);
-        setNearbyEntity(getNearbyEntity({ x: newX, y: newY }));
-        return { x: newX, y: newY };
-      }
-      return prev;
-    });
-  }, []);
+  useEffect(() => {
+    dialogueRef.current = dialogue;
+  }, [dialogue]);
+  useEffect(() => {
+    showMenuRef.current = showMenu;
+  }, [showMenu]);
+  useEffect(() => {
+    playerPosRef.current = playerPos;
+  }, [playerPos]);
+  useEffect(() => {
+    directionRef.current = direction;
+  }, [direction]);
 
-  // Single stable event listener setup — never re-registers
+  // Movement
+  const movePlayer = useCallback(
+    (dx: number, dy: number, dir: Direction) => {
+      setDirection(dir);
+      setPlayerPos((prev) => {
+        const newX = prev.x + dx;
+        const newY = prev.y + dy;
+        if (isWalkable(newX, newY)) {
+          setMoving(true);
+          if (moveTimerRef.current) clearTimeout(moveTimerRef.current);
+          moveTimerRef.current = setTimeout(() => setMoving(false), 100);
+          const entity = getNearbyEntity({ x: newX, y: newY }, dir);
+          setNearbyEntity(entity);
+          return { x: newX, y: newY };
+        }
+        return prev;
+      });
+    },
+    []
+  );
+
+  // Single stable event listener — never re-registers
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
       const hasDialogue = dialogueRef.current !== null;
       const hasMenu = showMenuRef.current;
 
-      // Escape always works
+      // Escape — always works
       if (key === "escape") {
-        if (hasDialogue) { setDialogue(null); return; }
-        if (hasMenu) { setShowMenu(false); return; }
+        e.preventDefault();
+        if (hasDialogue) {
+          setDialogue(null);
+          return;
+        }
+        if (hasMenu) {
+          setShowMenu(false);
+          return;
+        }
         setShowMenu(true);
         return;
       }
 
-      // Block movement when dialogue or menu is open
+      // Block movement keys when dialogue or menu is open
       if (hasDialogue || hasMenu) return;
 
-      // Interact — with cooldown to prevent double-triggers
-      if ((key === "e" || key === " ") && !e.repeat && !interactCooldownRef.current) {
+      // Interact: E or Space — single press, no repeat
+      if (
+        (key === "e" || key === " ") &&
+        !e.repeat &&
+        !interactCooldownRef.current
+      ) {
         e.preventDefault();
-        // Get current nearby entity from the latest position
-        setPlayerPos((pos) => {
-          const entity = getNearbyEntity(pos);
-          if (entity) {
-            interactCooldownRef.current = true;
-            setTimeout(() => { interactCooldownRef.current = false; }, 300);
-            setDialogue({ npc: entity, lineIndex: 0 });
-          }
-          return pos; // don't change position
-        });
+        interactCooldownRef.current = true;
+        setTimeout(() => {
+          interactCooldownRef.current = false;
+        }, 300);
+
+        // Read current position and direction from refs
+        const pos = playerPosRef.current;
+        const dir = directionRef.current;
+        const entity = getNearbyEntity(pos, dir);
+        if (entity) {
+          setDialogue({ npc: entity, lineIndex: 0 });
+        }
         return;
       }
 
       // Movement keys
-      if (["w", "arrowup"].includes(key)) { e.preventDefault(); keysRef.current.add("up"); }
-      if (["s", "arrowdown"].includes(key)) { e.preventDefault(); keysRef.current.add("down"); }
-      if (["a", "arrowleft"].includes(key)) { e.preventDefault(); keysRef.current.add("left"); }
-      if (["d", "arrowright"].includes(key)) { e.preventDefault(); keysRef.current.add("right"); }
+      if (key === "w" || key === "arrowup") {
+        e.preventDefault();
+        keysRef.current.add("up");
+      }
+      if (key === "s" || key === "arrowdown") {
+        e.preventDefault();
+        keysRef.current.add("down");
+      }
+      if (key === "a" || key === "arrowleft") {
+        e.preventDefault();
+        keysRef.current.add("left");
+      }
+      if (key === "d" || key === "arrowright") {
+        e.preventDefault();
+        keysRef.current.add("right");
+      }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
-      if (["w", "arrowup"].includes(key)) keysRef.current.delete("up");
-      if (["s", "arrowdown"].includes(key)) keysRef.current.delete("down");
-      if (["a", "arrowleft"].includes(key)) keysRef.current.delete("left");
-      if (["d", "arrowright"].includes(key)) keysRef.current.delete("right");
+      if (key === "w" || key === "arrowup") keysRef.current.delete("up");
+      if (key === "s" || key === "arrowdown") keysRef.current.delete("down");
+      if (key === "a" || key === "arrowleft") keysRef.current.delete("left");
+      if (key === "d" || key === "arrowright") keysRef.current.delete("right");
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -145,9 +204,9 @@ export function RPGWorld() {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, []); // Empty deps — registered once, reads refs for current state
+  }, []);
 
-  // Game loop — single interval, cleaned up properly
+  // Game loop
   useEffect(() => {
     const interval = setInterval(() => {
       if (dialogueRef.current || showMenuRef.current) return;
@@ -160,7 +219,7 @@ export function RPGWorld() {
     return () => clearInterval(interval);
   }, [movePlayer]);
 
-  // Close dialogue via E/Enter/Space
+  // Dialogue advance — called by button click
   const handleDialogueAdvance = useCallback(() => {
     if (!dialogue) return;
     const nextIndex = dialogue.lineIndex + 1;
@@ -182,8 +241,20 @@ export function RPGWorld() {
   }, [dialogue]);
 
   // Viewport
-  const offsetX = Math.max(0, Math.min(playerPos.x - Math.floor(VIEWPORT_TILES_X / 2), MAP_WIDTH - VIEWPORT_TILES_X));
-  const offsetY = Math.max(0, Math.min(playerPos.y - Math.floor(VIEWPORT_TILES_Y / 2), MAP_HEIGHT - VIEWPORT_TILES_Y));
+  const offsetX = Math.max(
+    0,
+    Math.min(
+      playerPos.x - Math.floor(VIEWPORT_TILES_X / 2),
+      MAP_WIDTH - VIEWPORT_TILES_X
+    )
+  );
+  const offsetY = Math.max(
+    0,
+    Math.min(
+      playerPos.y - Math.floor(VIEWPORT_TILES_Y / 2),
+      MAP_HEIGHT - VIEWPORT_TILES_Y
+    )
+  );
   const viewportWidth = VIEWPORT_TILES_X * TILE_SIZE;
   const viewportHeight = VIEWPORT_TILES_Y * TILE_SIZE;
 
@@ -198,7 +269,13 @@ export function RPGWorld() {
         onClick={() => containerRef.current?.focus()}
       >
         {/* Tile map */}
-        <div className="absolute" style={{ left: -offsetX * TILE_SIZE, top: -offsetY * TILE_SIZE }}>
+        <div
+          className="absolute"
+          style={{
+            left: -offsetX * TILE_SIZE,
+            top: -offsetY * TILE_SIZE,
+          }}
+        >
           {Array.from({ length: MAP_HEIGHT }).map((_, y) => (
             <div key={y} className="flex">
               {Array.from({ length: MAP_WIDTH }).map((_, x) => (
@@ -212,16 +289,39 @@ export function RPGWorld() {
         {npcs.map((npc) => {
           const nx = (npc.position.x - offsetX) * TILE_SIZE;
           const ny = (npc.position.y - offsetY) * TILE_SIZE;
-          if (nx < -TILE_SIZE || ny < -TILE_SIZE || nx > viewportWidth || ny > viewportHeight) return null;
+          if (
+            nx < -TILE_SIZE ||
+            ny < -TILE_SIZE ||
+            nx > viewportWidth ||
+            ny > viewportHeight
+          )
+            return null;
           const isNearby = nearbyEntity?.id === npc.id;
           return (
-            <div key={npc.id} className="absolute flex items-center justify-center"
-              style={{ left: nx, top: ny, width: TILE_SIZE, height: TILE_SIZE, fontSize: npc.type === "quest" ? 16 : 18 }}>
+            <div
+              key={npc.id}
+              className="absolute flex items-center justify-center"
+              style={{
+                left: nx,
+                top: ny,
+                width: TILE_SIZE,
+                height: TILE_SIZE,
+                fontSize: npc.type === "quest" ? 16 : 18,
+              }}
+            >
               {npc.type === "quest" && (
-                <div className="absolute -top-2 left-1/2 -translate-x-1/2 retro-font text-[6px] text-gold animate-blink">!</div>
+                <div className="absolute -top-2 left-1/2 -translate-x-1/2 retro-font text-[6px] text-gold animate-blink">
+                  !
+                </div>
               )}
               {isNearby && (
-                <div className="absolute inset-0 rounded-sm" style={{ boxShadow: "0 0 8px rgba(212,168,71,0.5)", border: "1px solid rgba(212,168,71,0.4)" }} />
+                <div
+                  className="absolute inset-0 rounded-sm"
+                  style={{
+                    boxShadow: "0 0 8px rgba(212,168,71,0.5)",
+                    border: "1px solid rgba(212,168,71,0.4)",
+                  }}
+                />
               )}
               {npc.sprite}
             </div>
@@ -229,7 +329,13 @@ export function RPGWorld() {
         })}
 
         {/* Player */}
-        <div className="absolute" style={{ left: (playerPos.x - offsetX) * TILE_SIZE, top: (playerPos.y - offsetY) * TILE_SIZE }}>
+        <div
+          className="absolute"
+          style={{
+            left: (playerPos.x - offsetX) * TILE_SIZE,
+            top: (playerPos.y - offsetY) * TILE_SIZE,
+          }}
+        >
           <PlayerSprite moving={moving} />
         </div>
 
@@ -237,8 +343,12 @@ export function RPGWorld() {
         {nearbyEntity && !dialogue && (
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20">
             <div className="dialogue-box rounded-lg px-4 py-2 flex items-center gap-2">
-              <span className="retro-font text-[7px] px-1.5 py-0.5 bg-bg-main border border-gold/40 rounded text-gold">E</span>
-              <span className="retro-font text-[7px] text-cream">{nearbyEntity.name}</span>
+              <span className="retro-font text-[7px] px-1.5 py-0.5 bg-bg-main border border-gold/40 rounded text-gold">
+                E
+              </span>
+              <span className="retro-font text-[7px] text-cream">
+                {nearbyEntity.name}
+              </span>
             </div>
           </div>
         )}
@@ -254,24 +364,38 @@ export function RPGWorld() {
       {/* Dialogue */}
       <AnimatePresence>
         {dialogue && (
-          <motion.div className="dialogue-box rounded-lg p-4 mt-3 max-w-md w-full"
-            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}>
+          <motion.div
+            className="dialogue-box rounded-lg p-4 mt-3 max-w-md w-full"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+          >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <span className="text-lg">{dialogue.npc.sprite}</span>
-                <span className="pixel-font text-[9px] text-gold">{dialogue.npc.name}</span>
+                <span className="pixel-font text-[9px] text-gold">
+                  {dialogue.npc.name}
+                </span>
               </div>
-              <button onClick={() => setDialogue(null)}
+              <button
+                onClick={() => setDialogue(null)}
                 className="retro-font text-[6px] text-text-secondary hover:text-cream px-1.5 py-0.5 border border-border hover:border-gold/40 rounded transition-all"
-                aria-label="Close dialogue">✕</button>
+                aria-label="Close dialogue"
+              >
+                ✕
+              </button>
             </div>
-            <p className="text-sm text-cream leading-relaxed mb-3">{dialogue.npc.dialogue[dialogue.lineIndex]}</p>
+            <p className="text-sm text-cream leading-relaxed mb-3">
+              {dialogue.npc.dialogue[dialogue.lineIndex]}
+            </p>
             <div className="flex items-center justify-between">
               <span className="retro-font text-[5px] text-text-secondary">
                 {dialogue.lineIndex + 1} / {dialogue.npc.dialogue.length}
               </span>
-              <button onClick={handleDialogueAdvance}
-                className="retro-font text-[6px] text-gold animate-blink hover:text-accent transition-colors cursor-pointer">
+              <button
+                onClick={handleDialogueAdvance}
+                className="retro-font text-[6px] text-gold animate-blink hover:text-accent transition-colors cursor-pointer"
+              >
                 ▶ PRESS E
               </button>
             </div>
@@ -282,14 +406,31 @@ export function RPGWorld() {
       {/* Visit link */}
       <AnimatePresence>
         {visitLink && (
-          <motion.div className="dialogue-box rounded-lg p-4 mt-3 max-w-md w-full text-center"
-            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}>
-            <p className="retro-font text-[7px] text-gold mb-3">Open this quest's live demo?</p>
+          <motion.div
+            className="dialogue-box rounded-lg p-4 mt-3 max-w-md w-full text-center"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+          >
+            <p className="retro-font text-[7px] text-gold mb-3">
+              Open this quest's live demo?
+            </p>
             <div className="flex gap-3 justify-center">
-              <a href={visitLink} target="_blank" rel="noopener noreferrer" className="game-btn text-[7px]"
-                onClick={() => setVisitLink(null)}>VISIT SITE</a>
-              <button className="retro-font text-[7px] text-text-secondary hover:text-cream px-3 py-1 border border-border rounded transition-colors"
-                onClick={() => setVisitLink(null)}>CLOSE</button>
+              <a
+                href={visitLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="game-btn text-[7px]"
+                onClick={() => setVisitLink(null)}
+              >
+                VISIT SITE
+              </a>
+              <button
+                className="retro-font text-[7px] text-text-secondary hover:text-cream px-3 py-1 border border-border rounded transition-colors"
+                onClick={() => setVisitLink(null)}
+              >
+                CLOSE
+              </button>
             </div>
           </motion.div>
         )}
@@ -298,11 +439,20 @@ export function RPGWorld() {
       {/* Pause menu */}
       <AnimatePresence>
         {showMenu && (
-          <motion.div className="fixed inset-0 z-50 flex items-center justify-center"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div className="absolute inset-0 bg-bg-main/70" onClick={() => setShowMenu(false)} />
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div
+              className="absolute inset-0 bg-bg-main/70"
+              onClick={() => setShowMenu(false)}
+            />
             <div className="dialogue-box rounded-lg p-5 relative z-10 min-w-[200px]">
-              <h3 className="pixel-font text-[11px] text-gold mb-4 text-center">PAUSE MENU</h3>
+              <h3 className="pixel-font text-[11px] text-gold mb-4 text-center">
+                PAUSE MENU
+              </h3>
               <div className="space-y-2">
                 {[
                   { label: "RESUME", action: () => setShowMenu(false) },
@@ -313,15 +463,28 @@ export function RPGWorld() {
                   { label: "EXIT TO PORTFOLIO", href: "#home" },
                 ].map((item) =>
                   item.href ? (
-                    <a key={item.label} href={item.href} className="block text-center game-btn text-[7px] w-full"
-                      onClick={() => setShowMenu(false)}>{item.label}</a>
+                    <a
+                      key={item.label}
+                      href={item.href}
+                      className="block text-center game-btn text-[7px] w-full"
+                      onClick={() => setShowMenu(false)}
+                    >
+                      {item.label}
+                    </a>
                   ) : (
-                    <button key={item.label} className="block text-center game-btn text-[7px] w-full"
-                      onClick={item.action}>{item.label}</button>
+                    <button
+                      key={item.label}
+                      className="block text-center game-btn text-[7px] w-full"
+                      onClick={item.action}
+                    >
+                      {item.label}
+                    </button>
                   )
                 )}
               </div>
-              <p className="retro-font text-[5px] text-text-secondary/40 text-center mt-3">ESC to close</p>
+              <p className="retro-font text-[5px] text-text-secondary/40 text-center mt-3">
+                ESC to close
+              </p>
             </div>
           </motion.div>
         )}

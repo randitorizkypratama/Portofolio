@@ -30,7 +30,7 @@ export const npcs: NPC[] = [
   {
     id: "npc-guide",
     name: "Quest Guide",
-    position: { x: 10, y: 2 },
+    position: { x: 6, y: 5 },
     sprite: "🧙",
     dialogue: [
       "Greetings, traveler! I am the Quest Guide.",
@@ -84,7 +84,7 @@ export const npcs: NPC[] = [
   {
     id: "npc-skills",
     name: "Skills Master",
-    position: { x: 23, y: 2 },
+    position: { x: 23, y: 5 },
     sprite: "⚔️",
     dialogue: [
       "I am the Skills Master. Here are your abilities:",
@@ -97,19 +97,25 @@ export const npcs: NPC[] = [
   },
 ];
 
-export function getNearbyEntity(playerPos: Position): NPC | null {
-  const adjacent: Position[] = [
-    { x: playerPos.x, y: playerPos.y - 1 },
-    { x: playerPos.x, y: playerPos.y + 1 },
-    { x: playerPos.x - 1, y: playerPos.y },
-    { x: playerPos.x + 1, y: playerPos.y },
-  ];
+export function getNearbyEntity(
+  playerPos: Position,
+  direction: Direction
+): NPC | null {
+  const offsets: Record<Direction, Position> = {
+    up: { x: 0, y: -1 },
+    down: { x: 0, y: 1 },
+    left: { x: -1, y: 0 },
+    right: { x: 1, y: 0 },
+  };
 
-  for (const pos of adjacent) {
-    const found = npcs.find(
-      (npc) => npc.position.x === pos.x && npc.position.y === pos.y
-    );
-    if (found) return found;
-  }
-  return null;
+  const checkPos = {
+    x: playerPos.x + offsets[direction].x,
+    y: playerPos.y + offsets[direction].y,
+  };
+
+  return (
+    npcs.find(
+      (npc) => npc.position.x === checkPos.x && npc.position.y === checkPos.y
+    ) || null
+  );
 }
