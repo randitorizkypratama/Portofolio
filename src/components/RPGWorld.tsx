@@ -15,11 +15,15 @@ import {
   type NPC,
 } from "../game/entities";
 import { tileBackground } from "../game/tileArt";
+import { getTileAt } from "../game/tileMap";
 import { sfx } from "../game/sfx";
 import { track } from "../game/achievements";
-import { notifyNewly } from "../game/toast";
+import { notifyNewly, showToast } from "../game/toast";
 import { getDayPeriod, type DayPeriod } from "../game/dayNight";
+import { FISH, HOOK_ZONE, addFish, rollFish, getCaughtFish } from "../game/fishing";
+import { cycleBgmTrack, getBgmTrackName } from "../game/music";
 import { Minimap } from "./Minimap";
+import { NPCPortrait } from "./NPCPortrait";
 
 const VIEWPORT_TILES_X = 17;
 const VIEWPORT_TILES_Y = 13;
@@ -344,6 +348,21 @@ export function RPGWorld() {
   const [visitLink, setVisitLink] = useState<string | null>(null);
   const [scale, setScale] = useState(1);
   const [period, setPeriod] = useState<DayPeriod>(() => getDayPeriod());
+  const [fishing, setFishing] = useState<{
+    pos: number;
+    dir: 1 | -1;
+    done: boolean;
+    result?: string | null;
+  } | null>(null);
+  const [weather, setWeather] = useState<"clear" | "rain" | "storm">("clear");
+  const [running, setRunning] = useState(false);
+  const [runTime, setRunTime] = useState(0);
+  const [bestTime, setBestTime] = useState<number | null>(() => {
+    const v = Number(localStorage.getItem("pq_best_time") || "0");
+    return v > 0 ? v : null;
+  });
+  const [visitors, setVisitors] = useState<number | null>(null);
+  const [caughtFish, setCaughtFish] = useState<string[]>(() => getCaughtFish());
 
   const moveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const keysRef = useRef<Set<string>>(new Set());
@@ -364,6 +383,15 @@ export function RPGWorld() {
   const offsetXRef = useRef(0);
   const offsetYRef = useRef(0);
 
+  // Fishing / speedrun
+  const fishingRef = useRef<typeof fishing>(null);
+  const runStartRef = useRef<number | null>(null);
+  const clearedQuestsRef = useRef<Set<string>>(new Set());
+  const visitorsRef = useRef<number | null>(null);
+
+  useEffect(() => { fishingRef.current = fishing; }, [fishing]);
+  useEffect(() => { visitorsRef.current = visitors; }, [visitors]);
+
   useEffect(() => { dialogueRef.current = dialogue; }, [dialogue]);
   useEffect(() => { showMenuRef.current = showMenu; }, [showMenu]);
   useEffect(() => { playerPosRef.current = playerPos; }, [playerPos]);
@@ -373,6 +401,71 @@ export function RPGWorld() {
   useEffect(() => {
     const id = setInterval(() => setPeriod(getDayPeriod()), 10 * 60 * 1000);
     return () => clearInterval(id);
+  }, []);
+
+  // Fishing bar animation
+  useEffect(() => {
+    if (!fishing || fishing.done) return;
+    let raf = 0;
+    let last = performance.now();
+    const tick = (now: number) => {
+      const dt = (now - last) / 1000;
+      last = now;
+      setFishing((f) => {
+        if (!f || f.done) return f;
+        let pos = f.pos + f.dir * dt * 75;
+        let dir = f.dir;
+        if (pos >= 100) { pos = 100; dir = -1; }
+        if (pos <= 0) { pos = 0; dir = 1; }
+        return { ...f, pos, dir };
+      });
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [fishing !== null, fishing?.done]);
+
+  // Weather — random rain/storm bursts
+  useEffect(() => {
+    let t: ReturnType<typeof setTimeout>;
+    const schedule = () => {
+      t = setTimeout(() => {
+        setWeather((w) => {
+          const options =
+            w === "clear"
+              ? (["rain", "storm", "clear"] as const)
+              : (["clear", "clear", "rain"] as const);
+          return options[Math.floor(Math.random() * options.length)];
+        });
+        schedule();
+      }, 45000 + Math.random() * 60000);
+    };
+    schedule();
+    return () => clearTimeout(t);
+  }, []);
+
+  // Speedrun timer
+  useEffect(() => {
+    if (!running) return;
+    const id = setInterval(() => {
+      if (runStartRef.current != null) setRunTime(Date.now() - runStartRef.current);
+    }, 200);
+    return () => clearInterval(id);
+  }, [running]);
+
+  // Visitor counter (Inn Keeper ledger)
+  useEffect(() => {
+    fetch("https://api.counterapi.dev/v1/fixdiriloe/pixel-quest-visits/up")
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((j: unknown) => {
+        const n =
+          typeof j === "number"
+            ? j
+            : ((j as { count?: number; data?: { count?: number } })?.count ??
+              (j as { data?: { count?: number } })?.data?.count);
+        if (typeof n === "number") setVisitors(n);
+      })
+      .catch(() => {});
   }, []);
 
   // Pet follows player with lerp (DOM-manipulated, no re-render)
@@ -405,6 +498,27 @@ export function RPGWorld() {
   }, []);
 
   const doInteract = useCallback(() => {
+    // Fishing: hook or cancel
+    if (fishingRef.current && !fishingRef.current.done) {
+      const f = fishingRef.current;
+      const hit = f.pos >= HOOK_ZONE.start && f.pos <= HOOK_ZONE.end;
+      if (hit) {
+        const fish = rollFish();
+        const isNew = addFish(fish.id);
+        setCaughtFish(getCaughtFish());
+        notifyNewly(track("fish"));
+        sfx.link();
+        showToast(`CAUGHT: ${fish.name}${isNew ? " (NEW SPECIES!)" : ""}`);
+        setFishing({ ...f, done: true, result: fish.name });
+      } else {
+        sfx.close();
+        setFishing({ ...f, done: true, result: null });
+      }
+      setTimeout(() => setFishing(null), 1600);
+      return;
+    }
+    if (fishingRef.current?.done) return;
+
     if (dialogueRef.current) {
       advanceDialogueRef.current?.();
       return;
@@ -412,10 +526,36 @@ export function RPGWorld() {
     if (interactCooldownRef.current) return;
     interactCooldownRef.current = true;
     setTimeout(() => { interactCooldownRef.current = false; }, 300);
+
+    // Facing water? Cast a line
+    const p = playerPosRef.current;
+    const d = directionRef.current;
+    const fx = d === "right" ? 1 : d === "left" ? -1 : 0;
+    const fy = d === "down" ? 1 : d === "up" ? -1 : 0;
+    const aheadTile = getTileAt(p.x + fx, p.y + fy);
+    if (aheadTile === 2 || aheadTile === 13) {
+      sfx.interact();
+      setFishing({ pos: 0, dir: 1, done: false, result: undefined });
+      return;
+    }
+
     const entity = getNearbyEntity(playerPosRef.current, directionRef.current);
     if (entity) {
       sfx.interact();
-      setDialogue({ npc: entity, lineIndex: 0 });
+      let dlg = entity;
+      if (entity.id === "npc-inn") {
+        const count = visitorsRef.current;
+        dlg = {
+          ...entity,
+          dialogue: [
+            count != null
+              ? `Welcome to the Pixel Inn! You are visitor #${count}.`
+              : "Welcome to the Pixel Inn! The ledger is being rewritten...",
+            ...entity.dialogue.slice(1),
+          ],
+        };
+      }
+      setDialogue({ npc: dlg, lineIndex: 0 });
       notifyNewly(track("dialogue"));
       if (entity.type === "secret") notifyNewly(track("secret"));
     }
@@ -457,6 +597,20 @@ export function RPGWorld() {
         if (historyRef.current.length > 20) historyRef.current.shift();
         sfx.step();
         notifyNewly(track("step"));
+        // Speedrun starts on first move
+        if (runStartRef.current == null) {
+          runStartRef.current = Date.now();
+          setRunning(true);
+          setRunTime(0);
+        }
+        // Hidden grove warp
+        if (newX === 1 && newY === 1) {
+          window.setTimeout(() => {
+            setPlayerPos({ x: 4, y: 10 });
+            showToast("DISCOVERED — HIDDEN GROVE!");
+            notifyNewly(track("cartographer"));
+          }, 180);
+        }
         return { x: newX, y: newY };
       }
       return prev;
@@ -556,12 +710,26 @@ export function RPGWorld() {
           sfx.link();
           setVisitLink(url);
           notifyNewly(track("link"));
+          // Speedrun: quest cleared
+          clearedQuestsRef.current.add(npc.id);
+          if (clearedQuestsRef.current.size >= 3 && runStartRef.current != null) {
+            const elapsed = Date.now() - runStartRef.current;
+            setRunning(false);
+            setRunTime(elapsed);
+            runStartRef.current = null;
+            if (bestTime == null || elapsed < bestTime) {
+              localStorage.setItem("pq_best_time", String(elapsed));
+              setBestTime(elapsed);
+              showToast("NEW SPEEDRUN RECORD!");
+            }
+            if (elapsed <= 120000) notifyNewly(track("speedrun"));
+          }
         }
       }
     } else {
       setDialogue({ npc: dlg.npc, lineIndex: nextIndex });
     }
-  }, []);
+  }, [bestTime]);
 
   // Keep the ref pointing to the latest advance function
   useEffect(() => {
@@ -572,6 +740,19 @@ export function RPGWorld() {
   const offsetY = Math.max(0, Math.min(playerPos.y - Math.floor(VIEWPORT_TILES_Y / 2), MAP_HEIGHT - VIEWPORT_TILES_Y));
   const viewportWidth = VIEWPORT_TILES_X * TILE_SIZE;
   const viewportHeight = VIEWPORT_TILES_Y * TILE_SIZE;
+
+  const fmtTime = (ms: number) => {
+    const s = Math.floor(ms / 1000);
+    return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+  };
+
+  // Is the player facing water (fishable)?
+  const facingWater = (() => {
+    const fx = direction === "right" ? 1 : direction === "left" ? -1 : 0;
+    const fy = direction === "down" ? 1 : direction === "up" ? -1 : 0;
+    const t = getTileAt(playerPos.x + fx, playerPos.y + fy);
+    return t === 2 || t === 13;
+  })();
 
   useEffect(() => {
     offsetXRef.current = offsetX;
@@ -707,6 +888,46 @@ export function RPGWorld() {
             .map((n) => ({ id: n.id, x: n.position.x, y: n.position.y, type: n.type }))}
         />
 
+        {/* Speedrun timer + fish log */}
+        <div className="absolute top-2 left-2 z-[17] game-border rounded px-2 py-1 bg-bg-main/80 flex items-center gap-2">
+          <span className="retro-font text-[5px] text-text-secondary">TIME</span>
+          <span className="retro-font text-[7px] text-gold">{fmtTime(runTime)}</span>
+          {bestTime != null && (
+            <>
+              <span className="retro-font text-[5px] text-text-secondary">BEST</span>
+              <span className="retro-font text-[6px] text-xp">{fmtTime(bestTime)}</span>
+            </>
+          )}
+          {caughtFish.length > 0 && (
+            <span className="retro-font text-[5px] text-cyan">
+              🎣 {caughtFish.length}/{FISH.length}
+            </span>
+          )}
+        </div>
+
+        {/* Weather */}
+        {weather !== "clear" && (
+          <div
+            className="absolute inset-0 pointer-events-none z-[16] overflow-hidden"
+            aria-hidden="true"
+          >
+            {Array.from({ length: 36 }).map((_, i) => (
+              <span
+                key={i}
+                className="raindrop"
+                style={{
+                  left: `${(i * 37) % 100}%`,
+                  animationDelay: `${(i % 12) * 0.09}s`,
+                  animationDuration: `${0.55 + (i % 5) * 0.07}s`,
+                }}
+              />
+            ))}
+          </div>
+        )}
+        {weather === "storm" && (
+          <div className="lightning absolute inset-0 pointer-events-none z-[16]" aria-hidden="true" />
+        )}
+
         {/* Pixel corner accents on viewport frame */}
         <div className="absolute inset-0 pointer-events-none z-30">
           <div className="absolute top-0 left-0 w-3 h-3 border-t-[3px] border-l-[3px] border-gold/70" />
@@ -730,6 +951,21 @@ export function RPGWorld() {
               <span className="retro-font text-[7px] text-cream">
                 Talk to {nearbyEntity.name}
               </span>
+            </motion.div>
+          </div>
+        )}
+        {!nearbyEntity && !dialogue && facingWater && !fishing && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20">
+            <motion.div
+              className="dialogue-box rounded-lg px-4 py-2 flex items-center gap-2"
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              <span className="retro-font text-[8px] px-2 py-0.5 bg-gold/20 border border-gold/50 rounded text-gold font-bold">
+                E
+              </span>
+              <span className="retro-font text-[7px] text-cream">Cast a line</span>
             </motion.div>
           </div>
         )}
@@ -784,7 +1020,7 @@ export function RPGWorld() {
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <span className="text-lg">{dialogue.npc.sprite}</span>
+                <NPCPortrait npc={dialogue.npc} size={36} />
                 <span className="pixel-font text-[9px] text-gold">{dialogue.npc.name}</span>
               </div>
               <button onClick={() => setDialogue(null)}
@@ -801,6 +1037,42 @@ export function RPGWorld() {
                 ▶ PRESS E
               </button>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Fishing minigame */}
+      <AnimatePresence>
+        {fishing && (
+          <motion.div className="dialogue-box rounded-lg p-4 mt-3 max-w-md w-full"
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="pixel-font text-[9px] text-cyan">🎣 FISHING</span>
+              <span className="retro-font text-[5px] text-text-secondary">
+                {caughtFish.length}/{FISH.length} SPECIES
+              </span>
+            </div>
+            {fishing.done ? (
+              <p className="text-sm text-cream">
+                {fishing.result ? `You caught a ${fishing.result}!` : "It got away..."}
+              </p>
+            ) : (
+              <>
+                <div className="relative h-5 bg-bg-main border-2 border-border rounded-sm overflow-hidden mb-2">
+                  <div
+                    className="absolute inset-y-0 bg-xp/20 border-x border-xp/50"
+                    style={{ left: `${HOOK_ZONE.start}%`, width: `${HOOK_ZONE.end - HOOK_ZONE.start}%` }}
+                  />
+                  <div
+                    className="absolute inset-y-0 w-1 bg-gold"
+                    style={{ left: `calc(${fishing.pos}% - 2px)`, boxShadow: "0 0 6px #d4a847" }}
+                  />
+                </div>
+                <p className="retro-font text-[6px] text-text-secondary text-center">
+                  PRESS E WHEN THE MARKER IS IN THE GREEN
+                </p>
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -832,6 +1104,13 @@ export function RPGWorld() {
               <div className="space-y-2">
                 {[
                   { label: "RESUME", action: () => setShowMenu(false) },
+                  {
+                    label: `JUKEBOX: ${getBgmTrackName()}`,
+                    action: () => {
+                      cycleBgmTrack();
+                      showToast(`NOW PLAYING — ${getBgmTrackName()}`);
+                    },
+                  },
                   { label: "PROJECTS", href: "#projects" },
                   { label: "SKILLS", href: "#skills" },
                   { label: "CV DOWNLOAD", href: "#about" },

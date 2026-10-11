@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { BookMarked, X, Check, Circle } from "lucide-react";
+import { BookMarked, X, Check, Circle, Fish } from "lucide-react";
 import { sfx } from "../game/sfx";
 import {
   JOURNAL_SECTIONS,
@@ -9,12 +9,18 @@ import {
   getCompletion,
   subscribeJournal,
 } from "../game/journal";
+import { FISH, getCaughtFish } from "../game/fishing";
 
 export function QuestJournal() {
   const [open, setOpen] = useState(false);
   const [journal, setJournal] = useState(getJournal());
+  const [caught, setCaught] = useState<string[]>(() => getCaughtFish());
 
   useEffect(() => subscribeJournal(() => setJournal(getJournal())), []);
+  useEffect(() => {
+    if (!open) return;
+    setCaught(getCaughtFish());
+  }, [open]);
 
   const pct = getCompletion(journal);
 
@@ -147,6 +153,37 @@ export function QuestJournal() {
                     })}
                   </ul>
                 </div>
+
+                {/* Fish log */}
+                {caught.length > 0 && (
+                  <div>
+                    <h3 className="retro-font text-[6px] text-gold mb-2 flex items-center gap-1.5">
+                      <Fish size={10} />
+                      ✦ FISHING LOG {caught.length}/{FISH.length}
+                    </h3>
+                    <ul className="space-y-1.5">
+                      {FISH.map((f) => {
+                        const done = caught.includes(f.id);
+                        return (
+                          <li key={f.id} className="flex items-center gap-2">
+                            {done ? (
+                              <Check size={11} className="text-xp shrink-0" />
+                            ) : (
+                              <Circle size={11} className="text-text-secondary/40 shrink-0" />
+                            )}
+                            <span
+                              className={`text-xs ${
+                                done ? "text-cream" : "text-text-secondary/60"
+                              }`}
+                            >
+                              {done ? f.name : "???"}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
 
                 <p className="retro-font text-[5px] text-text-secondary/60 leading-relaxed">
                   EXPLORE THE PAGE & THE WORLD — EVERY CORNER COUNTS.

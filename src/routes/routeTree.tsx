@@ -62,6 +62,15 @@ function ExpBar() {
 function RootLayout() {
   const [started, setStarted] = useState(false);
   const [showGame, setShowGame] = useState(false);
+  const [crtOn, setCrtOn] = useState(
+    () => typeof localStorage !== "undefined" && localStorage.getItem("pq_crt") !== "0"
+  );
+
+  useEffect(() => {
+    const onChange = (e: Event) => setCrtOn((e as CustomEvent<boolean>).detail);
+    window.addEventListener("pq-crt-changed", onChange);
+    return () => window.removeEventListener("pq-crt-changed", onChange);
+  }, []);
 
   const handleStart = useCallback(() => {
     setStarted(true);
@@ -127,6 +136,7 @@ function RootLayout() {
 
   return (
     <div className="min-h-screen bg-bg-main">
+      {crtOn && <div className="crt-overlay" aria-hidden="true" />}
       <StartScreen onStart={handleStart} onSkip={handleSkip} />
       {started && (
         <>

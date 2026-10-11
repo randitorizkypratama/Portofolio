@@ -335,3 +335,53 @@ h1, h2, h3 {
 body.konami-rainbow {
   animation: rainbow-shift 3s linear infinite;
 }
+
+@keyframes rain-fall {
+  from { transform: translateY(-12px); }
+  to { transform: translateY(420px); }
+}
+
+.raindrop {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 10px;
+  background: rgba(120, 190, 230, 0.45);
+  animation-name: rain-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes lightning-flash {
+  0%, 92%, 100% { opacity: 0; }
+  93% { opacity: 0.35; }
+  95% { opacity: 0; }
+  96% { opacity: 0.5; }
+  98% { opacity: 0; }
+}
+
+.lightning {
+  background: #cfe8ff;
+  animation: lightning-flash 6s linear infinite;
+}
+
+@keyframes crt-flicker {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 1; }
+}
+
+.crt-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.14) 0px,
+    rgba(0, 0, 0, 0.14) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  animation: crt-flicker 4s ease-in-out infinite;
+  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.45);
+}

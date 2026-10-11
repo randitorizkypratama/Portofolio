@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ExternalLink, Swords, Shield, TreePine, X, ChevronRight } from "lucide-react";
+import { ExternalLink, Swords, Shield, TreePine, X, ChevronRight, Share2 } from "lucide-react";
 import { projects, type Project } from "../data/portfolio";
 import { ScrollReveal } from "./ScrollReveal";
 import { markProject } from "../game/journal";
 import { sfx } from "../game/sfx";
+import { showToast } from "../game/toast";
 
 const questIcons: Record<string, typeof Swords> = {
   "kpop-photocard-tracker": Shield,
@@ -151,6 +152,31 @@ function CaseStudyModal({
               <ExternalLink size={12} />
               LIVE DEMO
             </a>
+            <button
+              onClick={async () => {
+                const shareData = {
+                  title: `${project.title} — FixDiriloe`,
+                  text: project.description,
+                  url: project.url,
+                };
+                try {
+                  if (navigator.share) {
+                    await navigator.share(shareData);
+                  } else {
+                    await navigator.clipboard.writeText(
+                      `${project.title} — ${project.url}`
+                    );
+                    showToast("LINK COPIED!");
+                  }
+                } catch {
+                  /* user cancelled */
+                }
+              }}
+              className="retro-font text-[7px] px-3 py-2 border-2 border-border text-text-secondary hover:text-cream hover:border-gold/40 rounded transition-all flex items-center gap-2"
+            >
+              <Share2 size={12} />
+              SHARE
+            </button>
           </div>
         </div>
       </motion.div>

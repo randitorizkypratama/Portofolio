@@ -7,6 +7,9 @@ export interface Stats {
   message?: boolean;
   konami?: boolean;
   secret?: boolean;
+  fish?: number;
+  speedrun?: boolean;
+  cartographer?: boolean;
 }
 
 export interface AchievementDef {
@@ -44,6 +47,10 @@ export const ACHIEVEMENT_DEFS: AchievementDef[] = [
   { id: "message_bottle", name: "Message in a Bottle", desc: "Send a message via the contact form", check: (s) => !!s.message },
   { id: "bug_hunter", name: "Bug Hunter", desc: "Discover the ancient Konami spell", check: (s) => !!s.konami },
   { id: "secret_finder", name: "Secret Finder", desc: "Find the hidden villager", check: (s) => !!s.secret },
+  { id: "angler", name: "Angler", desc: "Catch your first fish", check: (s) => (s.fish ?? 0) >= 1 },
+  { id: "fish_master", name: "Fish Master", desc: "Catch all 5 species", check: (s) => (s.fish ?? 0) >= 5 },
+  { id: "speedrunner", name: "Speedrunner", desc: "Clear all 3 quests under 2 minutes", check: (s) => !!s.speedrun },
+  { id: "cartographer", name: "Cartographer", desc: "Find the hidden grove", check: (s) => !!s.cartographer },
   {
     id: "completionist",
     name: "Completionist",
@@ -73,7 +80,10 @@ export type TrackEvent =
   | "cv"
   | "message"
   | "konami"
-  | "secret";
+  | "secret"
+  | "fish"
+  | "speedrun"
+  | "cartographer";
 
 /** Increment a stat; returns ids newly unlocked by this event. */
 export function track(event: TrackEvent, payload?: string): string[] {
@@ -89,6 +99,9 @@ export function track(event: TrackEvent, payload?: string): string[] {
   if (event === "message") s.message = true;
   if (event === "konami") s.konami = true;
   if (event === "secret") s.secret = true;
+  if (event === "fish") s.fish = (s.fish ?? 0) + 1;
+  if (event === "speedrun") s.speedrun = true;
+  if (event === "cartographer") s.cartographer = true;
   localStorage.setItem(KEY, JSON.stringify(s));
   const after = getUnlockedIds(s);
   const newly = after.filter((id) => !before.has(id));

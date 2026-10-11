@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Download, FileText, User, Trophy, Lock, Volume2, VolumeX, Music, Pause } from "lucide-react";
+import { Download, FileText, User, Trophy, Lock, Volume2, VolumeX, Music, Pause, Monitor, MonitorOff } from "lucide-react";
 import { siteConfig } from "../data/portfolio";
 import { ScrollReveal } from "./ScrollReveal";
 import {
@@ -22,6 +22,9 @@ export function PlayerProfile() {
   );
   const [muted, setMuted] = useState(() => isSfxMuted());
   const [bgmOn, setBgmOn] = useState(() => isBgmOn());
+  const [crtOn, setCrtOn] = useState(
+    () => localStorage.getItem("pq_crt") !== "0"
+  );
 
   useEffect(
     () => subscribe(() => setUnlocked(getUnlockedIds(getStats()))),
@@ -34,6 +37,15 @@ export function PlayerProfile() {
 
   const handleToggleBgm = useCallback(() => {
     setBgmOn(toggleBgm());
+  }, []);
+
+  const handleToggleCrt = useCallback(() => {
+    setCrtOn((prev) => {
+      const next = !prev;
+      localStorage.setItem("pq_crt", next ? "1" : "0");
+      window.dispatchEvent(new CustomEvent("pq-crt-changed", { detail: next }));
+      return next;
+    });
   }, []);
 
   const handleDownload = useCallback(() => {
@@ -150,6 +162,14 @@ export function PlayerProfile() {
             >
               {bgmOn ? <Music size={12} /> : <Pause size={12} />}
               {bgmOn ? "MUSIC: ON" : "MUSIC: OFF"}
+            </button>
+            <button
+              onClick={handleToggleCrt}
+              className="flex-1 flex items-center justify-center gap-2 py-1.5 retro-font text-[6px] text-text-secondary hover:text-cream border border-border/50 hover:border-gold/40 rounded transition-all"
+              aria-label={crtOn ? "Disable CRT effect" : "Enable CRT effect"}
+            >
+              {crtOn ? <Monitor size={12} /> : <MonitorOff size={12} />}
+              {crtOn ? "CRT: ON" : "CRT: OFF"}
             </button>
           </div>
 

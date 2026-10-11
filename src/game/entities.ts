@@ -147,6 +147,30 @@ export const npcs: NPC[] = [
     ],
     type: "secret",
   },
+  {
+    id: "npc-bard",
+    name: "Traveling Bard",
+    position: { x: 16, y: 18 },
+    sprite: "🎻",
+    dialogue: [
+      "Ho ho! Care for a tune, traveler?",
+      "The jukebox in the pause menu holds three melodies — cycle them freely!",
+      "Music sooths the soul... and makes quests 100% more epic.",
+    ],
+    type: "npc",
+  },
+  {
+    id: "npc-inn",
+    name: "Inn Keeper",
+    position: { x: 24, y: 19 },
+    sprite: "🏨",
+    dialogue: [
+      "Welcome to the Pixel Inn!",
+      "Rest your feet — the plaza fountain is just west of here.",
+      "Every traveler who signs the ledger makes this village a little brighter.",
+    ],
+    type: "npc",
+  },
 ];
 
 export function getNearbyEntity(
