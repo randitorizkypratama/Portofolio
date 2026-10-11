@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ExternalLink, Swords, Shield, TreePine, X, ChevronRight, Share2 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ExternalLink, Swords, Shield, TreePine, X, ChevronRight, Share2, BookOpen } from "lucide-react";
 import { projects, type Project } from "../data/portfolio";
 import { ScrollReveal } from "./ScrollReveal";
 import { markProject } from "../game/journal";
@@ -143,14 +144,24 @@ function CaseStudyModal({
 
           {/* Actions */}
           <div className="flex gap-3 pt-2">
+            <Link
+              to="/projects/$slug"
+              params={{ slug: project.slug }}
+              onClick={onClose}
+              className="game-btn flex items-center gap-2 text-[7px] flex-1 justify-center"
+              onMouseEnter={() => sfx.hover()}
+            >
+              <BookOpen size={12} />
+              FULL CASE STUDY
+            </Link>
             <a
               href={project.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="game-btn flex items-center gap-2 text-[7px] flex-1 justify-center"
+              className="retro-font text-[7px] px-3 py-2 border-2 border-border text-text-secondary hover:text-cream hover:border-gold/40 rounded transition-all flex items-center gap-2"
             >
               <ExternalLink size={12} />
-              LIVE DEMO
+              LIVE
             </a>
             <button
               onClick={async () => {

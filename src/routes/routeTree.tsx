@@ -1,5 +1,10 @@
 import { useState, useCallback, useEffect, lazy, Suspense } from "react";
-import { createRootRoute, createRoute } from "@tanstack/react-router";
+import {
+  createRootRoute,
+  createRoute,
+  Outlet,
+  useRouterState,
+} from "@tanstack/react-router";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { HeroSection } from "../components/HeroSection";
@@ -15,6 +20,13 @@ import { GlobalToast } from "../components/GlobalToast";
 import { QuestJournal } from "../components/QuestJournal";
 import { GitHubStats } from "../components/GitHubStats";
 import { UpdateScroll } from "../components/UpdateScroll";
+import { CurrentlySection } from "../components/CurrentlySection";
+import { TimelineSection } from "../components/TimelineSection";
+import { TestimonialsSection } from "../components/TestimonialsSection";
+import { FaqSection } from "../components/FaqSection";
+import { CaseStudyPage } from "../components/CaseStudyPage";
+import { UsesPage } from "../components/UsesPage";
+import { NotFoundPage } from "../components/NotFoundPage";
 import { Analytics } from "@vercel/analytics/react";
 import { markSection } from "../game/journal";
 import { track } from "../game/achievements";
@@ -85,6 +97,9 @@ function MiniPlayer() {
 }
 
 function RootLayout() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isHome = pathname === "/";
+
   const [started, setStarted] = useState(false);
   const [showGame, setShowGame] = useState(false);
   const [crtOn, setCrtOn] = useState(
@@ -158,6 +173,22 @@ function RootLayout() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  // Sub-pages (case studies, uses, 404) — no StartScreen, just content
+  if (!isHome) {
+    return (
+      <div className="min-h-screen bg-bg-main">
+        <Analytics />
+        {crtOn && <div className="crt-overlay" aria-hidden="true" />}
+        <Header />
+        <GlobalToast />
+        <main>
+          <Outlet />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-bg-main">
@@ -248,6 +279,9 @@ function RootLayout() {
             <SectionDivider />
             <PlayerProfile />
             <SectionDivider />
+            <CurrentlySection />
+            <TimelineSection />
+            <SectionDivider />
             <ProjectsSection />
             <GitHubStats />
             <SectionDivider />
@@ -255,6 +289,9 @@ function RootLayout() {
             <UpdateScroll />
             <SectionDivider />
             <SkillStatusPanel />
+            <SectionDivider />
+            <TestimonialsSection />
+            <FaqSection />
             <SectionDivider />
             <ContactSection />
           </main>
@@ -267,6 +304,7 @@ function RootLayout() {
 
 const rootRoute = createRootRoute({
   component: RootLayout,
+  notFoundComponent: NotFoundPage,
 });
 
 const indexRoute = createRoute({
@@ -275,4 +313,20 @@ const indexRoute = createRoute({
   component: () => null,
 });
 
-export const routeTree = rootRoute.addChildren([indexRoute]);
+const caseStudyRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/projects/$slug",
+  component: CaseStudyPage,
+});
+
+const usesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/uses",
+  component: UsesPage,
+});
+
+export const routeTree = rootRoute.addChildren([
+  indexRoute,
+  caseStudyRoute,
+  usesRoute,
+]);

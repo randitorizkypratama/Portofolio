@@ -1,13 +1,26 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Menu, X } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { navLinks, siteConfig } from "../data/portfolio";
 import { sfx } from "../game/sfx";
+import { LanguageToggle } from "./LanguageToggle";
+import { useLocale, pick, type L } from "../i18n";
+import { ui } from "../data/content";
+
+const navLabels: Record<string, L> = {
+  Home: ui.navHome,
+  Explore: ui.navExplore,
+  Projects: ui.navProjects,
+  Skills: ui.navSkills,
+  Contact: ui.navContact,
+};
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+  const lang = useLocale();
 
   useEffect(() => {
     const onScroll = () => {
@@ -66,14 +79,24 @@ export function Header() {
                     : "text-text-secondary hover:text-cream hover:bg-white/5 border border-transparent"
                 }`}
               >
-                {link.label}
+                {navLabels[link.label] ? pick(navLabels[link.label], lang) : link.label}
               </a>
             </li>
           ))}
+          <li>
+            <Link
+              to="/uses"
+              onMouseEnter={() => sfx.hover()}
+              className="px-3 py-1.5 text-xs pixel-font rounded transition-all text-text-secondary hover:text-cream hover:bg-white/5 border border-transparent"
+            >
+              {pick(ui.navUses, lang)}
+            </Link>
+          </li>
         </ul>
 
         {/* Right - Status + Download */}
         <div className="hidden md:flex items-center gap-3">
+          <LanguageToggle />
           {/* Mini status bars */}
           <div className="flex flex-col gap-0.5 w-16">
             <div className="flex items-center gap-1">
@@ -131,10 +154,22 @@ export function Header() {
                         : "text-text-secondary hover:text-cream"
                     }`}
                   >
-                    {link.label}
+                    {navLabels[link.label] ? pick(navLabels[link.label], lang) : link.label}
                   </a>
                 </li>
               ))}
+              <li className="pt-2 mt-1 border-t border-border/50">
+                <Link
+                  to="/uses"
+                  onClick={() => setIsOpen(false)}
+                  className="block px-3 py-2 text-xs pixel-font rounded text-text-secondary hover:text-cream"
+                >
+                  {pick(ui.navUses, lang)}
+                </Link>
+              </li>
+              <li className="px-3 pt-1">
+                <LanguageToggle />
+              </li>
             </ul>
           </motion.div>
         )}

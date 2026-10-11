@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>FixDiriloe — Quest Log</title>
+    <link>https://pixel-quest-portfolio.vercel.app/</link>
+    <description>Devlog and update notes from the Pixel Quest portfolio.</description>
+    <language>en</language>
+    <item>
+      <title>Oct 2026 — Debug Dragon boss battle</title>
+      <link>https://pixel-quest-portfolio.vercel.app/</link>
+      <pubDate>Thu, 01 Oct 2026 00:00:00 GMT</pubDate>
+      <description>Timing bar, enrage phase, free-turn crits, Blessed Water items.</description>
+    </item>
+    <item>
+      <title>Oct 2026 — NPC night schedule + friendship hearts</title>
+      <link>https://pixel-quest-portfolio.vercel.app/</link>
+      <pubDate>Thu, 01 Oct 2026 00:00:00 GMT</pubDate>
+      <description>The village feels alive after dark.</description>
+    </item>
+    <item>
+      <title>Sep 2026 — Fishing minigame</title>
+      <link>https://pixel-quest-portfolio.vercel.app/</link>
+      <pubDate>Tue, 01 Sep 2026 00:00:00 GMT</pubDate>
+      <description>Born from one pond tile and a dream. Golden Koi still uncaught by most.</description>
+    </item>
+    <item>
+      <title>Sep 2026 — Portfolio reborn as an RPG</title>
+      <link>https://pixel-quest-portfolio.vercel.app/</link>
+      <pubDate>Tue, 01 Sep 2026 00:00:00 GMT</pubDate>
+      <description>Rebuilt the whole portfolio as an RPG. Best career decision so far.</description>
+    </item>
+  </channel>
+</rss>

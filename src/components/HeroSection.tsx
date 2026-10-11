@@ -3,6 +3,8 @@ import { ChevronDown, Mail, Code2, Database, Wrench } from "lucide-react";
 import { siteConfig } from "../data/portfolio";
 import { GithubIcon, XIcon, LinkedinIcon } from "./SocialIcons";
 import { TypewriterText } from "./TypewriterText";
+import { useLocale, pick } from "../i18n";
+import { ui } from "../data/content";
 
 const socialIcons = [
   { icon: GithubIcon, href: siteConfig.socials.github, label: "GitHub" },
@@ -18,6 +20,8 @@ const specializations = [
 ];
 
 export function HeroSection() {
+  const lang = useLocale();
+
   return (
     <section
       id="home"
@@ -49,10 +53,10 @@ export function HeroSection() {
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-4 pixel-font text-cream">
-              Building Digital{" "}
-              <span className="text-gold">Worlds</span>
+              {pick(ui.heroTitle1, lang)}{" "}
+              <span className="text-gold">{pick(ui.heroTitle2, lang)}</span>
               <br />
-              with Code
+              {pick(ui.heroTitle3, lang)}
             </h1>
 
             {/* RPG dialogue-style intro with typewriter */}
@@ -86,13 +90,13 @@ export function HeroSection() {
 
             <div className="flex flex-col sm:flex-row gap-3 mb-6">
               <a href="#projects" className="game-btn text-center text-[8px]">
-                ▸ View Projects
+                {pick(ui.viewProjects, lang)}
               </a>
               <a
                 href="#contact"
                 className="text-center text-[8px] retro-font px-4 py-2 border-2 border-border text-text-secondary hover:text-cream hover:border-gold/40 rounded transition-all"
               >
-                ▸ Contact Me
+                {pick(ui.contactMe, lang)}
               </a>
             </div>
 
