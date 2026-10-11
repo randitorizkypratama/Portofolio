@@ -380,10 +380,10 @@ export function RPGWorld() {
     let raf = 0;
     const tick = () => {
       const hist = historyRef.current;
-      const target = hist[Math.max(0, hist.length - 4)];
+      const target = hist[Math.max(0, hist.length - 2)];
       const p = petPosRef.current;
-      p.x += (target.x - p.x) * 0.1;
-      p.y += (target.y - p.y) * 0.1;
+      p.x += (target.x - p.x) * 0.18;
+      p.y += (target.y - p.y) * 0.18;
       if (petRef.current) {
         petRef.current.style.transform = `translate(${(p.x - offsetXRef.current) * TILE_SIZE}px, ${(p.y - offsetYRef.current) * TILE_SIZE}px)`;
       }
