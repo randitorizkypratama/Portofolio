@@ -2,14 +2,18 @@ import { motion } from "motion/react";
 import { MapPin, Code, Gamepad2 } from "lucide-react";
 import { siteConfig } from "../data/portfolio";
 import { ScrollReveal } from "./ScrollReveal";
+import { useLocale, pick } from "../i18n";
+import { ui } from "../data/content";
 
 const chips = [
   { icon: MapPin, label: siteConfig.location },
   { icon: Code, label: siteConfig.role },
-  { icon: Gamepad2, label: siteConfig.interests },
+  { icon: Gamepad2, labelKey: "interests" as const },
 ];
 
 export function AboutSection() {
+  const lang = useLocale();
+
   return (
     <section id="about" className="py-20 sm:py-28 dot-grid">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
@@ -112,28 +116,28 @@ export function AboutSection() {
                 transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
               />
               <span className="retro-font text-[8px] text-gold">
-                ✦ ABOUT ME ✦
+                {pick(ui.aboutMe, lang)}
               </span>
             </div>
 
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 text-cream">
-              Turning Ideas into{" "}
-              <span className="text-gold">Interactive</span>{" "}
-              Experiences
+              {pick(ui.aboutTitleBefore, lang)}{" "}
+              <span className="text-gold">{pick(ui.aboutTitleAccent, lang)}</span>{" "}
+              {pick(ui.aboutTitleAfter, lang)}
             </h2>
 
             <p className="text-text-secondary leading-relaxed mb-8 text-sm">
-              {siteConfig.aboutDescription}
+              {pick(ui.aboutBody, lang)}
             </p>
 
             <div className="flex flex-wrap gap-2">
-              {chips.map(({ icon: Icon, label }) => (
+              {chips.map(({ icon: Icon, label, labelKey }) => (
                 <div
-                  key={label}
+                  key={labelKey ?? label}
                   className="flex items-center gap-2 px-3 py-1.5 rounded border-2 border-border bg-bg-elevated text-xs text-text-secondary"
                 >
                   <Icon size={12} className="text-gold" />
-                  {label}
+                  {labelKey ? pick(ui[labelKey], lang) : label}
                 </div>
               ))}
             </div>

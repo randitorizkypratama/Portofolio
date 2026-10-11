@@ -1,8 +1,12 @@
 import { motion } from "motion/react";
 import { ScrollText, BookOpen } from "lucide-react";
 import { updates, devlog } from "../data/portfolio";
+import { useLocale, pick } from "../i18n";
+import { ui, updatesCopy, devlogCopy } from "../data/content";
 
 export function UpdateScroll() {
+  const lang = useLocale();
+
   return (
     <section id="updates" className="py-16 sm:py-20 dot-grid">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
@@ -11,13 +15,15 @@ export function UpdateScroll() {
             <ScrollText size={12} />
             SCROLL OF UPDATES
           </span>
-          <h2 className="text-xl sm:text-2xl font-bold text-cream">Changelog</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-cream">{pick(ui.changelogTitle, lang)}</h2>
           <p className="text-sm text-text-secondary mt-2">
-            Every patch note from the realm — newest first.
+            {pick(ui.changelogIntro, lang)}
           </p>
         </div>
         <div className="space-y-4">
-          {updates.map((u, i) => (
+          {updates.map((u, i) => {
+            const copy = updatesCopy[u.version];
+            return (
             <motion.div
               key={u.version}
               className="dialogue-box rounded-lg p-4"
@@ -31,30 +37,36 @@ export function UpdateScroll() {
                   <span className="retro-font text-[7px] text-bg-main bg-gold px-1.5 py-0.5 rounded-sm font-bold">
                     v{u.version}
                   </span>
-                  <span className="pixel-font text-[9px] text-cream">{u.title}</span>
+                  <span className="pixel-font text-[9px] text-cream">
+                    {copy ? pick(copy.title, lang) : u.title}
+                  </span>
                 </div>
                 <span className="retro-font text-[5px] text-text-secondary">{u.date}</span>
               </div>
               <ul className="space-y-1">
-                {u.items.map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-xs text-text-secondary">
+                {(copy ? copy.items : u.items).map((item, j) => (
+                  <li
+                    key={typeof item === "string" ? item : j}
+                    className="flex items-start gap-2 text-xs text-text-secondary"
+                  >
                     <span className="text-gold shrink-0 mt-px">✦</span>
-                    <span>{item}</span>
+                    <span>{typeof item === "string" ? item : pick(item, lang)}</span>
                   </li>
                 ))}
               </ul>
             </motion.div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Quest Archive — dev journal */}
         <div className="mt-12">
           <span className="retro-font text-[8px] text-gold block mb-2 flex items-center justify-center gap-2">
             <BookOpen size={12} />
-            QUEST ARCHIVE
+            {pick(ui.questArchive, lang)}
           </span>
           <p className="text-sm text-text-secondary text-center mb-6">
-            Field notes from the developer's journal.
+            {pick(ui.questArchiveIntro, lang)}
           </p>
           <div className="space-y-3 max-w-2xl mx-auto">
             {devlog.map((d, i) => (
@@ -70,7 +82,7 @@ export function UpdateScroll() {
                   {d.date}
                 </span>
                 <p className="text-xs text-text-secondary leading-relaxed">
-                  {d.entry}
+                  {devlogCopy[i] ? pick(devlogCopy[i], lang) : d.entry}
                 </p>
               </motion.div>
             ))}

@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useLocale, pick } from "../i18n";
+import { ui } from "../data/content";
 
 interface StartScreenProps {
   onStart: () => void;
@@ -9,6 +11,7 @@ interface StartScreenProps {
 export function StartScreen({ onStart, onSkip }: StartScreenProps) {
   const [show, setShow] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
+  const lang = useLocale();
 
   const handleStart = useCallback(() => {
     setFadeOut(true);
@@ -91,7 +94,7 @@ export function StartScreen({ onStart, onSkip }: StartScreenProps) {
             PIXEL QUEST
           </h1>
           <p className="retro-font text-[8px] text-text-secondary mb-1">
-            Developer Portfolio
+            {pick(ui.portfolioLabel, lang)}
           </p>
           <p className="retro-font text-[6px] text-text-secondary/40 mb-6">
             v1.0
@@ -100,20 +103,20 @@ export function StartScreen({ onStart, onSkip }: StartScreenProps) {
           {/* Objective */}
           <div className="dialogue-box rounded-lg p-4 mb-6 text-left">
             <p className="retro-font text-[7px] text-cream leading-relaxed mb-3">
-              Explore the world to discover my projects, technical skills, and experience.
+              {pick(ui.startObjective, lang)}
             </p>
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
                 <span className="retro-font text-[6px] px-1.5 py-0.5 bg-bg-main border border-border rounded text-gold">WASD</span>
-                <span className="retro-font text-[6px] text-text-secondary">Move</span>
+                <span className="retro-font text-[6px] text-text-secondary">{pick(ui.moveLabel, lang)}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="retro-font text-[6px] px-1.5 py-0.5 bg-bg-main border border-border rounded text-gold">E</span>
-                <span className="retro-font text-[6px] text-text-secondary">Interact</span>
+                <span className="retro-font text-[6px] text-text-secondary">{pick(ui.interactLabel, lang)}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="retro-font text-[6px] px-1.5 py-0.5 bg-bg-main border border-border rounded text-gold">ESC</span>
-                <span className="retro-font text-[6px] text-text-secondary">Menu</span>
+                <span className="retro-font text-[6px] text-text-secondary">{pick(ui.menuLabel, lang)}</span>
               </div>
             </div>
           </div>
@@ -125,18 +128,18 @@ export function StartScreen({ onStart, onSkip }: StartScreenProps) {
               className="game-btn text-[9px] w-full max-w-[240px]"
               autoFocus
             >
-              ▶ START EXPLORING
+              {pick(ui.startExploring, lang)}
             </button>
             <button
               onClick={handleSkip}
               className="retro-font text-[7px] text-text-secondary hover:text-cream px-4 py-2 border border-border hover:border-gold/40 rounded transition-all w-full max-w-[240px]"
             >
-              SKIP GAME — VIEW PORTFOLIO
+              {pick(ui.skipGame, lang)}
             </button>
           </div>
 
           <p className="retro-font text-[5px] text-text-secondary/30 mt-4">
-            Enter / Space — Start · Esc — Skip
+            {pick(ui.startHint, lang)}
           </p>
         </motion.div>
 

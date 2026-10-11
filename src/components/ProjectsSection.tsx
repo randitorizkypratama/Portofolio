@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { Link } from "@tanstack/react-router";
 import { ExternalLink, Swords, Shield, TreePine, X, ChevronRight, Share2, BookOpen } from "lucide-react";
 import { projects, type Project } from "../data/portfolio";
+import { projectCopy, ui } from "../data/content";
+import { useLocale, pick } from "../i18n";
 import { ScrollReveal } from "./ScrollReveal";
 import { markProject } from "../game/journal";
 import { sfx } from "../game/sfx";
@@ -22,6 +24,14 @@ function CaseStudyModal({
   onClose: () => void;
 }) {
   const Icon = questIcons[project.slug] || Swords;
+  const lang = useLocale();
+  const copy = projectCopy[project.slug];
+  const desc = copy ? pick(copy.description, lang) : project.description;
+  const problem = copy ? pick(copy.problem, lang) : project.problem;
+  const features = copy
+    ? copy.features.map((f) => pick(f, lang))
+    : project.features;
+  const arch = copy ? pick(copy.architecture, lang) : project.architecture;
 
   return (
     <motion.div
@@ -51,7 +61,7 @@ function CaseStudyModal({
               {project.title}
             </span>
             <span className="retro-font text-[5px] px-1.5 py-0.5 rounded bg-xp/15 text-xp border border-xp/30">
-              ✓ CLEAR
+              {pick(ui.clearBadge, lang)}
             </span>
           </div>
           <button
@@ -77,30 +87,30 @@ function CaseStudyModal({
           {/* Description */}
           <div>
             <h3 className="retro-font text-[7px] text-gold mb-2">
-              OVERVIEW
+              {pick(ui.overview, lang).toUpperCase()}
             </h3>
             <p className="text-sm text-text-secondary leading-relaxed">
-              {project.description}
+              {desc}
             </p>
           </div>
 
           {/* Problem */}
           <div>
             <h3 className="retro-font text-[7px] text-gold mb-2">
-              PROBLEM
+              {pick(ui.problem, lang).toUpperCase()}
             </h3>
             <p className="text-sm text-text-secondary leading-relaxed">
-              {project.problem}
+              {problem}
             </p>
           </div>
 
           {/* Key Features */}
           <div>
             <h3 className="retro-font text-[7px] text-gold mb-2">
-              KEY FEATURES
+              {pick(ui.keyFeatures, lang).toUpperCase()}
             </h3>
             <ul className="space-y-1.5">
-              {project.features.map((f, i) => (
+              {features.map((f, i) => (
                 <li
                   key={i}
                   className="flex items-start gap-2 text-sm text-text-secondary"
@@ -118,17 +128,17 @@ function CaseStudyModal({
           {/* Architecture */}
           <div>
             <h3 className="retro-font text-[7px] text-gold mb-2">
-              ARCHITECTURE
+              {pick(ui.architecture, lang).toUpperCase()}
             </h3>
             <p className="text-sm text-text-secondary leading-relaxed">
-              {project.architecture}
+              {arch}
             </p>
           </div>
 
           {/* Tech tags */}
           <div>
             <h3 className="retro-font text-[7px] text-gold mb-2">
-              TECH STACK
+              {pick(ui.techStack, lang).toUpperCase()}
             </h3>
             <div className="flex flex-wrap gap-1.5">
               {project.tags.map((tag) => (
@@ -152,7 +162,7 @@ function CaseStudyModal({
               onMouseEnter={() => sfx.hover()}
             >
               <BookOpen size={12} />
-              FULL CASE STUDY
+              {pick(ui.fullCaseStudy, lang)}
             </Link>
             <a
               href={project.url}
@@ -161,13 +171,13 @@ function CaseStudyModal({
               className="retro-font text-[7px] px-3 py-2 border-2 border-border text-text-secondary hover:text-cream hover:border-gold/40 rounded transition-all flex items-center gap-2"
             >
               <ExternalLink size={12} />
-              LIVE
+              {pick(ui.liveShort, lang)}
             </a>
             <button
               onClick={async () => {
                 const shareData = {
                   title: `${project.title} — FixDiriloe`,
-                  text: project.description,
+                  text: desc,
                   url: project.url,
                 };
                 try {
@@ -177,7 +187,7 @@ function CaseStudyModal({
                     await navigator.clipboard.writeText(
                       `${project.title} — ${project.url}`
                     );
-                    showToast("LINK COPIED!");
+                    showToast(pick(ui.linkCopied, lang));
                   }
                 } catch {
                   /* user cancelled */
@@ -186,7 +196,7 @@ function CaseStudyModal({
               className="retro-font text-[7px] px-3 py-2 border-2 border-border text-text-secondary hover:text-cream hover:border-gold/40 rounded transition-all flex items-center gap-2"
             >
               <Share2 size={12} />
-              SHARE
+              {pick(ui.share, lang)}
             </button>
           </div>
         </div>
@@ -205,6 +215,9 @@ function QuestCard({
   onSelect: () => void;
 }) {
   const Icon = questIcons[project.slug] || Swords;
+  const lang = useLocale();
+  const copy = projectCopy[project.slug];
+  const desc = copy ? pick(copy.description, lang) : project.description;
 
   return (
     <ScrollReveal delay={index * 0.1}>
@@ -236,11 +249,11 @@ function QuestCard({
           <div className="flex items-center gap-2">
             <Icon size={14} style={{ color: project.color }} />
             <span className="retro-font text-[5px] text-text-secondary">
-              QUEST #{String(index + 1).padStart(2, "0")}
+              {pick(ui.questNo, lang)} #{String(index + 1).padStart(2, "0")}
             </span>
           </div>
           <span className="retro-font text-[5px] px-1.5 py-0.5 rounded bg-xp/15 text-xp border border-xp/30">
-            ✓ CLEAR
+            {pick(ui.clearBadge, lang)}
           </span>
         </div>
 
@@ -250,7 +263,7 @@ function QuestCard({
             {project.title}
           </h3>
           <p className="text-xs text-text-secondary leading-relaxed mb-2.5 line-clamp-2">
-            {project.description}
+            {desc}
           </p>
 
           <div className="flex flex-wrap gap-1 mb-2.5">
@@ -266,7 +279,7 @@ function QuestCard({
 
           <div className="flex items-center gap-1.5 text-gold group-hover:text-accent transition-colors">
             <ExternalLink size={11} />
-            <span className="retro-font text-[6px]">VIEW CASE STUDY</span>
+            <span className="retro-font text-[6px]">{pick(ui.cardCaseStudy, lang)}</span>
           </div>
         </div>
       </motion.div>
@@ -276,6 +289,7 @@ function QuestCard({
 
 export function ProjectsSection() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const lang = useLocale();
 
   return (
     <section id="projects" className="py-20 sm:py-28 dot-grid">
@@ -286,10 +300,10 @@ export function ProjectsSection() {
               ✦ QUEST LOG ✦
             </span>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-cream mb-2">
-              Things I've Built
+              {pick(ui.projectsTitle, lang)}
             </h2>
             <p className="text-text-secondary text-sm max-w-md mx-auto">
-              Click a quest to view the full case study.
+              {pick(ui.projectsIntro, lang)}
             </p>
           </div>
         </ScrollReveal>

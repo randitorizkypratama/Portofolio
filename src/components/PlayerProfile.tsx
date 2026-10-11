@@ -14,8 +14,11 @@ import { isSfxMuted, toggleSfxMuted } from "../game/sfx";
 import { isBgmOn, toggleBgm } from "../game/music";
 import { getTitle } from "../game/titles";
 import { ITEMS, getInventory } from "../game/inventory";
+import { useLocale, pick } from "../i18n";
+import { ui } from "../data/content";
 
 export function PlayerProfile() {
+  const lang = useLocale();
   const [downloadState, setDownloadState] = useState<
     "idle" | "started" | "unavailable"
   >("idle");
@@ -88,7 +91,7 @@ export function PlayerProfile() {
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2 border-b-2 border-border bg-bg-main/40">
           <span className="retro-font text-[7px] text-gold">
-            ✦ PLAYER PROFILE ✦
+            {pick(ui.playerProfile, lang)}
           </span>
           <span className="retro-font text-[5px] text-text-secondary">
             FILE #001
@@ -188,11 +191,11 @@ export function PlayerProfile() {
           {/* Inventory */}
           <div className="mb-3">
             <span className="retro-font text-[6px] text-gold block mb-1.5">
-              INVENTORY
+              {pick(ui.inventoryLabel, lang)}
             </span>
             {ITEMS.filter((it) => (inv[it.id] ?? 0) > 0).length === 0 ? (
               <p className="retro-font text-[5px] text-text-secondary/60">
-                EMPTY — OPEN CHESTS IN THE WORLD!
+                {pick(ui.inventoryEmpty, lang)}
               </p>
             ) : (
               <div className="flex flex-wrap gap-1.5">
@@ -214,7 +217,7 @@ export function PlayerProfile() {
             <div className="flex items-center gap-2 mb-2">
               <Trophy size={11} className="text-gold" />
               <span className="retro-font text-[6px] text-gold">
-                ACHIEVEMENTS {unlocked.length}/{ACHIEVEMENT_DEFS.length}
+                {pick(ui.achievementsLabel, lang)} {unlocked.length}/{ACHIEVEMENT_DEFS.length}
               </span>
             </div>
             <div className="grid grid-cols-3 gap-1.5">

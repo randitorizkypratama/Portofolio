@@ -7,16 +7,25 @@ import { Send, CheckCircle, Loader2 } from "lucide-react";
 import { siteConfig } from "../data/portfolio";
 import { ScrollReveal } from "./ScrollReveal";
 import { trackAndNotify } from "../game/toast";
+import { useLocale, pick, type Locale } from "../i18n";
+import { ui } from "../data/content";
 
-const contactSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email"),
-  message: z.string().min(10, "Message must be at least 10 characters"),
-});
+function makeContactSchema(lang: Locale) {
+  return z.object({
+    name: z.string().min(2, pick(ui.errName, lang)),
+    email: z.string().email(pick(ui.errEmail, lang)),
+    message: z.string().min(10, pick(ui.errMessage, lang)),
+  });
+}
 
-type ContactFormData = z.infer<typeof contactSchema>;
+type ContactFormData = {
+  name: string;
+  email: string;
+  message: string;
+};
 
 export function ContactSection() {
+  const lang = useLocale();
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState(false);
   const {
@@ -25,7 +34,7 @@ export function ContactSection() {
     formState: { errors, isSubmitting },
     reset,
   } = useForm<ContactFormData>({
-    resolver: zodResolver(contactSchema),
+    resolver: zodResolver(makeContactSchema(lang)),
   });
 
   const onSubmit = async (data: ContactFormData) => {
@@ -71,11 +80,11 @@ export function ContactSection() {
                   ✦ MESSAGE BOARD ✦
                 </span>
                 <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-cream">
-                  Let's Build Something{" "}
-                  <span className="text-gold">Great!</span>
+                  {pick(ui.contactTitle, lang)}{" "}
+                  <span className="text-gold">{pick(ui.contactTitleAccent, lang)}</span>
                 </h2>
                 <p className="text-text-secondary mb-8 text-sm">
-                  {siteConfig.contactDescription}
+                  {pick(ui.contactBody, lang)}
                 </p>
 
                 {/* Decorative */}
@@ -90,7 +99,7 @@ export function ContactSection() {
                   />
                   <div className="game-border rounded-lg p-3">
                     <p className="retro-font text-[6px] text-cyan">
-                      Thanks for visiting!
+                      {pick(ui.thanksForVisiting, lang)}
                     </p>
                   </div>
                   <motion.img
@@ -109,12 +118,12 @@ export function ContactSection() {
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div>
                   <label htmlFor="name" className="retro-font text-[6px] text-text-secondary block mb-1.5">
-                    NAME
+                    {pick(ui.labelName, lang)}
                   </label>
                   <input
                     id="name"
                     type="text"
-                    placeholder="Your name"
+                    placeholder={pick(ui.phName, lang)}
                     {...register("name")}
                     className="w-full px-3 py-2 bg-bg-main border-2 border-border rounded text-sm text-cream placeholder:text-text-secondary/40 focus:outline-none focus:border-gold/50 transition-colors"
                   />
@@ -127,12 +136,12 @@ export function ContactSection() {
 
                 <div>
                   <label htmlFor="email" className="retro-font text-[6px] text-text-secondary block mb-1.5">
-                    EMAIL
+                    {pick(ui.labelEmail, lang)}
                   </label>
                   <input
                     id="email"
                     type="email"
-                    placeholder="your@email.com"
+                    placeholder={pick(ui.phEmail, lang)}
                     {...register("email")}
                     className="w-full px-3 py-2 bg-bg-main border-2 border-border rounded text-sm text-cream placeholder:text-text-secondary/40 focus:outline-none focus:border-gold/50 transition-colors"
                   />
@@ -145,12 +154,12 @@ export function ContactSection() {
 
                 <div>
                   <label htmlFor="message" className="retro-font text-[6px] text-text-secondary block mb-1.5">
-                    MESSAGE
+                    {pick(ui.labelMessage, lang)}
                   </label>
                   <textarea
                     id="message"
                     rows={4}
-                    placeholder="Your message..."
+                    placeholder={pick(ui.phMessage, lang)}
                     {...register("message")}
                     className="w-full px-3 py-2 bg-bg-main border-2 border-border rounded text-sm text-cream placeholder:text-text-secondary/40 focus:outline-none focus:border-gold/50 transition-colors resize-none"
                   />
@@ -164,13 +173,13 @@ export function ContactSection() {
                 {submitted ? (
                   <div className="flex items-center gap-2 retro-font text-[7px] text-xp">
                     <CheckCircle size={14} />
-                    Message sent!
+                    {pick(ui.msgSent, lang)}
                   </div>
                 ) : (
                   <>
                     {submitError && (
                       <p className="retro-font text-[6px] text-hp">
-                        FAILED TO SEND — TRY AGAIN LATER
+                        {pick(ui.msgFailed, lang)}
                       </p>
                     )}
                     <button
@@ -183,7 +192,7 @@ export function ContactSection() {
                       ) : (
                         <Send size={14} />
                       )}
-                      SEND MESSAGE
+                      {pick(ui.sendMessage, lang)}
                     </button>
                   </>
                 )}

@@ -3,6 +3,8 @@ import { Star, Users, FolderGit2, ExternalLink } from "lucide-react";
 import { siteConfig } from "../data/portfolio";
 import { ScrollReveal } from "./ScrollReveal";
 import { sfx } from "../game/sfx";
+import { useLocale, pick } from "../i18n";
+import { ui } from "../data/content";
 
 interface GhRepo {
   name: string;
@@ -68,6 +70,7 @@ async function fetchGithub(): Promise<GhStats> {
 }
 
 export function GitHubStats() {
+  const lang = useLocale();
   const [data, setData] = useState<GhStats | null>(null);
   const [failed, setFailed] = useState(false);
 
@@ -100,7 +103,7 @@ export function GitHubStats() {
                   ✦ GITHUB SCOUT ✦
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold text-cream">
-                  Live from GitHub
+                  {pick(ui.githubTitle, lang)}
                 </h2>
               </div>
               <a

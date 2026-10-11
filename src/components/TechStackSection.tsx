@@ -1,6 +1,8 @@
 import { motion } from "motion/react";
 import { techStack, siteConfig } from "../data/portfolio";
 import { ScrollReveal } from "./ScrollReveal";
+import { useLocale, pick } from "../i18n";
+import { ui } from "../data/content";
 
 const itemColors: Record<string, string> = {
   nuxt: "#00DC82",
@@ -56,6 +58,7 @@ const rarityColors: Record<string, string> = {
 };
 
 export function TechStackSection() {
+  const lang = useLocale();
   return (
     <section id="tech-stack" className="py-20 sm:py-28 dot-grid">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
@@ -67,10 +70,10 @@ export function TechStackSection() {
                 ✦ INVENTORY ✦
               </span>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-cream mb-4">
-                Tools I Use
+                {pick(ui.techToolsTitle, lang)}
               </h2>
               <p className="text-text-secondary text-sm mb-6">
-                Equipment and skills acquired on my developer journey.
+                {pick(ui.techToolsIntro, lang)}
               </p>
               <motion.img
                 src="/images/avatar.webp"

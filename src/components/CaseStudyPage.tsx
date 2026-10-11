@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { GithubIcon } from "./SocialIcons";
 import { projects } from "../data/portfolio";
-import { caseStudyExtras, ui } from "../data/content";
+import { caseStudyExtras, projectCopy, ui } from "../data/content";
 import { useLocale, pick } from "../i18n";
 import { sfx } from "../game/sfx";
 
@@ -49,6 +49,13 @@ export function CaseStudyPage() {
   }
 
   const Icon = questIcons[project.slug] || Swords;
+  const copy = projectCopy[project.slug];
+  const desc = copy ? pick(copy.description, lang) : project.description;
+  const problem = copy ? pick(copy.problem, lang) : project.problem;
+  const features = copy
+    ? copy.features.map((f) => pick(f, lang))
+    : project.features;
+  const arch = copy ? pick(copy.architecture, lang) : project.architecture;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -87,7 +94,7 @@ export function CaseStudyPage() {
             {project.title}
           </h1>
           <p className="text-sm text-text-secondary leading-relaxed">
-            {project.description}
+            {desc}
           </p>
         </header>
 
@@ -103,13 +110,13 @@ export function CaseStudyPage() {
         <div className="space-y-8">
           <Section title={pick(ui.overview, lang)}>
             <p className="text-sm text-text-secondary leading-relaxed">
-              {project.description}
+              {desc}
             </p>
           </Section>
 
           <Section title={pick(ui.problem, lang)}>
             <p className="text-sm text-text-secondary leading-relaxed">
-              {project.problem}
+              {problem}
             </p>
           </Section>
 
@@ -145,7 +152,7 @@ export function CaseStudyPage() {
 
           <Section title={pick(ui.keyFeatures, lang)}>
             <ul className="space-y-2">
-              {project.features.map((f, i) => (
+              {features.map((f, i) => (
                 <li
                   key={i}
                   className="flex items-start gap-2 text-sm text-text-secondary"
@@ -159,7 +166,7 @@ export function CaseStudyPage() {
 
           <Section title={pick(ui.architecture, lang)}>
             <p className="text-sm text-text-secondary leading-relaxed">
-              {project.architecture}
+              {arch}
             </p>
           </Section>
 

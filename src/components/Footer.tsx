@@ -1,7 +1,10 @@
 import { motion } from "motion/react";
 import { Mail } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { siteConfig, navLinks } from "../data/portfolio";
 import { GithubIcon, XIcon, LinkedinIcon } from "./SocialIcons";
+import { useLocale, pick } from "../i18n";
+import { ui, navLabels } from "../data/content";
 
 const socialIcons = [
   { icon: GithubIcon, href: siteConfig.socials.github, label: "GitHub" },
@@ -11,6 +14,8 @@ const socialIcons = [
 ];
 
 export function Footer() {
+  const lang = useLocale();
+
   return (
     <footer className="border-t-2 border-border bg-bg-secondary/50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
@@ -35,9 +40,15 @@ export function Footer() {
                 href={link.href}
                 className="retro-font text-[6px] text-text-secondary hover:text-cream transition-colors"
               >
-                {link.label}
+                {navLabels[link.label] ? pick(navLabels[link.label], lang) : link.label}
               </a>
             ))}
+            <Link
+              to="/uses"
+              className="retro-font text-[6px] text-text-secondary hover:text-cream transition-colors"
+            >
+              {pick(ui.navUses, lang)}
+            </Link>
           </nav>
 
           <div className="flex gap-2">
@@ -58,7 +69,7 @@ export function Footer() {
 
         <div className="mt-8 pt-6 border-t border-border text-center">
           <p className="retro-font text-[6px] text-text-secondary">
-            © {new Date().getFullYear()} {siteConfig.name} · Crafted with pixels and passion
+            © {new Date().getFullYear()} {siteConfig.name} · {pick(ui.footerRights, lang)}
           </p>
         </div>
       </div>

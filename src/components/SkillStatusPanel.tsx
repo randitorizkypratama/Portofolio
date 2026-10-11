@@ -1,5 +1,7 @@
 import { Code2, Database, Wrench, Layers } from "lucide-react";
 import { ScrollReveal } from "./ScrollReveal";
+import { useLocale, pick } from "../i18n";
+import { ui } from "../data/content";
 
 interface Skill {
   name: string;
@@ -75,6 +77,7 @@ function SkillRow({ skill }: { skill: Skill }) {
 }
 
 export function SkillStatusPanel() {
+  const lang = useLocale();
   return (
     <section id="skills" className="py-16 sm:py-20 dot-grid">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
@@ -84,10 +87,10 @@ export function SkillStatusPanel() {
               ✦ STATUS PANEL ✦
             </span>
             <h2 className="text-2xl sm:text-3xl font-bold text-cream mb-2">
-              Developer Skills
+              {pick(ui.skillsTitle, lang)}
             </h2>
             <p className="text-text-secondary text-sm max-w-md mx-auto">
-              Verified skills mapped to real project work.
+              {pick(ui.skillsIntro, lang)}
             </p>
           </div>
         </ScrollReveal>
@@ -103,7 +106,7 @@ export function SkillStatusPanel() {
                     {cat.name}
                   </span>
                   <span className="retro-font text-[5px] text-text-secondary ml-auto">
-                    {cat.skills.length} SKILLS
+                    {cat.skills.length} {pick(ui.skillsCount, lang)}
                   </span>
                 </div>
 

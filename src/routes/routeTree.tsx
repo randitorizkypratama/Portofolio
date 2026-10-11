@@ -32,6 +32,8 @@ import { markSection } from "../game/journal";
 import { track } from "../game/achievements";
 import { notifyNewly, showToast } from "../game/toast";
 import { startBgm, cycleBgmTrack, getBgmTrackName } from "../game/music";
+import { useLocale, pick } from "../i18n";
+import { ui } from "../data/content";
 
 const RPGWorld = lazy(() =>
   import("../components/RPGWorld").then((m) => ({ default: m.RPGWorld }))
@@ -99,6 +101,7 @@ function MiniPlayer() {
 function RootLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isHome = pathname === "/";
+  const lang = useLocale();
 
   const [started, setStarted] = useState(false);
   const [showGame, setShowGame] = useState(false);
@@ -214,7 +217,7 @@ function RootLayout() {
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-6">
                       <div className="text-center sm:text-left">
                         <span className="retro-font text-[8px] text-gold block mb-1">
-                          ✦ EXPLORE THE WORLD ✦
+                          {pick(ui.exploreHud, lang)}
                         </span>
                         <h2 className="text-xl sm:text-2xl font-bold text-cream">
                           Pixel Quest World
@@ -224,10 +227,10 @@ function RootLayout() {
                         {/* Objective */}
                         <div className="game-border rounded px-3 py-1.5 hidden sm:block">
                           <span className="retro-font text-[5px] text-text-secondary block">
-                            OBJECTIVE
+                            {pick(ui.objectiveLabel, lang)}
                           </span>
                           <span className="retro-font text-[6px] text-cream">
-                            Find & interact with quest boards
+                            {pick(ui.objectiveText, lang)}
                           </span>
                         </div>
                         {/* Skip button */}
@@ -235,7 +238,7 @@ function RootLayout() {
                           href="#projects"
                           className="retro-font text-[6px] text-text-secondary hover:text-cream px-2 py-1 border border-border hover:border-gold/40 rounded transition-all"
                         >
-                          SKIP →
+                          {pick(ui.skipLabel, lang)} →
                         </a>
                       </div>
                     </div>
@@ -255,10 +258,10 @@ function RootLayout() {
                     {/* Quick links below game */}
                     <div className="flex flex-wrap justify-center gap-2 mt-4">
                       {[
-                        { label: "Projects", href: "#projects" },
-                        { label: "Skills", href: "#skills" },
+                        { label: pick(ui.navProjects, lang), href: "#projects" },
+                        { label: pick(ui.navSkills, lang), href: "#skills" },
                         { label: "CV", href: "#about" },
-                        { label: "Contact", href: "#contact" },
+                        { label: pick(ui.navContact, lang), href: "#contact" },
                       ].map((link) => (
                         <a
                           key={link.label}

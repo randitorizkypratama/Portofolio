@@ -62,7 +62,7 @@ export function HeroSection() {
             {/* RPG dialogue-style intro with typewriter */}
             <div className="dialogue-box rounded-lg px-4 py-3 max-w-md mb-6">
               <TypewriterText
-                text={siteConfig.description}
+                text={pick(ui.heroDesc, lang)}
                 className="text-text-secondary text-sm leading-relaxed"
               />
             </div>
