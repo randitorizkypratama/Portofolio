@@ -95,6 +95,32 @@ export const npcs: NPC[] = [
     ],
     type: "npc",
   },
+  {
+    id: "npc-sensei",
+    name: "Code Sensei",
+    position: { x: 6, y: 10 },
+    sprite: "⛩️",
+    dialogue: [
+      "Ah, a fellow traveler of the digital path...",
+      "My journey: frontend → backend → databases. Every stack is a new dungeon.",
+      "HIBIKISHOP, DuelDex, Family Tree — three dungeons cleared.",
+      "Keep building. The grind never stops, and neither does the XP.",
+    ],
+    type: "npc",
+  },
+  {
+    id: "npc-github",
+    name: "GitHub Guardian",
+    position: { x: 11, y: 19 },
+    sprite: "🛡️",
+    dialogue: [
+      "I guard the Repository of Commits...",
+      "All projects live on GitHub — source code, issues, and history.",
+      "Streaks are forged one commit at a time, traveler.",
+      "Visit: github.com/fixdiriloe",
+    ],
+    type: "npc",
+  },
 ];
 
 export function getNearbyEntity(

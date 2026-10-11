@@ -17,6 +17,7 @@ type ContactFormData = z.infer<typeof contactSchema>;
 
 export function ContactSection() {
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
   const {
     register,
     handleSubmit,
@@ -27,14 +28,31 @@ export function ContactSection() {
   });
 
   const onSubmit = async (data: ContactFormData) => {
-    const subject = encodeURIComponent(`Portfolio Contact from ${data.name}`);
-    const body = encodeURIComponent(
-      `Name: ${data.name}\nEmail: ${data.email}\n\n${data.message}`
-    );
-    window.open(`mailto:${siteConfig.email}?subject=${subject}&body=${body}`);
-    setSubmitted(true);
-    reset();
-    setTimeout(() => setSubmitted(false), 5000);
+    setSubmitError(false);
+    try {
+      const res = await fetch(
+        `https://formsubmit.co/ajax/${encodeURIComponent(siteConfig.email)}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            _subject: `Portfolio Contact from ${data.name}`,
+            name: data.name,
+            email: data.email,
+            message: data.message,
+          }),
+        }
+      );
+      if (!res.ok) throw new Error("Request failed");
+      setSubmitted(true);
+      reset();
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch {
+      setSubmitError(true);
+    }
   };
 
   return (
@@ -147,18 +165,25 @@ export function ContactSection() {
                     Message sent!
                   </div>
                 ) : (
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="game-btn w-full flex items-center justify-center gap-2 text-[8px] disabled:opacity-50"
-                  >
-                    {isSubmitting ? (
-                      <Loader2 size={14} className="animate-spin" />
-                    ) : (
-                      <Send size={14} />
+                  <>
+                    {submitError && (
+                      <p className="retro-font text-[6px] text-hp">
+                        FAILED TO SEND — TRY AGAIN LATER
+                      </p>
                     )}
-                    SEND MESSAGE
-                  </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="game-btn w-full flex items-center justify-center gap-2 text-[8px] disabled:opacity-50"
+                    >
+                      {isSubmitting ? (
+                        <Loader2 size={14} className="animate-spin" />
+                      ) : (
+                        <Send size={14} />
+                      )}
+                      SEND MESSAGE
+                    </button>
+                  </>
                 )}
               </form>
             </div>

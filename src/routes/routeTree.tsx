@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, lazy, Suspense } from "react";
 import { createRootRoute, createRoute } from "@tanstack/react-router";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
@@ -11,7 +11,10 @@ import { SectionDivider } from "../components/SectionDivider";
 import { StartScreen } from "../components/StartScreen";
 import { PlayerProfile } from "../components/PlayerProfile";
 import { SkillStatusPanel } from "../components/SkillStatusPanel";
-import { RPGWorld } from "../components/RPGWorld";
+
+const RPGWorld = lazy(() =>
+  import("../components/RPGWorld").then((m) => ({ default: m.RPGWorld }))
+);
 
 function RootLayout() {
   const [started, setStarted] = useState(false);
@@ -71,7 +74,17 @@ function RootLayout() {
                       </div>
                     </div>
 
-                    <RPGWorld />
+                    <Suspense
+                      fallback={
+                        <div className="game-border rounded-lg p-10 text-center">
+                          <span className="retro-font text-[6px] text-text-secondary animate-pulse">
+                            LOADING WORLD…
+                          </span>
+                        </div>
+                      }
+                    >
+                      <RPGWorld />
+                    </Suspense>
 
                     {/* Quick links below game */}
                     <div className="flex flex-wrap justify-center gap-2 mt-4">

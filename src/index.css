@@ -306,3 +306,13 @@ h1, h2, h3 {
 .dpad-round {
   border-radius: 9999px;
 }
+
+@keyframes pet-bounce {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  50% { transform: translateY(-3px) scaleY(1.05); }
+}
+
+.pet-bounce {
+  animation: pet-bounce 0.8s ease-in-out infinite;
+  transform-origin: bottom center;
+}

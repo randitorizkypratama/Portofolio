@@ -1,13 +1,33 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Download, FileText, User } from "lucide-react";
+import { Download, FileText, User, Trophy, Lock, Volume2, VolumeX } from "lucide-react";
 import { siteConfig } from "../data/portfolio";
 import { ScrollReveal } from "./ScrollReveal";
+import {
+  ACHIEVEMENT_DEFS,
+  getStats,
+  getUnlockedIds,
+  subscribe,
+} from "../game/achievements";
+import { isSfxMuted, toggleSfxMuted } from "../game/sfx";
 
 export function PlayerProfile() {
   const [downloadState, setDownloadState] = useState<
     "idle" | "started" | "unavailable"
   >("idle");
+  const [unlocked, setUnlocked] = useState<string[]>(() =>
+    getUnlockedIds(getStats())
+  );
+  const [muted, setMuted] = useState(() => isSfxMuted());
+
+  useEffect(
+    () => subscribe(() => setUnlocked(getUnlockedIds(getStats()))),
+    []
+  );
+
+  const handleToggleMute = useCallback(() => {
+    setMuted(toggleSfxMuted());
+  }, []);
 
   const handleDownload = useCallback(() => {
     const link = document.createElement("a");
@@ -35,7 +55,7 @@ export function PlayerProfile() {
 
   return (
     <ScrollReveal>
-      <div className="dialogue-box rounded-lg max-w-sm mx-auto">
+      <div className="dialogue-box rounded-lg max-w-md mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2 border-b-2 border-border bg-bg-main/40">
           <span className="retro-font text-[7px] text-gold">
@@ -99,11 +119,60 @@ export function PlayerProfile() {
           {/* Secondary action */}
           <a
             href="#about"
-            className="flex items-center justify-center gap-2 w-full py-1.5 retro-font text-[6px] text-text-secondary hover:text-cream border border-transparent hover:border-border rounded transition-all"
+            className="flex items-center justify-center gap-2 w-full py-1.5 retro-font text-[6px] text-text-secondary hover:text-cream border border-transparent hover:border-border rounded transition-all mb-3"
           >
             <User size={12} />
             VIEW PROFILE
           </a>
+
+          {/* Sound toggle */}
+          <button
+            onClick={handleToggleMute}
+            className="flex items-center justify-center gap-2 w-full py-1.5 retro-font text-[6px] text-text-secondary hover:text-cream border border-border/50 hover:border-gold/40 rounded transition-all mb-3"
+            aria-label={muted ? "Enable sound effects" : "Mute sound effects"}
+          >
+            {muted ? <VolumeX size={12} /> : <Volume2 size={12} />}
+            {muted ? "SOUND: OFF" : "SOUND: ON"}
+          </button>
+
+          {/* Achievements */}
+          <div className="mb-1">
+            <div className="flex items-center gap-2 mb-2">
+              <Trophy size={11} className="text-gold" />
+              <span className="retro-font text-[6px] text-gold">
+                ACHIEVEMENTS {unlocked.length}/{ACHIEVEMENT_DEFS.length}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-1.5">
+              {ACHIEVEMENT_DEFS.map((a) => {
+                const isUnlocked = unlocked.includes(a.id);
+                return (
+                  <div
+                    key={a.id}
+                    title={`${a.name} — ${a.desc}`}
+                    className={`rounded border px-1.5 py-1 text-center ${
+                      isUnlocked
+                        ? "border-gold/50 bg-gold/10"
+                        : "border-border/50 bg-bg-main/40 opacity-50"
+                    }`}
+                  >
+                    {isUnlocked ? (
+                      <Trophy size={10} className="text-gold mx-auto mb-0.5" />
+                    ) : (
+                      <Lock size={10} className="text-text-secondary mx-auto mb-0.5" />
+                    )}
+                    <p
+                      className={`retro-font text-[4px] leading-tight ${
+                        isUnlocked ? "text-gold" : "text-text-secondary"
+                      }`}
+                    >
+                      {a.name}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
 
           {/* Status notification */}
           <AnimatePresence>
