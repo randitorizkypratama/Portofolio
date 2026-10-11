@@ -141,7 +141,7 @@ export const npcs: NPC[] = [
     id: "npc-faq",
     name: "Village Elder",
     position: { x: 19, y: 12 },
-    nightPosition: { x: 16, y: 13 },
+    nightPosition: { x: 17, y: 13 },
     sprite: "👴",
     dialogue: [
       "Ah, a visitor with questions. Ask away — I answer in riddles no more.",
@@ -279,7 +279,7 @@ export const npcs: NPC[] = [
   {
     id: "shrine-west",
     name: "West Grove Stone",
-    position: { x: 3, y: 4 },
+    position: { x: 2, y: 3 },
     sprite: "🗿",
     dialogue: ["The waypoint stone glows. Where to?"],
     type: "shrine",
@@ -303,7 +303,7 @@ export const npcs: NPC[] = [
   {
     id: "pumpkin-1",
     name: "Jack-o'-Lantern",
-    position: { x: 5, y: 13 },
+    position: { x: 4, y: 12 },
     sprite: "🎃",
     dialogue: ["A grinning jack-o'-lantern... candy inside!"],
     type: "pumpkin",
@@ -343,7 +343,7 @@ export const npcs: NPC[] = [
   {
     id: "pumpkin-5",
     name: "Jack-o'-Lantern",
-    position: { x: 7, y: 5 },
+    position: { x: 8, y: 5 },
     sprite: "🎃",
     dialogue: ["A lone pumpkin watches the road. Candy!"],
     type: "pumpkin",

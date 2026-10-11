@@ -564,7 +564,7 @@ const isHalloween = () => new Date().getMonth() === 9;
 const SHRINES = [
   { id: "shrine-west", name: "West Grove Stone", spawn: { x: 2, y: 4 } },
   { id: "shrine-east", name: "East Gate Stone", spawn: { x: 26, y: 12 } },
-  { id: "shrine-south", name: "South Inn Stone", spawn: { x: 23, y: 18 } },
+  { id: "shrine-south", name: "South Inn Stone", spawn: { x: 23, y: 20 } },
 ];
 
 function BossDragonMini({ enraged }: { enraged: boolean }) {
@@ -1194,6 +1194,13 @@ export function RPGWorld() {
     setPlayerPos((prev) => {
       const newX = prev.x + dx;
       const newY = prev.y + dy;
+      const active = makeActiveList(periodRef.current.night, true);
+      // Entities stand their ground — bumping into one shows the interact bracket
+      const blocking = active.find((e) => e.position.x === newX && e.position.y === newY);
+      if (blocking) {
+        setNearbyEntity(blocking);
+        return prev;
+      }
       if (isWalkable(newX, newY)) {
         setMoving(true);
         if (moveTimerRef.current) clearTimeout(moveTimerRef.current);
@@ -1201,7 +1208,7 @@ export function RPGWorld() {
         const entity = getNearbyEntity(
           { x: newX, y: newY },
           dir,
-          makeActiveList(periodRef.current.night, true)
+          active
         );
         setNearbyEntity(entity);
         historyRef.current.push({ x: newX, y: newY });
@@ -1224,7 +1231,7 @@ export function RPGWorld() {
         // Hidden grove warp
         if (newX === 1 && newY === 1) {
           window.setTimeout(() => {
-            setPlayerPos({ x: 4, y: 10 });
+            setPlayerPos({ x: 3, y: 10 });
             showToast("DISCOVERED — HIDDEN GROVE!");
             notifyNewly(track("cartographer"));
           }, 180);
