@@ -10,6 +10,7 @@ import { ContactSection } from "../components/ContactSection";
 import { SectionDivider } from "../components/SectionDivider";
 import { StartScreen } from "../components/StartScreen";
 import { PlayerProfile } from "../components/PlayerProfile";
+import { SkillStatusPanel } from "../components/SkillStatusPanel";
 
 function RootLayout() {
   const [started, setStarted] = useState(false);
@@ -34,6 +35,8 @@ function RootLayout() {
             <ProjectsSection />
             <SectionDivider />
             <TechStackSection />
+            <SectionDivider />
+            <SkillStatusPanel />
             <SectionDivider />
             <ContactSection />
           </main>
