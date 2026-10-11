@@ -455,3 +455,67 @@ body.konami-rainbow {
 .enraged-sprite {
   animation: enrage-pulse 0.6s ease-in-out infinite;
 }
+
+/* Ambient pollen (daytime) */
+@keyframes pollen-drift {
+  0% { transform: translate(0, -8px); opacity: 0; }
+  12% { opacity: 0.7; }
+  85% { opacity: 0.45; }
+  100% { transform: translate(18px, 120px); opacity: 0; }
+}
+
+.pollen {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 1px;
+  pointer-events: none;
+  background: #e8e0a0;
+  animation-name: pollen-drift;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* NPC idle bob */
+@keyframes npc-idle-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1.5px); }
+}
+
+.npc-idle {
+  animation: npc-idle-bob 2.8s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+/* Footstep dust puff */
+@keyframes step-dust {
+  0% { transform: scale(0.4); opacity: 0.55; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+
+.step-dust {
+  position: absolute;
+  width: 14px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(214, 204, 164, 0.55);
+  pointer-events: none;
+  animation: step-dust 0.4s ease-out forwards;
+}
+
+/* Fountain mist */
+@keyframes mist-rise {
+  0% { transform: translateY(0) scale(0.7); opacity: 0; }
+  30% { opacity: 0.4; }
+  100% { transform: translateY(-38px) scale(1.5); opacity: 0; }
+}
+
+.mist-puff {
+  position: absolute;
+  width: 18px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.55), transparent 70%);
+  pointer-events: none;
+  animation: mist-rise 3.2s ease-out infinite;
+}

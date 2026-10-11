@@ -35,6 +35,7 @@ import {
 import { getTitle } from "../game/titles";
 import { Minimap } from "./Minimap";
 import { NPCPortrait } from "./NPCPortrait";
+import { TypewriterText } from "./TypewriterText";
 
 const VIEWPORT_TILES_X = 17;
 const VIEWPORT_TILES_Y = 13;
@@ -48,6 +49,29 @@ const FIREFLIES = [
   { left: "72%", top: "22%", delay: 3.1, duration: 6, color: "#5bb8c9" },
   { left: "88%", top: "55%", delay: 1.8, duration: 5.8, color: "#ffd94a" },
 ];
+
+// Daytime pollen motes
+const POLLEN = Array.from({ length: 10 }, (_, i) => ({
+  left: `${(i * 29 + 7) % 100}%`,
+  top: `${(i * 43 + 10) % 80}%`,
+  delay: (i * 0.9) % 5,
+  duration: 7 + (i % 4) * 1.5,
+  color: i % 3 === 0 ? "#d8e8a0" : "#e8e0a0",
+}));
+
+// Village lamps (world tile coords) — light up at night
+const LAMPS: { x: number; y: number }[] = [
+  { x: 14, y: 4 },
+  { x: 8, y: 10 },
+  { x: 20, y: 10 },
+  { x: 14, y: 18 },
+];
+
+// Fountain center in world coords (tile 13 cluster near top)
+const FOUNTAIN = { x: 14, y: 1 };
+
+// Smooth camera + entity glide (keep durations in sync)
+const GLIDE = "left 0.14s ease-out, top 0.14s ease-out";
 
 // Pixel-art tile renderer (SVG data-URI backgrounds)
 function TileSprite({ type, x, y }: { type: number; x: number; y: number }) {
@@ -186,7 +210,13 @@ function NPCSprite({
         width="30"
         height="30"
         viewBox="0 0 16 16"
-        style={{ imageRendering: "pixelated", position: "relative", zIndex: 1 }}
+        className="npc-idle"
+        style={{
+          imageRendering: "pixelated",
+          position: "relative",
+          zIndex: 1,
+          animationDelay: `${(npc.id.charCodeAt(npc.id.length - 1) % 8) * 0.35}s`,
+        }}
       >
         {npc.type === "quest" ? (
           <>
@@ -591,6 +621,8 @@ export function RPGWorld() {
   const [openedLoot, setOpenedLoot] = useState<Set<string>>(() => getOpened());
   const [teleportFrom, setTeleportFrom] = useState<NPC | null>(null);
   const [playerTitle] = useState(() => getTitle());
+  const [puffs, setPuffs] = useState<{ id: number; x: number; y: number }[]>([]);
+  const puffIdRef = useRef(0);
 
   const moveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const keysRef = useRef<Set<string>>(new Set());
@@ -1153,6 +1185,13 @@ export function RPGWorld() {
         if (historyRef.current.length > 20) historyRef.current.shift();
         sfx.stepOn(getTileAt(newX, newY));
         notifyNewly(track("step"));
+        // Footstep dust puff
+        const puffId = ++puffIdRef.current;
+        setPuffs((p) => [...p.slice(-6), { id: puffId, x: newX, y: newY }]);
+        window.setTimeout(
+          () => setPuffs((p) => p.filter((q) => q.id !== puffId)),
+          430
+        );
         // Speedrun starts on first move
         if (runStartRef.current == null) {
           runStartRef.current = Date.now();
@@ -1385,13 +1424,33 @@ export function RPGWorld() {
         onClick={() => containerRef.current?.focus()}
       >
         {/* Tile map */}
-        <div className="absolute" style={{ left: -offsetX * TILE_SIZE, top: -offsetY * TILE_SIZE }}>
+        <div
+          className="absolute"
+          style={{
+            left: -offsetX * TILE_SIZE,
+            top: -offsetY * TILE_SIZE,
+            transition: GLIDE,
+          }}
+        >
           {Array.from({ length: MAP_HEIGHT }).map((_, y) => (
             <div key={y} className="flex">
               {Array.from({ length: MAP_WIDTH }).map((_, x) => (
                 <TileSprite key={`${x}-${y}`} type={mapData[y]?.[x] ?? 0} x={x} y={y} />
               ))}
             </div>
+          ))}
+
+          {/* Fountain mist (world-anchored) */}
+          {Array.from({ length: 3 }).map((_, i) => (
+            <span
+              key={`mist-${i}`}
+              className="mist-puff"
+              style={{
+                left: FOUNTAIN.x * TILE_SIZE + 6 + i * 8,
+                top: FOUNTAIN.y * TILE_SIZE + 4,
+                animationDelay: `${i * 1.1}s`,
+              }}
+            />
           ))}
         </div>
 
@@ -1401,7 +1460,10 @@ export function RPGWorld() {
           const ny = (npc.position.y - offsetY) * TILE_SIZE;
           if (nx < -TILE_SIZE || ny < -TILE_SIZE || nx > viewportWidth || ny > viewportHeight) return null;
           return (
-            <div key={npc.id} style={{ position: "absolute", left: nx, top: ny }}>
+            <div
+              key={npc.id}
+              style={{ position: "absolute", left: nx, top: ny, transition: GLIDE }}
+            >
               <NPCSprite
                 npc={npc}
                 isNearby={nearbyEntity?.id === npc.id}
@@ -1413,7 +1475,14 @@ export function RPGWorld() {
         })}
 
         {/* Player */}
-        <div className="absolute" style={{ left: (playerPos.x - offsetX) * TILE_SIZE, top: (playerPos.y - offsetY) * TILE_SIZE }}>
+        <div
+          className="absolute"
+          style={{
+            left: (playerPos.x - offsetX) * TILE_SIZE,
+            top: (playerPos.y - offsetY) * TILE_SIZE,
+            transition: GLIDE,
+          }}
+        >
           <PlayerSprite moving={moving} />
         </div>
 
@@ -1424,6 +1493,7 @@ export function RPGWorld() {
             left: (playerPos.x - offsetX) * TILE_SIZE - 24,
             top: (playerPos.y - offsetY) * TILE_SIZE - 11,
             width: TILE_SIZE + 48,
+            transition: GLIDE,
           }}
         >
           <span
@@ -1434,11 +1504,29 @@ export function RPGWorld() {
           </span>
         </div>
 
+        {/* Footstep dust puffs */}
+        {puffs.map((p) => (
+          <span
+            key={p.id}
+            className="step-dust"
+            style={{
+              left: (p.x - offsetX) * TILE_SIZE + 9,
+              top: (p.y - offsetY) * TILE_SIZE + 24,
+              transition: GLIDE,
+              zIndex: 8,
+            }}
+          />
+        ))}
+
         {/* Pet slime companion */}
         <div
           ref={petRef}
           className="absolute top-0 left-0 z-[9] pointer-events-none flex items-end justify-center"
-          style={{ width: TILE_SIZE, height: TILE_SIZE }}
+          style={{
+            width: TILE_SIZE,
+            height: TILE_SIZE,
+            transition: "transform 0.16s ease-out",
+          }}
         >
           <svg
             width="26"
@@ -1468,6 +1556,37 @@ export function RPGWorld() {
           className="absolute inset-0 pointer-events-none z-[14]"
           style={{ background: period.overlay, transition: "background 2s ease" }}
         />
+
+        {/* Night lighting — player lantern + village lamps */}
+        {period.night && (
+          <>
+            <div
+              className="absolute inset-0 pointer-events-none z-[14]"
+              style={{
+                background: [
+                  `radial-gradient(circle 95px at ${(playerPos.x - offsetX) * TILE_SIZE + TILE_SIZE / 2}px ${(playerPos.y - offsetY) * TILE_SIZE + TILE_SIZE / 2}px, rgba(6,10,26,0) 30%, rgba(6,10,26,0.4) 100%)`,
+                  ...LAMPS.map(
+                    (l) =>
+                      `radial-gradient(circle 70px at ${(l.x - offsetX) * TILE_SIZE + TILE_SIZE / 2}px ${(l.y - offsetY) * TILE_SIZE + TILE_SIZE / 2}px, rgba(6,10,26,0) 20%, rgba(6,10,26,0.4) 100%)`
+                  ),
+                  "rgba(6,10,26,0.4)",
+                ].join(", "),
+                transition: GLIDE,
+              }}
+            />
+            {/* Warm lamp glow */}
+            <div
+              className="absolute inset-0 pointer-events-none z-[15]"
+              style={{
+                background: LAMPS.map(
+                  (l) =>
+                    `radial-gradient(circle 52px at ${(l.x - offsetX) * TILE_SIZE + TILE_SIZE / 2}px ${(l.y - offsetY) * TILE_SIZE + TILE_SIZE / 2}px, rgba(255,190,90,0.16), transparent 70%)`
+                ).join(", "),
+                transition: GLIDE,
+              }}
+            />
+          </>
+        )}
 
         {/* Atmosphere: warm light + vignette + scanlines */}
         <div
@@ -1505,6 +1624,28 @@ export function RPGWorld() {
             />
           ))}
         </div>
+
+        {/* Pollen motes (daytime) */}
+        {!period.night && (
+          <div
+            className="absolute inset-0 pointer-events-none z-[16] overflow-hidden"
+            aria-hidden="true"
+          >
+            {POLLEN.map((p, i) => (
+              <span
+                key={i}
+                className="pollen"
+                style={{
+                  left: p.left,
+                  top: p.top,
+                  background: p.color,
+                  animationDelay: `${p.delay}s`,
+                  animationDuration: `${p.duration}s`,
+                }}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Minimap */}
         <Minimap
@@ -1620,7 +1761,11 @@ export function RPGWorld() {
                 className="retro-font text-[6px] text-text-secondary hover:text-cream px-1.5 py-0.5 border border-border hover:border-gold/40 rounded transition-all"
                 aria-label="Close dialogue">✕</button>
             </div>
-            <p className="text-sm text-cream leading-relaxed mb-3">{dialogue.npc.dialogue[dialogue.lineIndex]}</p>
+            <TypewriterText
+              text={dialogue.npc.dialogue[dialogue.lineIndex]}
+              speed={18}
+              className="text-sm text-cream leading-relaxed mb-3 block"
+            />
             <div className="flex items-center justify-between">
               <span className="retro-font text-[5px] text-text-secondary">
                 {dialogue.lineIndex + 1} / {dialogue.npc.dialogue.length}
