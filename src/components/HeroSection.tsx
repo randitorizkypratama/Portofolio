@@ -118,7 +118,24 @@ export function HeroSection() {
                 className="w-full h-auto rounded-lg border-2 border-border shadow-pixel-glow"
                 loading="eager"
               />
-              <div className="absolute inset-0 rounded-lg bg-gradient-to-l from-transparent via-transparent to-bg-main/50" />
+              {/* Partial overlay — left side blends into bg, right stays visible */}
+              <div className="absolute inset-0 rounded-lg pointer-events-none"
+                style={{
+                  background: "linear-gradient(to right, #0f1923 0%, #0f1923cc 15%, #0f192355 35%, transparent 55%)",
+                }}
+              />
+              {/* Bottom fade for depth */}
+              <div className="absolute inset-x-0 bottom-0 h-1/4 rounded-b-lg pointer-events-none"
+                style={{
+                  background: "linear-gradient(to top, #0f1923aa, transparent)",
+                }}
+              />
+              {/* Subtle top-left glow accent */}
+              <div className="absolute top-2 left-2 w-16 h-16 rounded-full pointer-events-none"
+                style={{
+                  background: "radial-gradient(circle, rgba(212,168,71,0.08), transparent 70%)",
+                }}
+              />
             </motion.div>
           </motion.div>
         </div>
