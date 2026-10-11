@@ -151,6 +151,84 @@ function bridgeTile(): string {
   return s;
 }
 
+function roofTile(): string {
+  let s = px(0, 0, 16, 16, "#a54a4a") + px(0, 0, 16, 2, "#c86a5a") + px(0, 2, 16, 1, "#8c3b38");
+  for (const y of [5, 9, 13]) s += px(0, y, 16, 1, "#8c3b38");
+  s += px(3, 3, 1, 2, "#8c3b38") + px(11, 3, 1, 2, "#8c3b38");
+  s += px(7, 6, 1, 3, "#8c3b38") + px(15, 6, 1, 3, "#8c3b38");
+  s += px(2, 10, 1, 3, "#8c3b38") + px(10, 10, 1, 3, "#8c3b38");
+  s += px(6, 14, 1, 2, "#8c3b38");
+  s += px(1, 3, 2, 1, "#d47a6a") + px(8, 6, 3, 1, "#d47a6a") + px(4, 10, 3, 1, "#d47a6a");
+  return s;
+}
+
+function eavesTile(): string {
+  return (
+    px(0, 0, 16, 16, "#e6d2a8") +
+    px(0, 0, 16, 2, "#8c3b38") +
+    px(0, 2, 16, 2, "#7a4f2a") + px(0, 2, 16, 1, "#8b5a33") +
+    px(0, 4, 16, 1, "#3a2510") +
+    px(0, 6, 16, 1, "#d4bc8c") + px(0, 10, 16, 1, "#d4bc8c") +
+    px(0, 2, 1, 2, "#5c3a1e") + px(15, 2, 1, 2, "#5c3a1e")
+  );
+}
+
+function doorTile(): string {
+  let s = px(0, 0, 16, 16, "#e6d2a8");
+  s += px(0, 0, 16, 1, "#7a4f2a") + px(0, 15, 16, 1, "#6b4222");
+  s += px(0, 1, 1, 14, "#7a4f2a") + px(15, 1, 1, 14, "#7a4f2a");
+  s += px(4, 2, 8, 13, "#5c3a1e");
+  s += px(5, 3, 6, 12, "#8b5a2b");
+  s += px(6, 3, 1, 12, "#7a4f2a") + px(9, 3, 1, 12, "#7a4f2a");
+  s += px(5, 3, 6, 1, "#a5794a");
+  s += px(10, 9, 1, 2, "#d4a847");
+  s += px(5, 14, 6, 1, "#8a97a4");
+  return s;
+}
+
+function fountainFrame(shift: number): string {
+  const m = (n: number) => (n + 16) % 16;
+  return (
+    px(0, 0, 16, 16, "#4aa8d8") +
+    px(0, 11, 16, 5, "#2f86c4") +
+    px(m(3 + shift), 4, 5, 1, "#7ec8f0") +
+    px(m(8 + shift), 8, 4, 1, "#7ec8f0") +
+    px(m(5 + shift), 13, 3, 1, "#3d96d0") +
+    px(m(4 + shift), 5, 1, 1, "#d0f0ff") +
+    px(m(10 + shift), 9, 1, 1, "#d0f0ff") +
+    px(7, 6, 2, 4, "#a8e0f8")
+  );
+}
+
+function fountainRimTile(): string {
+  let s = px(0, 0, 16, 16, "#9aa5b1");
+  s += px(0, 0, 16, 2, "#c0c9d4") + px(0, 14, 16, 2, "#5c6874");
+  s += px(0, 2, 2, 12, "#8a97a4") + px(14, 2, 2, 12, "#6e7a87");
+  s += px(4, 2, 1, 12, "#7a8794") + px(11, 2, 1, 12, "#7a8794");
+  s += px(2, 5, 12, 1, "#7a8794") + px(2, 10, 12, 1, "#7a8794");
+  s += px(6, 3, 2, 2, "#b0bac4") + px(8, 8, 2, 2, "#b0bac4");
+  return s;
+}
+
+function lampTile(): string {
+  let s = grassBase();
+  s += px(5, 14, 6, 2, "#5c6874") + px(6, 14, 4, 1, "#8a97a4");
+  s += px(7, 6, 2, 9, "#3a4550") + px(8, 6, 1, 9, "#2a3440");
+  s += px(6, 2, 4, 4, "#3a4550") + px(7, 3, 2, 2, "#ffd94a");
+  s += px(5, 3, 1, 2, "#ffd94a") + px(10, 3, 1, 2, "#ffd94a");
+  s += px(6, 1, 4, 1, "#2a3440") + px(5, 6, 6, 1, "#2a3440");
+  return s;
+}
+
+function benchTile(): string {
+  let s = grassBase();
+  s += px(3, 11, 2, 3, "#5c3a1e") + px(11, 11, 2, 3, "#5c3a1e");
+  s += px(2, 8, 12, 2, "#a5794a") + px(2, 8, 12, 1, "#c08a4a") + px(2, 10, 12, 1, "#7a5430");
+  s += px(2, 4, 12, 2, "#a5794a") + px(2, 4, 12, 1, "#c08a4a");
+  s += px(3, 6, 1, 2, "#7a5430") + px(12, 6, 1, 2, "#7a5430");
+  return s;
+}
+
 /* ---------- prebuilt assets ---------- */
 
 const GRASS = [0, 1, 2].map((v) => svgUrl(grassVariant(v)));
@@ -167,6 +245,17 @@ const FLOWER = ["#ff7eb6", "#ffd94a", "#c084fc"].map((c) => svgUrl(flowerTile(c)
 const SIGN = svgUrl(signTile());
 const STONE = svgUrl(stoneTile());
 const BRIDGE = svgUrl(bridgeTile());
+const ROOF = svgUrl(roofTile());
+const EAVES = svgUrl(eavesTile());
+const DOOR = svgUrl(doorTile());
+const FOUNTAIN_WATER = svgUrl(
+  `<g>${fountainFrame(0)}</g><g transform='translate(16,0)'>${fountainFrame(4)}</g>`,
+  32,
+  16
+);
+const RIM = svgUrl(fountainRimTile());
+const LAMP = svgUrl(lampTile());
+const BENCH = svgUrl(benchTile());
 
 const NO_BG = { backgroundImage: "none", backgroundSize: "32px 32px" };
 
@@ -187,6 +276,13 @@ export function tileBackground(
     case 7: return { backgroundImage: SIGN, backgroundSize: "32px 32px" };
     case 8: return { backgroundImage: STONE, backgroundSize: "32px 32px" };
     case 9: return { backgroundImage: BRIDGE, backgroundSize: "32px 32px" };
+    case 10: return { backgroundImage: ROOF, backgroundSize: "32px 32px" };
+    case 11: return { backgroundImage: EAVES, backgroundSize: "32px 32px" };
+    case 12: return { backgroundImage: DOOR, backgroundSize: "32px 32px" };
+    case 13: return { backgroundImage: FOUNTAIN_WATER, backgroundSize: "64px 32px" };
+    case 14: return { backgroundImage: RIM, backgroundSize: "32px 32px" };
+    case 15: return { backgroundImage: LAMP, backgroundSize: "32px 32px" };
+    case 16: return { backgroundImage: BENCH, backgroundSize: "32px 32px" };
     default: return NO_BG;
   }
 }

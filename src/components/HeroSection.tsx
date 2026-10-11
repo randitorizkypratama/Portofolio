@@ -25,7 +25,7 @@ export function HeroSection() {
       <div className="absolute inset-0 bg-gradient-to-b from-bg-main via-bg-secondary to-bg-main" />
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 w-full py-16 lg:py-0">
-        <div className="grid lg:grid-cols-2 gap-8 items-center">
+        <div className="grid lg:grid-cols-[1fr_1.2fr] gap-8 items-center">
           {/* Left - Text */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -109,8 +109,9 @@ export function HeroSection() {
           >
             <motion.div
               className="relative"
-              whileHover={{ scale: 1.01 }}
-              transition={{ duration: 0.3 }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1.1 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
             >
               <img
                 src="/images/hero-bg.webp"

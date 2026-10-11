@@ -18,7 +18,7 @@ import { tileBackground } from "../game/tileArt";
 
 const VIEWPORT_TILES_X = 17;
 const VIEWPORT_TILES_Y = 13;
-const START_POS: Position = { x: 14, y: 9 };
+const START_POS: Position = { x: 14, y: 19 };
 
 const FIREFLIES = [
   { left: "8%", top: "18%", delay: 0, duration: 5.5, color: "#ffd94a" },
@@ -34,7 +34,7 @@ function TileSprite({ type, x, y }: { type: number; x: number; y: number }) {
   const bg = tileBackground(type, x, y);
   return (
     <div
-      className={type === 2 ? "tile-water select-none" : "select-none"}
+      className={type === 2 || type === 13 ? "tile-water select-none" : "select-none"}
       style={{
         width: TILE_SIZE,
         height: TILE_SIZE,
@@ -246,6 +246,7 @@ export function RPGWorld() {
   const [dialogue, setDialogue] = useState<{ npc: NPC; lineIndex: number } | null>(null);
   const [showMenu, setShowMenu] = useState(false);
   const [visitLink, setVisitLink] = useState<string | null>(null);
+  const [scale, setScale] = useState(1);
 
   const moveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const keysRef = useRef<Set<string>>(new Set());
@@ -257,11 +258,55 @@ export function RPGWorld() {
   const playerPosRef = useRef(playerPos);
   const directionRef = useRef(direction);
   const advanceDialogueRef = useRef<(() => void) | null>(null);
+  const interactRef = useRef<(() => void) | null>(null);
 
   useEffect(() => { dialogueRef.current = dialogue; }, [dialogue]);
   useEffect(() => { showMenuRef.current = showMenu; }, [showMenu]);
   useEffect(() => { playerPosRef.current = playerPos; }, [playerPos]);
   useEffect(() => { directionRef.current = direction; }, [direction]);
+
+  // Scale game viewport to fit mobile screens
+  useEffect(() => {
+    const update = () => {
+      const s = Math.min(1, (window.innerWidth - 24) / (VIEWPORT_TILES_X * TILE_SIZE));
+      setScale(Math.max(0.45, s));
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  const doInteract = useCallback(() => {
+    if (dialogueRef.current) {
+      advanceDialogueRef.current?.();
+      return;
+    }
+    if (interactCooldownRef.current) return;
+    interactCooldownRef.current = true;
+    setTimeout(() => { interactCooldownRef.current = false; }, 300);
+    const entity = getNearbyEntity(playerPosRef.current, directionRef.current);
+    if (entity) setDialogue({ npc: entity, lineIndex: 0 });
+  }, []);
+
+  useEffect(() => { interactRef.current = doInteract; }, [doInteract]);
+
+  const toggleMenu = useCallback(() => {
+    if (dialogueRef.current) { setDialogue(null); return; }
+    if (showMenuRef.current) { setShowMenu(false); return; }
+    setShowMenu(true);
+  }, []);
+
+  const bindDir = (dir: string) => ({
+    onPointerDown: (e: React.PointerEvent) => {
+      e.preventDefault();
+      (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+      keysRef.current.add(dir);
+    },
+    onPointerUp: () => keysRef.current.delete(dir),
+    onPointerCancel: () => keysRef.current.delete(dir),
+    onLostPointerCapture: () => keysRef.current.delete(dir),
+    onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
+  });
 
   const movePlayer = useCallback((dx: number, dy: number, dir: Direction) => {
     setDirection(dir);
@@ -386,7 +431,11 @@ export function RPGWorld() {
 
   return (
     <div className="flex flex-col items-center">
-      {/* Game viewport */}
+      {/* Scaled game viewport (fits mobile screens) */}
+      <div
+        className="relative mx-auto"
+        style={{ width: viewportWidth * scale, height: viewportHeight * scale }}
+      >
       <div
         ref={containerRef}
         className="relative overflow-hidden rounded-lg border-2 border-border focus:outline-none focus:border-gold/50"
@@ -394,6 +443,8 @@ export function RPGWorld() {
           width: viewportWidth,
           height: viewportHeight,
           imageRendering: "pixelated",
+          transform: `scale(${scale})`,
+          transformOrigin: "top left",
           boxShadow: "0 0 0 1px rgba(212,168,71,0.15), 0 8px 32px rgba(0,0,0,0.55), inset 0 0 48px rgba(8,12,20,0.3)",
         }}
         tabIndex={0}
@@ -488,9 +539,44 @@ export function RPGWorld() {
           </div>
         )}
       </div>
+      </div>
 
-      {/* Controls hint */}
-      <div className="flex gap-4 mt-2 retro-font text-[6px] text-text-secondary/50">
+      {/* Mobile touch controls */}
+      <div
+        className="lg:hidden w-full max-w-[544px] mx-auto mt-3 px-2 select-none"
+        style={{ touchAction: "none" }}
+      >
+        <div className="flex items-center justify-between">
+          {/* D-pad */}
+          <div className="relative w-[124px] h-[124px]">
+            <button className="dpad-btn left-1/2 -translate-x-1/2 top-0" aria-label="Move up" {...bindDir("up")}>▲</button>
+            <button className="dpad-btn left-1/2 -translate-x-1/2 bottom-0" aria-label="Move down" {...bindDir("down")}>▼</button>
+            <button className="dpad-btn top-1/2 -translate-y-1/2 left-0" aria-label="Move left" {...bindDir("left")}>◀</button>
+            <button className="dpad-btn top-1/2 -translate-y-1/2 right-0" aria-label="Move right" {...bindDir("right")}>▶</button>
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-9 h-9 rounded border-2 border-border/60 bg-bg-elevated/60" />
+          </div>
+          {/* Action buttons */}
+          <div className="flex flex-col gap-3 items-center">
+            <button
+              className="dpad-btn dpad-static dpad-round w-14 h-14 text-[9px] text-gold border-gold/70"
+              aria-label="Interact"
+              onClick={() => interactRef.current?.()}
+            >
+              E
+            </button>
+            <button
+              className="dpad-btn dpad-static w-14 h-10 text-[6px]"
+              aria-label="Open menu"
+              onClick={toggleMenu}
+            >
+              MENU
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Controls hint (desktop) */}
+      <div className="hidden lg:flex gap-4 mt-2 retro-font text-[6px] text-text-secondary/50">
         <span>WASD / Arrows — Move</span>
         <span>E / Space — Interact</span>
         <span>ESC — Menu</span>

@@ -270,3 +270,39 @@ h1, h2, h3 {
 .player-idle {
   animation: breathe 2.6s ease-in-out infinite;
 }
+
+/* Mobile touch controls */
+.dpad-btn {
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-elevated);
+  border: 2px solid var(--color-border);
+  color: var(--color-cream);
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  border-radius: 6px;
+  box-shadow: 0 3px 0 0 #0a0f16;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  cursor: pointer;
+}
+
+.dpad-btn:active {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-gold);
+  transform: translateY(2px);
+  box-shadow: none;
+}
+
+.dpad-static {
+  position: relative;
+}
+
+.dpad-round {
+  border-radius: 9999px;
+}

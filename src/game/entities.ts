@@ -18,7 +18,7 @@ export const npcs: NPC[] = [
   {
     id: "sign-welcome",
     name: "Welcome Sign",
-    position: { x: 14, y: 7 },
+    position: { x: 14, y: 18 },
     sprite: "📜",
     dialogue: [
       "Welcome to FixDiriloe's Pixel Quest!",
@@ -30,7 +30,7 @@ export const npcs: NPC[] = [
   {
     id: "npc-guide",
     name: "Quest Guide",
-    position: { x: 6, y: 5 },
+    position: { x: 12, y: 9 },
     sprite: "🧙",
     dialogue: [
       "Greetings, traveler! I am the Quest Guide.",
@@ -42,7 +42,7 @@ export const npcs: NPC[] = [
   {
     id: "quest-kpop",
     name: "HIBIKISHOP Quest Board",
-    position: { x: 3, y: 17 },
+    position: { x: 8, y: 7 },
     sprite: "📋",
     dialogue: [
       "═══ QUEST: HIBIKISHOP PC ═══",
@@ -56,7 +56,7 @@ export const npcs: NPC[] = [
   {
     id: "quest-dueldex",
     name: "DuelDex Quest Board",
-    position: { x: 23, y: 17 },
+    position: { x: 20, y: 7 },
     sprite: "📋",
     dialogue: [
       "═══ QUEST: DUELDEX ═══",
@@ -70,7 +70,7 @@ export const npcs: NPC[] = [
   {
     id: "quest-family",
     name: "Family Tree Quest Board",
-    position: { x: 14, y: 16 },
+    position: { x: 16, y: 14 },
     sprite: "📋",
     dialogue: [
       "═══ QUEST: FAMILY TREE ═══",
@@ -84,7 +84,7 @@ export const npcs: NPC[] = [
   {
     id: "npc-skills",
     name: "Skills Master",
-    position: { x: 23, y: 5 },
+    position: { x: 24, y: 8 },
     sprite: "⚔️",
     dialogue: [
       "I am the Skills Master. Here are your abilities:",
