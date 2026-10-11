@@ -20,9 +20,10 @@ try {
 }
 
 const N: Record<string, number> = {
-  E3: 165, F3: 175, G3: 196, A3: 220, B3: 247, C4: 262, D4: 294, E4: 330,
-  F4: 349, G4: 392, A4: 440, B4: 494, C5: 523, D5: 587, E5: 659, F5: 698,
-  G5: 784, A5: 880,
+  E2: 82, F2: 87, G2: 98, A2: 110,
+  D3: 147, E3: 165, F3: 175, G3: 196, A3: 220, Bb3: 233, B3: 247,
+  C4: 262, D4: 294, E4: 330, F4: 349, G4: 392, A4: 440, Bb4: 466, B4: 494,
+  C5: 523, D5: 587, E5: 659, F5: 698, G5: 784, A5: 880,
 };
 
 interface Track {
@@ -82,8 +83,66 @@ const NIGHT: Track = {
   ],
 };
 
-export const TRACKS: Track[] = [TOWN, MEADOW, NIGHT];
-export const TRACK_NAMES = ["SUNNY TOWN", "MEADOW RUN", "NIGHT OCARINA"];
+// Track 3 — Market Day (bouncy, F major)
+const MARKET: Track = {
+  stepDur: 0.16,
+  melody: [
+    "C5", "F5", "A5", "F5", "G5", "F5", "E5", "D5",
+    "C5", "E5", "G5", "E5", "F5", "E5", "D5", "C5",
+    "D5", "F5", "A5", "G5", "F5", "E5", "D5", "C5",
+    "G4", "C5", "E5", "G5", "E5", "C5", "G4", null,
+  ],
+  bass: [
+    "F3", "C4", "F3", "C4", "C4", "G3", "C4", "G3",
+    "F3", "C4", "A3", "E3", "G3", "D4", "G3", "D4",
+    "Bb3", "F3", "Bb3", "F3", "C4", "G3", "C4", "G3",
+    "F3", "C4", "F3", "C4", "C4", "G3", "F3", null,
+  ],
+};
+
+// Track 4 — Castle Hall (regal, D minor)
+const CASTLE: Track = {
+  stepDur: 0.3,
+  melody: [
+    "D5", null, "C5", "A4", "F4", "A4", "D5", null,
+    "E5", "D5", "C5", "A4", "G4", "A4", "F4", "E4",
+    "D5", null, "A4", null, "Bb4", null, "A4", null,
+    "G4", "F4", "E4", "D4", "D4", null, null, null,
+  ],
+  bass: [
+    "D3", null, null, null, "A2", null, null, null,
+    "Bb3", null, null, null, "G3", null, null, null,
+    "D3", null, null, null, "A2", null, null, null,
+    "G2", null, "A2", null, "D3", null, null, null,
+  ],
+};
+
+// Track 5 — Cavern Depths (mysterious, low)
+const CAVERN: Track = {
+  stepDur: 0.28,
+  melody: [
+    "A3", null, "C4", "E4", "A4", "E4", "C4", null,
+    "G3", null, "B3", "D4", "G4", "D4", "B3", null,
+    "F3", null, "A3", "C4", "F4", "C4", "A3", null,
+    "E3", null, "G3", "B3", "E4", "B3", "G3", null,
+  ],
+  bass: [
+    "A2", null, null, null, null, null, null, null,
+    "G2", null, null, null, null, null, null, null,
+    "F2", null, null, null, null, null, null, null,
+    "E2", null, null, null, null, null, null, null,
+  ],
+};
+
+export const TRACKS: Track[] = [TOWN, MEADOW, NIGHT, MARKET, CASTLE, CAVERN];
+export const TRACK_NAMES = [
+  "SUNNY TOWN",
+  "MEADOW RUN",
+  "NIGHT OCARINA",
+  "MARKET DAY",
+  "CASTLE HALL",
+  "CAVERN DEPTHS",
+];
 
 function note(freq: number, t: number, dur: number, type: OscillatorType, vol: number) {
   const c = getAudioCtx();

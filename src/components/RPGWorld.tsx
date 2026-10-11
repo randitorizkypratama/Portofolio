@@ -486,11 +486,12 @@ export function RPGWorld() {
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  // Scale game viewport to fit mobile screens
+  // Scale game viewport to fit mobile screens (smaller cap on phones)
   useEffect(() => {
     const update = () => {
-      const s = Math.min(1, (window.innerWidth - 24) / (VIEWPORT_TILES_X * TILE_SIZE));
-      setScale(Math.max(0.45, s));
+      const raw = (window.innerWidth - 24) / (VIEWPORT_TILES_X * TILE_SIZE);
+      const cap = window.innerWidth < 640 ? 0.55 : 1;
+      setScale(Math.max(0.4, Math.min(cap, raw)));
     };
     update();
     window.addEventListener("resize", update);
