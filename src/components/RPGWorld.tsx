@@ -633,24 +633,10 @@ export function RPGWorld() {
         return;
       }
 
-      // E / Space — works during dialogue (to advance) AND during gameplay (to interact)
+      // E / Space — interact (dialogue, fishing, NPCs)
       if ((key === "e" || key === " ") && !e.repeat) {
         e.preventDefault();
-        if (hasDialogue) {
-          // Advance dialogue — handled by a separate function via ref
-          advanceDialogueRef.current?.();
-          return;
-        }
-        if (!interactCooldownRef.current) {
-          interactCooldownRef.current = true;
-          setTimeout(() => { interactCooldownRef.current = false; }, 300);
-          const pos = playerPosRef.current;
-          const dir = directionRef.current;
-          const entity = getNearbyEntity(pos, dir);
-          if (entity) {
-            setDialogue({ npc: entity, lineIndex: 0 });
-          }
-        }
+        interactRef.current?.();
         return;
       }
 
@@ -972,6 +958,86 @@ export function RPGWorld() {
       </div>
       </div>
 
+      {/* Dialogue — above touch controls so it's visible on mobile */}
+      <AnimatePresence>
+        {dialogue && (
+          <motion.div className="dialogue-box rounded-lg p-4 mt-3 max-w-md w-full"
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <NPCPortrait npc={dialogue.npc} size={36} />
+                <span className="pixel-font text-[9px] text-gold">{dialogue.npc.name}</span>
+              </div>
+              <button onClick={() => setDialogue(null)}
+                className="retro-font text-[6px] text-text-secondary hover:text-cream px-1.5 py-0.5 border border-border hover:border-gold/40 rounded transition-all"
+                aria-label="Close dialogue">✕</button>
+            </div>
+            <p className="text-sm text-cream leading-relaxed mb-3">{dialogue.npc.dialogue[dialogue.lineIndex]}</p>
+            <div className="flex items-center justify-between">
+              <span className="retro-font text-[5px] text-text-secondary">
+                {dialogue.lineIndex + 1} / {dialogue.npc.dialogue.length}
+              </span>
+              <button onClick={handleDialogueAdvance}
+                className="retro-font text-[6px] text-gold animate-blink hover:text-accent transition-colors cursor-pointer px-3 py-2 -my-2">
+                ▶ PRESS E
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Fishing minigame */}
+      <AnimatePresence>
+        {fishing && (
+          <motion.div className="dialogue-box rounded-lg p-4 mt-3 max-w-md w-full"
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="pixel-font text-[9px] text-cyan">🎣 FISHING</span>
+              <span className="retro-font text-[5px] text-text-secondary">
+                {caughtFish.length}/{FISH.length} SPECIES
+              </span>
+            </div>
+            {fishing.done ? (
+              <p className="text-sm text-cream">
+                {fishing.result ? `You caught a ${fishing.result}!` : "It got away..."}
+              </p>
+            ) : (
+              <>
+                <div className="relative h-5 bg-bg-main border-2 border-border rounded-sm overflow-hidden mb-2">
+                  <div
+                    className="absolute inset-y-0 bg-xp/20 border-x border-xp/50"
+                    style={{ left: `${HOOK_ZONE.start}%`, width: `${HOOK_ZONE.end - HOOK_ZONE.start}%` }}
+                  />
+                  <div
+                    className="absolute inset-y-0 w-1 bg-gold"
+                    style={{ left: `calc(${fishing.pos}% - 2px)`, boxShadow: "0 0 6px #d4a847" }}
+                  />
+                </div>
+                <p className="retro-font text-[6px] text-text-secondary text-center">
+                  PRESS / TAP E WHEN THE MARKER IS IN THE GREEN
+                </p>
+              </>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Visit link */}
+      <AnimatePresence>
+        {visitLink && (
+          <motion.div className="dialogue-box rounded-lg p-4 mt-3 max-w-md w-full text-center"
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}>
+            <p className="retro-font text-[7px] text-gold mb-3">Open this quest's live demo?</p>
+            <div className="flex gap-3 justify-center">
+              <a href={visitLink} target="_blank" rel="noopener noreferrer" className="game-btn text-[7px]"
+                onClick={() => setVisitLink(null)}>VISIT SITE</a>
+              <button className="retro-font text-[7px] text-text-secondary hover:text-cream px-3 py-1 border border-border rounded transition-colors"
+                onClick={() => setVisitLink(null)}>CLOSE</button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Mobile touch controls */}
       <div
         className="lg:hidden w-full max-w-[544px] mx-auto mt-3 px-2 select-none"
@@ -1013,86 +1079,6 @@ export function RPGWorld() {
         <span>ESC — Menu</span>
       </div>
 
-      {/* Dialogue */}
-      <AnimatePresence>
-        {dialogue && (
-          <motion.div className="dialogue-box rounded-lg p-4 mt-3 max-w-md w-full"
-            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}>
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <NPCPortrait npc={dialogue.npc} size={36} />
-                <span className="pixel-font text-[9px] text-gold">{dialogue.npc.name}</span>
-              </div>
-              <button onClick={() => setDialogue(null)}
-                className="retro-font text-[6px] text-text-secondary hover:text-cream px-1.5 py-0.5 border border-border hover:border-gold/40 rounded transition-all"
-                aria-label="Close dialogue">✕</button>
-            </div>
-            <p className="text-sm text-cream leading-relaxed mb-3">{dialogue.npc.dialogue[dialogue.lineIndex]}</p>
-            <div className="flex items-center justify-between">
-              <span className="retro-font text-[5px] text-text-secondary">
-                {dialogue.lineIndex + 1} / {dialogue.npc.dialogue.length}
-              </span>
-              <button onClick={handleDialogueAdvance}
-                className="retro-font text-[6px] text-gold animate-blink hover:text-accent transition-colors cursor-pointer">
-                ▶ PRESS E
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Fishing minigame */}
-      <AnimatePresence>
-        {fishing && (
-          <motion.div className="dialogue-box rounded-lg p-4 mt-3 max-w-md w-full"
-            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}>
-            <div className="flex items-center justify-between mb-2">
-              <span className="pixel-font text-[9px] text-cyan">🎣 FISHING</span>
-              <span className="retro-font text-[5px] text-text-secondary">
-                {caughtFish.length}/{FISH.length} SPECIES
-              </span>
-            </div>
-            {fishing.done ? (
-              <p className="text-sm text-cream">
-                {fishing.result ? `You caught a ${fishing.result}!` : "It got away..."}
-              </p>
-            ) : (
-              <>
-                <div className="relative h-5 bg-bg-main border-2 border-border rounded-sm overflow-hidden mb-2">
-                  <div
-                    className="absolute inset-y-0 bg-xp/20 border-x border-xp/50"
-                    style={{ left: `${HOOK_ZONE.start}%`, width: `${HOOK_ZONE.end - HOOK_ZONE.start}%` }}
-                  />
-                  <div
-                    className="absolute inset-y-0 w-1 bg-gold"
-                    style={{ left: `calc(${fishing.pos}% - 2px)`, boxShadow: "0 0 6px #d4a847" }}
-                  />
-                </div>
-                <p className="retro-font text-[6px] text-text-secondary text-center">
-                  PRESS E WHEN THE MARKER IS IN THE GREEN
-                </p>
-              </>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Visit link */}
-      <AnimatePresence>
-        {visitLink && (
-          <motion.div className="dialogue-box rounded-lg p-4 mt-3 max-w-md w-full text-center"
-            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}>
-            <p className="retro-font text-[7px] text-gold mb-3">Open this quest's live demo?</p>
-            <div className="flex gap-3 justify-center">
-              <a href={visitLink} target="_blank" rel="noopener noreferrer" className="game-btn text-[7px]"
-                onClick={() => setVisitLink(null)}>VISIT SITE</a>
-              <button className="retro-font text-[7px] text-text-secondary hover:text-cream px-3 py-1 border border-border rounded transition-colors"
-                onClick={() => setVisitLink(null)}>CLOSE</button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Pause menu */}
       <AnimatePresence>
         {showMenu && (
@@ -1118,10 +1104,10 @@ export function RPGWorld() {
                   { label: "EXIT TO PORTFOLIO", href: "#home" },
                 ].map((item) =>
                   item.href ? (
-                    <a key={item.label} href={item.href} className="block text-center game-btn text-[7px] w-full"
+                    <a key={item.label} href={item.href} className="block text-center game-btn text-[8px] py-2.5 w-full"
                       onClick={() => setShowMenu(false)}>{item.label}</a>
                   ) : (
-                    <button key={item.label} className="block text-center game-btn text-[7px] w-full"
+                    <button key={item.label} className="block text-center game-btn text-[8px] py-2.5 w-full"
                       onClick={item.action}>{item.label}</button>
                   )
                 )}

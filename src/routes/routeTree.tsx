@@ -42,7 +42,7 @@ function ExpBar() {
   }, []);
 
   return (
-    <div className="fixed top-14 left-1/2 -translate-x-1/2 z-40 w-40 sm:w-56 pointer-events-none">
+    <div className="fixed top-16 left-1/2 -translate-x-1/2 z-40 w-36 sm:w-56 pointer-events-none">
       <div className="flex items-center gap-1.5">
         <span className="retro-font text-[5px] text-gold">EXP</span>
         <div className="flex-1 h-1.5 bg-bg-main/80 border border-border rounded-sm overflow-hidden">
