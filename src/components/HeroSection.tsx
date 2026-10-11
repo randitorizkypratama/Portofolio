@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { ChevronDown, Mail, Code2, Database, Wrench } from "lucide-react";
 import { siteConfig } from "../data/portfolio";
 import { GithubIcon, XIcon, LinkedinIcon } from "./SocialIcons";
+import { TypewriterText } from "./TypewriterText";
 
 const socialIcons = [
   { icon: GithubIcon, href: siteConfig.socials.github, label: "GitHub" },
@@ -54,9 +55,13 @@ export function HeroSection() {
               with Code
             </h1>
 
-            <p className="text-text-secondary text-sm sm:text-base max-w-md mb-6 leading-relaxed">
-              {siteConfig.description}
-            </p>
+            {/* RPG dialogue-style intro with typewriter */}
+            <div className="dialogue-box rounded-lg px-4 py-3 max-w-md mb-6">
+              <TypewriterText
+                text={siteConfig.description}
+                className="text-text-secondary text-sm leading-relaxed"
+              />
+            </div>
 
             {/* Specialization chips */}
             <div className="flex flex-wrap gap-2 mb-6">

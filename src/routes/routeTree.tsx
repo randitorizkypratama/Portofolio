@@ -1,4 +1,4 @@
-import { useState, useCallback, lazy, Suspense } from "react";
+import { useState, useCallback, useEffect, lazy, Suspense } from "react";
 import { createRootRoute, createRoute } from "@tanstack/react-router";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
@@ -11,10 +11,53 @@ import { SectionDivider } from "../components/SectionDivider";
 import { StartScreen } from "../components/StartScreen";
 import { PlayerProfile } from "../components/PlayerProfile";
 import { SkillStatusPanel } from "../components/SkillStatusPanel";
+import { GlobalToast } from "../components/GlobalToast";
+import { QuestJournal } from "../components/QuestJournal";
+import { GitHubStats } from "../components/GitHubStats";
+import { markSection } from "../game/journal";
+import { track } from "../game/achievements";
+import { notifyNewly, showToast } from "../game/toast";
+import { startBgm } from "../game/music";
 
 const RPGWorld = lazy(() =>
   import("../components/RPGWorld").then((m) => ({ default: m.RPGWorld }))
 );
+
+const KONAMI = [
+  "arrowup", "arrowup", "arrowdown", "arrowdown",
+  "arrowleft", "arrowright", "arrowleft", "arrowright", "b", "a",
+];
+
+function ExpBar() {
+  const [pct, setPct] = useState(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      setPct(max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return (
+    <div className="fixed top-14 left-1/2 -translate-x-1/2 z-40 w-40 sm:w-56 pointer-events-none">
+      <div className="flex items-center gap-1.5">
+        <span className="retro-font text-[5px] text-gold">EXP</span>
+        <div className="flex-1 h-1.5 bg-bg-main/80 border border-border rounded-sm overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-xp to-gold transition-[width] duration-150"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <span className="retro-font text-[5px] text-text-secondary">
+          {Math.round(pct)}%
+        </span>
+      </div>
+    </div>
+  );
+}
 
 function RootLayout() {
   const [started, setStarted] = useState(false);
@@ -23,11 +66,63 @@ function RootLayout() {
   const handleStart = useCallback(() => {
     setStarted(true);
     setShowGame(true);
+    startBgm();
   }, []);
 
   const handleSkip = useCallback(() => {
     setStarted(true);
     setShowGame(false);
+    startBgm();
+  }, []);
+
+  // Track visited sections for the quest journal
+  useEffect(() => {
+    if (!started) return;
+    const ids = ["home", "about", "explore", "projects", "skills", "contact"];
+    const els = ids
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+    if (!els.length) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        for (const en of entries) {
+          if (en.isIntersecting && en.intersectionRatio >= 0.2) {
+            markSection(en.target.id);
+          }
+        }
+      },
+      { threshold: [0.2] }
+    );
+    els.forEach((el) => obs.observe(el));
+    return () => obs.disconnect();
+  }, [started]);
+
+  // Konami code easter egg
+  useEffect(() => {
+    let idx = 0;
+    let done = false;
+    const onKey = (e: KeyboardEvent) => {
+      if (done) return;
+      const k = e.key.toLowerCase();
+      if (k === KONAMI[idx]) {
+        idx++;
+        if (idx === KONAMI.length) {
+          done = true;
+          notifyNewly(track("konami"));
+          showToast("BUG HUNTER MODE — RAINBOW UNLEASHED!");
+          document.body.classList.add("konami-rainbow");
+          window.setTimeout(() => {
+            document.body.classList.remove("konami-rainbow");
+            done = false;
+            idx = 0;
+          }, 8000);
+        }
+      } else {
+        idx = k === KONAMI[0] ? 1 : 0;
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, []);
 
   return (
@@ -36,6 +131,9 @@ function RootLayout() {
       {started && (
         <>
           <Header />
+          <ExpBar />
+          <GlobalToast />
+          <QuestJournal />
           <main>
             <HeroSection />
 
@@ -114,6 +212,7 @@ function RootLayout() {
             <PlayerProfile />
             <SectionDivider />
             <ProjectsSection />
+            <GitHubStats />
             <SectionDivider />
             <TechStackSection />
             <SectionDivider />

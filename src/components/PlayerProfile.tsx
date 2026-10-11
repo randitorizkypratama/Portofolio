@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Download, FileText, User, Trophy, Lock, Volume2, VolumeX } from "lucide-react";
+import { Download, FileText, User, Trophy, Lock, Volume2, VolumeX, Music, Pause } from "lucide-react";
 import { siteConfig } from "../data/portfolio";
 import { ScrollReveal } from "./ScrollReveal";
 import {
@@ -9,7 +9,9 @@ import {
   getUnlockedIds,
   subscribe,
 } from "../game/achievements";
+import { trackAndNotify } from "../game/toast";
 import { isSfxMuted, toggleSfxMuted } from "../game/sfx";
+import { isBgmOn, toggleBgm } from "../game/music";
 
 export function PlayerProfile() {
   const [downloadState, setDownloadState] = useState<
@@ -19,6 +21,7 @@ export function PlayerProfile() {
     getUnlockedIds(getStats())
   );
   const [muted, setMuted] = useState(() => isSfxMuted());
+  const [bgmOn, setBgmOn] = useState(() => isBgmOn());
 
   useEffect(
     () => subscribe(() => setUnlocked(getUnlockedIds(getStats()))),
@@ -27,6 +30,10 @@ export function PlayerProfile() {
 
   const handleToggleMute = useCallback(() => {
     setMuted(toggleSfxMuted());
+  }, []);
+
+  const handleToggleBgm = useCallback(() => {
+    setBgmOn(toggleBgm());
   }, []);
 
   const handleDownload = useCallback(() => {
@@ -41,6 +48,7 @@ export function PlayerProfile() {
           link.click();
           document.body.removeChild(link);
           setDownloadState("started");
+          trackAndNotify("cv");
           setTimeout(() => setDownloadState("idle"), 3000);
         } else {
           setDownloadState("unavailable");
@@ -125,15 +133,25 @@ export function PlayerProfile() {
             VIEW PROFILE
           </a>
 
-          {/* Sound toggle */}
-          <button
-            onClick={handleToggleMute}
-            className="flex items-center justify-center gap-2 w-full py-1.5 retro-font text-[6px] text-text-secondary hover:text-cream border border-border/50 hover:border-gold/40 rounded transition-all mb-3"
-            aria-label={muted ? "Enable sound effects" : "Mute sound effects"}
-          >
-            {muted ? <VolumeX size={12} /> : <Volume2 size={12} />}
-            {muted ? "SOUND: OFF" : "SOUND: ON"}
-          </button>
+          {/* Sound toggles */}
+          <div className="flex gap-2 mb-3">
+            <button
+              onClick={handleToggleMute}
+              className="flex-1 flex items-center justify-center gap-2 py-1.5 retro-font text-[6px] text-text-secondary hover:text-cream border border-border/50 hover:border-gold/40 rounded transition-all"
+              aria-label={muted ? "Enable sound effects" : "Mute sound effects"}
+            >
+              {muted ? <VolumeX size={12} /> : <Volume2 size={12} />}
+              {muted ? "SFX: OFF" : "SFX: ON"}
+            </button>
+            <button
+              onClick={handleToggleBgm}
+              className="flex-1 flex items-center justify-center gap-2 py-1.5 retro-font text-[6px] text-text-secondary hover:text-cream border border-border/50 hover:border-gold/40 rounded transition-all"
+              aria-label={bgmOn ? "Turn off background music" : "Turn on background music"}
+            >
+              {bgmOn ? <Music size={12} /> : <Pause size={12} />}
+              {bgmOn ? "MUSIC: ON" : "MUSIC: OFF"}
+            </button>
+          </div>
 
           {/* Achievements */}
           <div className="mb-1">

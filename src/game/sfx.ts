@@ -13,7 +13,7 @@ export function toggleSfxMuted(): boolean {
   return muted;
 }
 
-function getCtx(): AudioContext | null {
+export function getAudioCtx(): AudioContext | null {
   if (typeof window === "undefined") return null;
   if (!ctx) {
     const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -27,7 +27,7 @@ function getCtx(): AudioContext | null {
 function blip(freq: number, dur = 0.07, type: OscillatorType = "square", vol = 0.035, when = 0) {
   if (muted) return;
   try {
-    const c = getCtx();
+    const c = getAudioCtx();
     if (!c) return;
     const t = c.currentTime + when;
     const o = c.createOscillator();
@@ -69,4 +69,6 @@ export const sfx = {
     blip(659, 0.08, "square", 0.035, 0.09);
     blip(784, 0.18, "square", 0.035, 0.18);
   },
+  hover: () => blip(880, 0.04, "square", 0.012),
+  type: () => blip(920, 0.03, "square", 0.01),
 };

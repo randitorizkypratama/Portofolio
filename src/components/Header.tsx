@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Menu, X } from "lucide-react";
 import { navLinks, siteConfig } from "../data/portfolio";
+import { sfx } from "../game/sfx";
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -58,6 +59,7 @@ export function Header() {
             <li key={link.href}>
               <a
                 href={link.href}
+                onMouseEnter={() => sfx.hover()}
                 className={`px-3 py-1.5 text-xs pixel-font rounded transition-all ${
                   activeSection === link.href.replace("#", "")
                     ? "text-gold bg-gold/10 border border-gold/30"
@@ -91,6 +93,7 @@ export function Header() {
           <a
             href={siteConfig.cvPath}
             download={siteConfig.cvFileName}
+            onMouseEnter={() => sfx.hover()}
             className="game-btn text-[7px] py-1 px-3"
           >
             CV

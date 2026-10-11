@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { ExternalLink, Swords, Shield, TreePine, X, ChevronRight } from "lucide-react";
 import { projects, type Project } from "../data/portfolio";
 import { ScrollReveal } from "./ScrollReveal";
+import { markProject } from "../game/journal";
+import { sfx } from "../game/sfx";
 
 const questIcons: Record<string, typeof Swords> = {
   "kpop-photocard-tracker": Shield,
@@ -173,6 +175,7 @@ function QuestCard({
         className="game-border rounded-lg overflow-hidden group cursor-pointer"
         whileHover={{ y: -3 }}
         transition={{ duration: 0.2 }}
+        onMouseEnter={() => sfx.hover()}
         onClick={onSelect}
         role="button"
         tabIndex={0}
@@ -260,7 +263,10 @@ export function ProjectsSection() {
               key={project.slug}
               project={project}
               index={i}
-              onSelect={() => setSelectedProject(project)}
+              onSelect={() => {
+                markProject(project.slug);
+                setSelectedProject(project);
+              }}
             />
           ))}
         </div>

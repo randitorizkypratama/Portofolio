@@ -316,3 +316,22 @@ h1, h2, h3 {
   animation: pet-bounce 0.8s ease-in-out infinite;
   transform-origin: bottom center;
 }
+
+@keyframes type-caret-blink {
+  50% { opacity: 0; }
+}
+
+.type-caret {
+  color: var(--color-gold);
+  animation: type-caret-blink 0.8s steps(1) infinite;
+  margin-left: 1px;
+}
+
+@keyframes rainbow-shift {
+  from { filter: hue-rotate(0deg); }
+  to { filter: hue-rotate(360deg); }
+}
+
+body.konami-rainbow {
+  animation: rainbow-shift 3s linear infinite;
+}

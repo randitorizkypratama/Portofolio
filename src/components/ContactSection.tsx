@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 import { Send, CheckCircle, Loader2 } from "lucide-react";
 import { siteConfig } from "../data/portfolio";
 import { ScrollReveal } from "./ScrollReveal";
+import { trackAndNotify } from "../game/toast";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -48,6 +49,7 @@ export function ContactSection() {
       );
       if (!res.ok) throw new Error("Request failed");
       setSubmitted(true);
+      trackAndNotify("message");
       reset();
       setTimeout(() => setSubmitted(false), 5000);
     } catch {

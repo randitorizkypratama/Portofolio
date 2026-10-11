@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Trophy } from "lucide-react";
 import {
   TILE_SIZE,
   MAP_WIDTH,
@@ -17,7 +16,8 @@ import {
 } from "../game/entities";
 import { tileBackground } from "../game/tileArt";
 import { sfx } from "../game/sfx";
-import { track, ACHIEVEMENT_DEFS } from "../game/achievements";
+import { track } from "../game/achievements";
+import { notifyNewly } from "../game/toast";
 import { getDayPeriod, type DayPeriod } from "../game/dayNight";
 import { Minimap } from "./Minimap";
 
@@ -253,6 +253,52 @@ function NPCSprite({ npc, isNearby }: { npc: NPC; isNearby: boolean }) {
             <rect x="7" y="12" width="2" height="1" fill="#5bb8c9" />
             <rect x="7" y="13" width="2" height="1" fill="#3d8ba0" />
           </>
+        ) : npc.id === "npc-secret" ? (
+          <>
+            {/* Ears */}
+            <rect x="4" y="2" width="3" height="2" fill="#e8a84c" />
+            <rect x="5" y="3" width="1" height="1" fill="#f0a0b0" />
+            <rect x="9" y="2" width="3" height="2" fill="#e8a84c" />
+            <rect x="10" y="3" width="1" height="1" fill="#f0a0b0" />
+            {/* Head */}
+            <rect x="4" y="4" width="8" height="6" fill="#e8a84c" />
+            <rect x="4" y="4" width="8" height="1" fill="#f0c078" />
+            {/* Eyes */}
+            <rect x="6" y="6" width="2" height="2" fill="#1a2438" />
+            <rect x="9" y="6" width="2" height="2" fill="#1a2438" />
+            <rect x="7" y="8" width="2" height="1" fill="#f0a0b0" />
+            {/* Whiskers */}
+            <rect x="2" y="7" width="2" height="1" fill="#f0e6d2" />
+            <rect x="12" y="7" width="2" height="1" fill="#f0e6d2" />
+            {/* Body */}
+            <rect x="5" y="10" width="6" height="4" fill="#e8a84c" />
+            <rect x="5" y="10" width="6" height="1" fill="#f0c078" />
+            {/* Tail */}
+            <rect x="11" y="11" width="3" height="1" fill="#e8a84c" />
+            <rect x="13" y="9" width="1" height="2" fill="#e8a84c" />
+            {/* Paws */}
+            <rect x="5" y="14" width="2" height="1" fill="#f0c078" />
+            <rect x="9" y="14" width="2" height="1" fill="#f0c078" />
+          </>
+        ) : npc.id === "npc-faq" ? (
+          <>
+            {/* White hair */}
+            <rect x="5" y="1" width="6" height="2" fill="#e8e8f0" />
+            <rect x="4" y="2" width="8" height="1" fill="#d0d0dc" />
+            {/* Head */}
+            <rect x="5" y="3" width="6" height="4" fill="#f0c8a0" />
+            <rect x="6" y="4" width="1" height="1" fill="#1a2438" />
+            <rect x="9" y="4" width="1" height="1" fill="#1a2438" />
+            {/* Beard */}
+            <rect x="5" y="7" width="6" height="2" fill="#e8e8f0" />
+            {/* Purple robe */}
+            <rect x="4" y="9" width="8" height="6" fill="#6a4a8a" />
+            <rect x="10" y="9" width="2" height="6" fill="#553a70" />
+            <rect x="7" y="10" width="2" height="4" fill="#d4a847" />
+            {/* Staff */}
+            <rect x="13" y="4" width="1" height="11" fill="#8b6239" />
+            <rect x="13" y="2" width="2" height="2" fill="#d4a847" />
+          </>
         ) : (
           <>
             {/* Headband */}
@@ -298,7 +344,6 @@ export function RPGWorld() {
   const [visitLink, setVisitLink] = useState<string | null>(null);
   const [scale, setScale] = useState(1);
   const [period, setPeriod] = useState<DayPeriod>(() => getDayPeriod());
-  const [toast, setToast] = useState<string | null>(null);
 
   const moveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const keysRef = useRef<Set<string>>(new Set());
@@ -348,12 +393,6 @@ export function RPGWorld() {
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  const unlockToast = useCallback((name: string) => {
-    setToast(name);
-    sfx.achievement();
-    setTimeout(() => setToast(null), 2600);
-  }, []);
-
   // Scale game viewport to fit mobile screens
   useEffect(() => {
     const update = () => {
@@ -377,13 +416,10 @@ export function RPGWorld() {
     if (entity) {
       sfx.interact();
       setDialogue({ npc: entity, lineIndex: 0 });
-      const newly = track("dialogue");
-      if (newly.length) {
-        const def = ACHIEVEMENT_DEFS.find((a) => a.id === newly[newly.length - 1]);
-        if (def) unlockToast(def.name);
-      }
+      notifyNewly(track("dialogue"));
+      if (entity.type === "secret") notifyNewly(track("secret"));
     }
-  }, [unlockToast]);
+  }, []);
 
   useEffect(() => { interactRef.current = doInteract; }, [doInteract]);
 
@@ -420,16 +456,12 @@ export function RPGWorld() {
         historyRef.current.push({ x: newX, y: newY });
         if (historyRef.current.length > 20) historyRef.current.shift();
         sfx.step();
-        const newly = track("step");
-        if (newly.length) {
-          const def = ACHIEVEMENT_DEFS.find((a) => a.id === newly[newly.length - 1]);
-          if (def) unlockToast(def.name);
-        }
+        notifyNewly(track("step"));
         return { x: newX, y: newY };
       }
       return prev;
     });
-  }, [unlockToast]);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -523,17 +555,13 @@ export function RPGWorld() {
         if (url) {
           sfx.link();
           setVisitLink(url);
-          const newly = track("link");
-          if (newly.length) {
-            const def = ACHIEVEMENT_DEFS.find((a) => a.id === newly[newly.length - 1]);
-            if (def) unlockToast(def.name);
-          }
+          notifyNewly(track("link"));
         }
       }
     } else {
       setDialogue({ npc: dlg.npc, lineIndex: nextIndex });
     }
-  }, [unlockToast]);
+  }, []);
 
   // Keep the ref pointing to the latest advance function
   useEffect(() => {
@@ -674,7 +702,9 @@ export function RPGWorld() {
         {/* Minimap */}
         <Minimap
           player={playerPos}
-          npcs={npcs.map((n) => ({ id: n.id, x: n.position.x, y: n.position.y, type: n.type }))}
+          npcs={npcs
+            .filter((n) => n.type !== "secret")
+            .map((n) => ({ id: n.id, x: n.position.x, y: n.position.y, type: n.type }))}
         />
 
         {/* Pixel corner accents on viewport frame */}
@@ -746,23 +776,6 @@ export function RPGWorld() {
         <span>E / Space — Interact</span>
         <span>ESC — Menu</span>
       </div>
-
-      {/* Achievement toast */}
-      <AnimatePresence>
-        {toast && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            className="mt-3 game-border-gold rounded-lg px-4 py-2 flex items-center gap-2"
-          >
-            <Trophy size={12} className="text-gold shrink-0" />
-            <span className="retro-font text-[6px] text-gold">
-              ACHIEVEMENT UNLOCKED — {toast}
-            </span>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Dialogue */}
       <AnimatePresence>

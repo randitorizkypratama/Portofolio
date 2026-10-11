@@ -11,7 +11,7 @@ export interface NPC {
   position: Position;
   sprite: string;
   dialogue: string[];
-  type: "npc" | "sign" | "quest";
+  type: "npc" | "sign" | "quest" | "secret";
 }
 
 export const npcs: NPC[] = [
@@ -120,6 +120,32 @@ export const npcs: NPC[] = [
       "Visit: github.com/fixdiriloe",
     ],
     type: "npc",
+  },
+  {
+    id: "npc-faq",
+    name: "Village Elder",
+    position: { x: 19, y: 12 },
+    sprite: "👴",
+    dialogue: [
+      "Ah, a visitor with questions. Ask away — I answer in riddles no more.",
+      "Q: Available for work? A: Yes — open to freelance & full-time frontend roles.",
+      "Q: Remote? A: Fully remote-friendly, based in Indonesia (UTC+7).",
+      "Q: Favorite stack? A: Vue/Nuxt, TypeScript, Tailwind, Bun & Turso.",
+      "Q: How to start? A: Use the Message Board south of the plaza — I always read it.",
+    ],
+    type: "npc",
+  },
+  {
+    id: "npc-secret",
+    name: "???",
+    position: { x: 4, y: 10 },
+    sprite: "🐈",
+    dialogue: [
+      "Psst... you found me. Not many travelers wander this meadow.",
+      "I'm Momo, the village's silent guardian. This corner is my secret.",
+      "Your reward: keep exploring — the best treasures are off the path.",
+    ],
+    type: "secret",
   },
 ];
 
