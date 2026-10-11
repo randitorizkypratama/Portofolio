@@ -649,10 +649,14 @@ export function RPGWorld() {
       hp,
       enraged: cur.enraged || enraged,
       taunt25: cur.taunt25 || taunt25,
-      busy: true,
+      busy: !crit,
       timing: null,
       log: pushLog(
-        pushLog(cur.log, `${atk.name}${crit ? " CRIT!" : ""} -${dmg} HP. ${atk.line}`),
+        pushLog(
+          cur.log,
+          `${atk.name}${crit ? " CRIT!" : ""} -${dmg} HP. ${atk.line}` +
+            (crit ? " The dragon staggers — free turn!" : "")
+        ),
         enraged
           ? "ENRAGE! The dragon glows crimson — MERGE CONFLICT unlocked!"
           : taunt25
@@ -664,7 +668,8 @@ export function RPGWorld() {
       sfx.roar();
       shake(600);
     }
-    window.setTimeout(dragonCounter, 950);
+    // CRIT (gold core) staggers the dragon — no counterattack
+    if (!crit) window.setTimeout(dragonCounter, 950);
   };
 
   const startAttack = (i: number) => {
@@ -864,7 +869,7 @@ export function RPGWorld() {
           playerHp: 3,
           log: [
             "RRAAAWR! The Debug Dragon blocks the plaza!",
-            "Time the STRIKE bar in the green — gold core = CRIT!",
+            "Time the STRIKE bar — gold core = CRIT + free turn!",
           ],
           phase: "fight",
           enraged: false,
@@ -1591,7 +1596,7 @@ export function RPGWorld() {
                   />
                 </div>
                 <p className="retro-font text-[5px] text-text-secondary text-center mb-1.5">
-                  PRESS E / TAP STRIKE IN THE GREEN — GOLD CORE = CRIT ×2
+                  PRESS E / TAP STRIKE IN THE GREEN — GOLD CORE = CRIT ×2 + FREE TURN
                 </p>
                 <button onClick={judgeStrike} className="game-btn w-full text-[7px] py-2">
                   STRIKE!
