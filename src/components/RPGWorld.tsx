@@ -235,6 +235,7 @@ export function RPGWorld() {
           const ny = (npc.position.y - offsetY) * TILE_SIZE;
           if (nx < -TILE_SIZE || ny < -TILE_SIZE || nx > viewportWidth || ny > viewportHeight)
             return null;
+          const isNearby = nearbyEntity?.id === npc.id;
           return (
             <div
               key={npc.id}
@@ -247,6 +248,22 @@ export function RPGWorld() {
                 fontSize: npc.type === "quest" ? 16 : 18,
               }}
             >
+              {/* Exclamation mark for quest boards */}
+              {npc.type === "quest" && (
+                <div className="absolute -top-2 left-1/2 -translate-x-1/2 retro-font text-[6px] text-gold animate-blink">
+                  !
+                </div>
+              )}
+              {/* Highlight when nearby */}
+              {isNearby && (
+                <div
+                  className="absolute inset-0 rounded-sm"
+                  style={{
+                    boxShadow: "0 0 8px rgba(212, 168, 71, 0.5)",
+                    border: "1px solid rgba(212, 168, 71, 0.4)",
+                  }}
+                />
+              )}
               {npc.sprite}
             </div>
           );
@@ -265,9 +282,14 @@ export function RPGWorld() {
 
         {/* Interaction prompt */}
         {nearbyEntity && !dialogue && (
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20">
-            <div className="dialogue-box rounded px-3 py-1.5 retro-font text-[7px] text-gold animate-blink">
-              PRESS E — {nearbyEntity.name}
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20">
+            <div className="dialogue-box rounded-lg px-4 py-2 flex items-center gap-2">
+              <span className="retro-font text-[7px] px-1.5 py-0.5 bg-bg-main border border-gold/40 rounded text-gold">
+                E
+              </span>
+              <span className="retro-font text-[7px] text-cream">
+                {nearbyEntity.name}
+              </span>
             </div>
           </div>
         )}
@@ -289,11 +311,20 @@ export function RPGWorld() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
           >
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-lg">{dialogue.npc.sprite}</span>
-              <span className="pixel-font text-[9px] text-gold">
-                {dialogue.npc.name}
-              </span>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">{dialogue.npc.sprite}</span>
+                <span className="pixel-font text-[9px] text-gold">
+                  {dialogue.npc.name}
+                </span>
+              </div>
+              <button
+                onClick={() => setDialogue(null)}
+                className="retro-font text-[6px] text-text-secondary hover:text-cream px-1.5 py-0.5 border border-border hover:border-gold/40 rounded transition-all"
+                aria-label="Close dialogue"
+              >
+                ✕
+              </button>
             </div>
             <p className="text-sm text-cream leading-relaxed mb-3">
               {dialogue.npc.dialogue[dialogue.lineIndex]}
