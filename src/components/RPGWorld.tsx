@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useReducer } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   TILE_SIZE,
@@ -23,7 +23,7 @@ import { notifyNewly, showToast } from "../game/toast";
 import { getDayPeriod, type DayPeriod } from "../game/dayNight";
 import { FISH, HOOK_ZONE, addFish, rollFish, getCaughtFish } from "../game/fishing";
 import { cycleBgmTrack, getBgmTrackName } from "../game/music";
-import { bumpFriendship, heartsLabel } from "../game/friendship";
+import { bumpFriendship, heartsLabel, getTotalHearts } from "../game/friendship";
 import {
   ITEMS,
   addItem,
@@ -106,7 +106,106 @@ function EntityShadow({ size = 20 }: { size?: number }) {
 }
 
 // Detailed pixel-art player (32x32, 16-bit shaded)
-function PlayerSprite({ moving }: { moving: boolean }) {
+function PlayerSprite({ moving, swimming, riding }: { moving: boolean; swimming?: boolean; riding?: boolean }) {
+  if (swimming) {
+    return (
+      <div
+        className="absolute z-10 flex items-center justify-center"
+        style={{ width: TILE_SIZE, height: TILE_SIZE }}
+      >
+        <svg
+          width="32"
+          height="32"
+          viewBox="0 0 32 32"
+          className="swim-bob"
+          style={{ imageRendering: "pixelated", position: "relative", zIndex: 1 }}
+        >
+          {/* wake ripples */}
+          <rect x="3" y="20" width="26" height="2" fill="#7ec8f0" opacity="0.75" />
+          <rect x="7" y="23" width="18" height="1" fill="#a8d8f8" opacity="0.6" />
+          <rect x="1" y="17" width="30" height="3" fill="#2a6cbe" />
+          <rect x="1" y="17" width="30" height="1" fill="#3d86d6" />
+          {/* head above water */}
+          <rect x="11" y="5" width="10" height="2" fill="#2a2a38" />
+          <rect x="12" y="5" width="5" height="1" fill="#45455c" />
+          <rect x="10" y="6" width="12" height="3" fill="#2a2a38" />
+          <rect x="11" y="8" width="10" height="5" fill="#f0c8a0" />
+          <rect x="11" y="11" width="10" height="2" fill="#e0b088" />
+          <rect x="11" y="8" width="10" height="2" fill="#2a2a38" />
+          <rect x="11" y="10" width="2" height="1" fill="#2a2a38" />
+          <rect x="19" y="10" width="2" height="1" fill="#2a2a38" />
+          <rect x="13" y="10" width="2" height="2" fill="#1a2438" />
+          <rect x="17" y="10" width="2" height="2" fill="#1a2438" />
+          <rect x="13" y="10" width="1" height="1" fill="#e8f0ff" />
+          <rect x="17" y="10" width="1" height="1" fill="#e8f0ff" />
+          <rect x="11" y="12" width="2" height="1" fill="#f0a088" />
+          <rect x="19" y="12" width="2" height="1" fill="#f0a088" />
+          {/* paddling arms */}
+          <rect x="6" y="15" width="5" height="2" fill="#f0c8a0" />
+          <rect x="21" y="15" width="5" height="2" fill="#e0b088" />
+          <rect x="5" y="16" width="2" height="1" fill="#3d3d72" />
+          <rect x="25" y="16" width="2" height="1" fill="#33335e" />
+        </svg>
+      </div>
+    );
+  }
+  if (riding) {
+    return (
+      <div
+        className="absolute z-10 flex items-center justify-center"
+        style={{ width: TILE_SIZE, height: TILE_SIZE }}
+      >
+        <EntityShadow size={26} />
+        <svg
+          width="36"
+          height="34"
+          viewBox="0 0 36 34"
+          className="pet-bounce"
+          style={{ imageRendering: "pixelated", position: "relative", zIndex: 1, overflow: "visible", marginBottom: -2 }}
+        >
+          {/* big slime mount */}
+          <rect x="10" y="14" width="16" height="2" fill="#2d7a38" />
+          <rect x="7" y="16" width="22" height="2" fill="#5ec26a" />
+          <rect x="6" y="18" width="24" height="8" fill="#5ec26a" />
+          <rect x="5" y="24" width="26" height="3" fill="#5ec26a" />
+          <rect x="4" y="27" width="28" height="3" fill="#5ec26a" />
+          <rect x="4" y="29" width="28" height="1" fill="#3a8f48" />
+          <rect x="6" y="27" width="24" height="1" fill="#3a8f48" />
+          <rect x="8" y="17" width="8" height="2" fill="#a8e8a0" />
+          <rect x="7" y="19" width="4" height="1" fill="#a8e8a0" />
+          {/* slime face */}
+          <rect x="12" y="21" width="3" height="3" fill="#ffffff" />
+          <rect x="21" y="21" width="3" height="3" fill="#ffffff" />
+          <rect x="13" y="22" width="2" height="2" fill="#1a2438" />
+          <rect x="22" y="22" width="2" height="2" fill="#1a2438" />
+          <rect x="13" y="22" width="1" height="1" fill="#e8f0ff" />
+          <rect x="22" y="22" width="1" height="1" fill="#e8f0ff" />
+          <rect x="16" y="25" width="4" height="1" fill="#2a6a2a" />
+          <rect x="15" y="24" width="1" height="1" fill="#2a6a2a" />
+          <rect x="20" y="24" width="1" height="1" fill="#2a6a2a" />
+          {/* rider — player sitting on top */}
+          <rect x="13" y="1" width="10" height="2" fill="#2a2a38" />
+          <rect x="14" y="1" width="5" height="1" fill="#45455c" />
+          <rect x="12" y="2" width="12" height="3" fill="#2a2a38" />
+          <rect x="13" y="4" width="10" height="5" fill="#f0c8a0" />
+          <rect x="13" y="7" width="10" height="2" fill="#e0b088" />
+          <rect x="13" y="4" width="10" height="2" fill="#2a2a38" />
+          <rect x="15" y="6" width="2" height="2" fill="#1a2438" />
+          <rect x="19" y="6" width="2" height="2" fill="#1a2438" />
+          <rect x="15" y="6" width="1" height="1" fill="#e8f0ff" />
+          <rect x="19" y="6" width="1" height="1" fill="#e8f0ff" />
+          <rect x="12" y="9" width="12" height="3" fill="#d4a847" />
+          <rect x="12" y="9" width="12" height="1" fill="#e8c86a" />
+          <rect x="10" y="11" width="16" height="3" fill="#3d3d72" />
+          <rect x="9" y="12" width="2" height="2" fill="#f0c8a0" />
+          <rect x="25" y="12" width="2" height="2" fill="#e0b088" />
+          {/* dangling feet */}
+          <rect x="10" y="14" width="3" height="2" fill="#25253f" />
+          <rect x="23" y="14" width="3" height="2" fill="#25253f" />
+        </svg>
+      </div>
+    );
+  }
   return (
     <div
       className="absolute z-10 flex items-center justify-center"
@@ -646,6 +745,16 @@ export function RPGWorld() {
   const [playerTitle] = useState(() => getTitle());
   const [puffs, setPuffs] = useState<{ id: number; x: number; y: number }[]>([]);
   const puffIdRef = useRef(0);
+  const [swimming, setSwimming] = useState(false);
+  const [riding, setRiding] = useState(false);
+  const [rideUnlocked, setRideUnlocked] = useState(() => getTotalHearts() >= 10);
+  const [, forcePatrolRender] = useReducer((c: number) => c + 1, 0);
+  const swimmingRef = useRef(false);
+  const ridingRef = useRef(false);
+  const rideUnlockedRef = useRef(rideUnlocked);
+  const lastMoveRef = useRef(0);
+  const patrolPosRef = useRef<Record<string, Position>>({});
+  const patrolIdxRef = useRef<Record<string, number>>({});
 
   const moveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const keysRef = useRef<Set<string>>(new Set());
@@ -699,10 +808,12 @@ export function RPGWorld() {
           (!n.nightOnly || night) &&
           (!n.halloweenOnly || halloween)
       )
-      .map((n) => ({
-        ...n,
-        position: night && n.nightPosition ? n.nightPosition : n.position,
-      }));
+      .map((n) => {
+        if (night && n.nightPosition) return { ...n, position: n.nightPosition };
+        const p = patrolPosRef.current[n.id];
+        if (!night && n.patrol?.length && p) return { ...n, position: p };
+        return n;
+      });
     if (includeBoss && bossAwakeRef.current && !dragonDefeatedRef.current) {
       list.push(bossDragon);
     }
@@ -1005,6 +1116,33 @@ export function RPGWorld() {
     return () => cancelAnimationFrame(raf);
   }, []);
 
+  // NPC patrol — daytime stroll between waypoints (pause when player is close)
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (dialogueRef.current || showMenuRef.current || battleRef.current || fishingRef.current) return;
+      if (periodRef.current.night) return;
+      const pp = playerPosRef.current;
+      const next = { ...patrolPosRef.current };
+      let changed = false;
+      for (const n of npcs) {
+        if (!n.patrol?.length) continue;
+        const cur = patrolPosRef.current[n.id] ?? n.position;
+        if (Math.abs(pp.x - cur.x) + Math.abs(pp.y - cur.y) <= 2) continue;
+        const idx = patrolIdxRef.current[n.id] ?? -1;
+        const nextIdx = (idx + 1) % n.patrol.length;
+        patrolIdxRef.current[n.id] = nextIdx;
+        next[n.id] = n.patrol[nextIdx];
+        changed = true;
+      }
+      if (changed) {
+        patrolPosRef.current = next;
+        forcePatrolRender();
+        setNearbyEntity(null);
+      }
+    }, 1700);
+    return () => clearInterval(id);
+  }, []);
+
   // Scale game viewport to fit mobile screens (smaller cap on phones)
   useEffect(() => {
     const update = () => {
@@ -1145,6 +1283,12 @@ export function RPGWorld() {
       if (entity.type === "npc" || entity.type === "secret") {
         const h = bumpFriendship(entity.id);
         setHearts(h);
+        if (!rideUnlockedRef.current && getTotalHearts() >= 10) {
+          rideUnlockedRef.current = true;
+          setRideUnlocked(true);
+          sfx.achievement();
+          showToast("BEST BUDS — SLIME RIDE UNLOCKED! (R)");
+        }
         if (h >= 3 && entity.secretLine) lines = [...lines, entity.secretLine];
       }
       let dlg: NPC = { ...entity, dialogue: lines };
@@ -1191,6 +1335,11 @@ export function RPGWorld() {
 
   const movePlayer = useCallback((dx: number, dy: number, dir: Direction) => {
     setDirection(dir);
+    // Speed: riding fast, swimming slow
+    const now = Date.now();
+    const minGap = ridingRef.current ? 75 : swimmingRef.current ? 235 : 0;
+    if (minGap > 0 && now - lastMoveRef.current < minGap) return;
+    lastMoveRef.current = now;
     setPlayerPos((prev) => {
       const newX = prev.x + dx;
       const newY = prev.y + dy;
@@ -1201,7 +1350,25 @@ export function RPGWorld() {
         setNearbyEntity(blocking);
         return prev;
       }
-      if (isWalkable(newX, newY)) {
+      // Water = swim mode (can't swim while riding the slime)
+      const targetTile = getTileAt(newX, newY);
+      const onWater = targetTile === 2 || targetTile === 13;
+      if (onWater) {
+        if (ridingRef.current) return prev;
+        if (!swimmingRef.current) {
+          swimmingRef.current = true;
+          setSwimming(true);
+          sfx.stepOn(2);
+        }
+      } else if (isWalkable(newX, newY)) {
+        if (swimmingRef.current) {
+          swimmingRef.current = false;
+          setSwimming(false);
+        }
+      } else {
+        return prev;
+      }
+      {
         setMoving(true);
         if (moveTimerRef.current) clearTimeout(moveTimerRef.current);
         moveTimerRef.current = setTimeout(() => setMoving(false), 100);
@@ -1215,13 +1382,15 @@ export function RPGWorld() {
         if (historyRef.current.length > 20) historyRef.current.shift();
         sfx.stepOn(getTileAt(newX, newY));
         notifyNewly(track("step"));
-        // Footstep dust puff
-        const puffId = ++puffIdRef.current;
-        setPuffs((p) => [...p.slice(-6), { id: puffId, x: newX, y: newY }]);
-        window.setTimeout(
-          () => setPuffs((p) => p.filter((q) => q.id !== puffId)),
-          430
-        );
+        // Footstep dust puff (land only)
+        if (!swimmingRef.current) {
+          const puffId = ++puffIdRef.current;
+          setPuffs((p) => [...p.slice(-6), { id: puffId, x: newX, y: newY }]);
+          window.setTimeout(
+            () => setPuffs((p) => p.filter((q) => q.id !== puffId)),
+            430
+          );
+        }
         // Speedrun starts on first move
         if (runStartRef.current == null) {
           runStartRef.current = Date.now();
@@ -1241,6 +1410,24 @@ export function RPGWorld() {
       return prev;
     });
   }, []);
+
+  const toggleRide = useCallback(() => {
+    if (!rideUnlockedRef.current) return;
+    if (dialogueRef.current || showMenuRef.current || battleRef.current || fishingRef.current) return;
+    ridingRef.current = !ridingRef.current;
+    setRiding(ridingRef.current);
+    if (ridingRef.current) {
+      swimmingRef.current = false;
+      setSwimming(false);
+      sfx.achievement();
+      showToast("SLIME RIDE — SPEED BOOST!");
+    } else {
+      sfx.close();
+    }
+  }, []);
+
+  const rideToggleRef = useRef(toggleRide);
+  useEffect(() => { rideToggleRef.current = toggleRide; }, [toggleRide]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -1296,6 +1483,13 @@ export function RPGWorld() {
       if ((key === "e" || key === " ") && !e.repeat) {
         e.preventDefault();
         interactRef.current?.();
+        return;
+      }
+
+      // R — mount/dismount slime
+      if (key === "r" && !e.repeat) {
+        e.preventDefault();
+        rideToggleRef.current?.();
         return;
       }
 
@@ -1513,7 +1707,7 @@ export function RPGWorld() {
             transition: GLIDE,
           }}
         >
-          <PlayerSprite moving={moving} />
+          <PlayerSprite moving={moving} swimming={swimming} riding={riding} />
         </div>
 
         {/* Player title */}
@@ -1548,7 +1742,8 @@ export function RPGWorld() {
           />
         ))}
 
-        {/* Pet slime companion */}
+        {/* Pet slime companion (hides while riding it) */}
+        {!riding && (
         <div
           ref={petRef}
           className="absolute top-0 left-0 z-[9] pointer-events-none flex items-end justify-center"
@@ -1593,6 +1788,7 @@ export function RPGWorld() {
             <rect x="16" y="17" width="4" height="1" fill="#3a8f48" />
           </svg>
         </div>
+        )}
 
         {/* Day/night tint (based on real local time) */}
         <div
@@ -2154,6 +2350,15 @@ export function RPGWorld() {
             >
               E
             </button>
+            {rideUnlocked && (
+              <button
+                className={`dpad-btn dpad-static w-14 h-10 text-[7px] ${riding ? "text-gold border-gold/70" : ""}`}
+                aria-label="Ride slime"
+                onClick={toggleRide}
+              >
+                {riding ? "OFF" : "RIDE"}
+              </button>
+            )}
             <button
               className="dpad-btn dpad-static w-14 h-10 text-[6px]"
               aria-label="Open menu"
@@ -2168,7 +2373,8 @@ export function RPGWorld() {
       {/* Controls hint (desktop) */}
       <div className="hidden lg:flex gap-4 mt-2 retro-font text-[6px] text-text-secondary/50">
         <span>WASD / Arrows — Move</span>
-        <span>E / Space — Interact</span>
+        <span>E / Space — Interact / Fish / Swim</span>
+        {rideUnlocked && <span className="text-gold/70">R — Ride Slime</span>}
         <span>ESC — Menu</span>
       </div>
 

@@ -31,3 +31,13 @@ export function bumpFriendship(id: string): number {
 export function heartsLabel(n: number): string {
   return "♥".repeat(n) + "♡".repeat(MAX - n);
 }
+
+/** Total hearts earned across every NPC (drives slime-ride unlock). */
+export function getTotalHearts(): number {
+  try {
+    const all = JSON.parse(localStorage.getItem(KEY) || "{}") as Record<string, number>;
+    return Object.values(all).reduce((a, b) => a + b, 0);
+  } catch {
+    return 0;
+  }
+}

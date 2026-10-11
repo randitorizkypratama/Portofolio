@@ -22,6 +22,8 @@ export interface NPC {
   secretLine?: string;
   /** Chest/pumpkin contents. */
   loot?: { id: string; count: number }[];
+  /** Daytime patrol route (walkable tiles, loops). Paused near the player. */
+  patrol?: Position[];
 }
 
 export const npcs: NPC[] = [
@@ -50,6 +52,7 @@ export const npcs: NPC[] = [
     ],
     secretLine: "Between us... I once got lost in my own documentation. Embarrassing.",
     type: "npc",
+    patrol: [{ x: 11, y: 9 }, { x: 11, y: 8 }, { x: 11, y: 7 }, { x: 11, y: 8 }],
   },
   {
     id: "quest-kpop",
@@ -121,6 +124,10 @@ export const npcs: NPC[] = [
     ],
     secretLine: "Secret: the real stack is the friends we refactored along the way.",
     type: "npc",
+    patrol: [
+      { x: 5, y: 10 }, { x: 5, y: 11 }, { x: 6, y: 11 },
+      { x: 7, y: 11 }, { x: 7, y: 10 }, { x: 6, y: 10 },
+    ],
   },
   {
     id: "npc-github",
@@ -152,6 +159,10 @@ export const npcs: NPC[] = [
     ],
     secretLine: "Between you and me: he replies fastest in the morning (UTC+7).",
     type: "npc",
+    patrol: [
+      { x: 18, y: 12 }, { x: 18, y: 13 }, { x: 19, y: 13 },
+      { x: 20, y: 13 }, { x: 20, y: 12 }, { x: 19, y: 12 },
+    ],
   },
   {
     id: "npc-secret",
@@ -178,6 +189,10 @@ export const npcs: NPC[] = [
     ],
     secretLine: "psst... listen close at the bridge — the water keeps its own rhythm.",
     type: "npc",
+    patrol: [
+      { x: 15, y: 18 }, { x: 15, y: 17 }, { x: 16, y: 17 }, { x: 17, y: 17 },
+      { x: 17, y: 18 }, { x: 16, y: 18 }, { x: 16, y: 19 }, { x: 15, y: 19 },
+    ],
   },
   {
     id: "npc-inn",
