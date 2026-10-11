@@ -24,6 +24,15 @@ import { getDayPeriod, type DayPeriod } from "../game/dayNight";
 import { FISH, HOOK_ZONE, addFish, rollFish, getCaughtFish } from "../game/fishing";
 import { cycleBgmTrack, getBgmTrackName } from "../game/music";
 import { bumpFriendship, heartsLabel } from "../game/friendship";
+import {
+  ITEMS,
+  addItem,
+  removeItem,
+  getInventory,
+  getOpened,
+  markOpened,
+} from "../game/inventory";
+import { getTitle } from "../game/titles";
 import { Minimap } from "./Minimap";
 import { NPCPortrait } from "./NPCPortrait";
 
@@ -138,7 +147,17 @@ function PlayerSprite({ moving }: { moving: boolean }) {
 }
 
 // Detailed pixel-art NPC (16x16)
-function NPCSprite({ npc, isNearby, enraged }: { npc: NPC; isNearby: boolean; enraged?: boolean }) {
+function NPCSprite({
+  npc,
+  isNearby,
+  enraged,
+  opened,
+}: {
+  npc: NPC;
+  isNearby: boolean;
+  enraged?: boolean;
+  opened?: boolean;
+}) {
   return (
     <div className="absolute flex items-center justify-center" style={{ width: TILE_SIZE, height: TILE_SIZE }}>
       <EntityShadow size={npc.id === "boss-dragon" ? 28 : npc.type === "quest" ? 22 : 18} />
@@ -342,6 +361,79 @@ function NPCSprite({ npc, isNearby, enraged }: { npc: NPC; isNearby: boolean; en
             <rect x="20" y="13" width="2" height="3" fill="#a93226" />
             <rect x="21" y="11" width="1" height="3" fill="#c0392b" />
           </svg>
+        ) : npc.type === "chest" ? (
+          opened ? (
+            <svg width="30" height="30" viewBox="0 0 16 16" style={{ imageRendering: "pixelated", position: "relative", zIndex: 1 }}>
+              <rect x="1" y="2" width="14" height="2" fill="#a5794a" />
+              <rect x="2" y="4" width="12" height="9" fill="#8b5a2b" />
+              <rect x="3" y="5" width="10" height="5" fill="#2a1a0a" />
+              <rect x="3" y="5" width="10" height="1" fill="#5c3a1e" />
+              <rect x="2" y="12" width="12" height="1" fill="#5c3a1e" />
+              <rect x="7" y="9" width="2" height="3" fill="#d4a847" />
+            </svg>
+          ) : (
+            <svg width="30" height="30" viewBox="0 0 16 16" style={{ imageRendering: "pixelated", position: "relative", zIndex: 1 }}>
+              <rect x="2" y="4" width="12" height="3" fill="#a5794a" />
+              <rect x="2" y="4" width="12" height="1" fill="#c08a4a" />
+              <rect x="2" y="7" width="12" height="6" fill="#8b5a2b" />
+              <rect x="2" y="8" width="12" height="1" fill="#5c3a1e" />
+              <rect x="7" y="7" width="2" height="4" fill="#d4a847" />
+              <rect x="7" y="8" width="2" height="1" fill="#f0d78c" />
+            </svg>
+          )
+        ) : npc.type === "shrine" ? (
+          <svg width="30" height="30" viewBox="0 0 16 16" style={{ imageRendering: "pixelated", position: "relative", zIndex: 1 }}>
+            <rect x="3" y="13" width="10" height="2" fill="#6e7a87" />
+            <rect x="4" y="12" width="8" height="1" fill="#8a97a4" />
+            <rect x="5" y="3" width="6" height="9" fill="#9aa5b1" />
+            <rect x="5" y="3" width="6" height="1" fill="#b8c2cc" />
+            <rect x="4" y="2" width="8" height="1" fill="#8a97a4" />
+            <rect x="7" y="5" width="2" height="5" fill="#5bb8c9" />
+            <rect x="7" y="5" width="1" height="2" fill="#a8e8f8" />
+          </svg>
+        ) : npc.type === "portal" ? (
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 16 16"
+            className="portal-sprite"
+            style={{ imageRendering: "pixelated", position: "relative", zIndex: 1, overflow: "visible" }}
+          >
+            <rect x="6" y="0" width="4" height="1" fill="#9b59b6" />
+            <rect x="5" y="1" width="6" height="1" fill="#8e44ad" />
+            <rect x="4" y="2" width="8" height="2" fill="#9b59b6" />
+            <rect x="3" y="4" width="10" height="8" fill="#8e44ad" />
+            <rect x="4" y="12" width="8" height="2" fill="#9b59b6" />
+            <rect x="5" y="14" width="6" height="1" fill="#8e44ad" />
+            <rect x="6" y="15" width="4" height="1" fill="#9b59b6" />
+            <rect x="5" y="4" width="6" height="8" fill="#2a1a3a" />
+            <rect x="6" y="5" width="4" height="6" fill="#3d2a52" />
+            <rect x="7" y="6" width="2" height="4" fill="#5bb8c9" />
+            <rect x="7" y="6" width="1" height="2" fill="#a8e8f8" />
+            <rect x="10" y="3" width="1" height="1" fill="#d4a847" />
+            <rect x="5" y="12" width="1" height="1" fill="#d4a847" />
+          </svg>
+        ) : npc.type === "pumpkin" ? (
+          <svg
+            width="30"
+            height="30"
+            viewBox="0 0 16 16"
+            className="pumpkin-sprite"
+            style={{ imageRendering: "pixelated", position: "relative", zIndex: 1 }}
+          >
+            <rect x="7" y="2" width="2" height="3" fill="#27ae60" />
+            <rect x="8" y="2" width="1" height="2" fill="#2ecc71" />
+            <rect x="5" y="5" width="6" height="9" fill="#f39c12" />
+            <rect x="4" y="6" width="1" height="7" fill="#e67e22" />
+            <rect x="11" y="6" width="1" height="7" fill="#e67e22" />
+            <rect x="6" y="5" width="1" height="9" fill="#e67e22" />
+            <rect x="9" y="5" width="1" height="9" fill="#e67e22" />
+            <rect x="6" y="8" width="1" height="2" fill="#1a2438" />
+            <rect x="9" y="8" width="1" height="2" fill="#1a2438" />
+            <rect x="7" y="11" width="2" height="1" fill="#1a2438" />
+            <rect x="6" y="10" width="1" height="1" fill="#1a2438" />
+            <rect x="10" y="10" width="1" height="1" fill="#1a2438" />
+          </svg>
         ) : (
           <>
             {/* Headband */}
@@ -389,10 +481,11 @@ interface BattleState {
   hp: number;
   playerHp: number;
   log: string[];
-  phase: "fight" | "victory" | "gameover";
+  phase: "intro" | "fight" | "victory" | "gameover";
   enraged: boolean;
   taunt25: boolean;
   busy: boolean;
+  itemMenu: boolean;
   timing: BattleTiming | null;
 }
 
@@ -412,6 +505,14 @@ const DRAGON_ENRAGE_MOVE = { name: "MERGE CONFLICT", line: "MERGE CONFLICT! Your
 const CONFETTI_COLORS = ["#d4a847", "#5bb8c9", "#c0392b", "#27ae60", "#f0e6d2", "#9b59b6"];
 
 const pushLog = (log: string[], line: string): string[] => [...log, line].slice(-3);
+
+const isHalloween = () => new Date().getMonth() === 9;
+
+const SHRINES = [
+  { id: "shrine-west", name: "West Grove Stone", spawn: { x: 2, y: 4 } },
+  { id: "shrine-east", name: "East Gate Stone", spawn: { x: 26, y: 12 } },
+  { id: "shrine-south", name: "South Inn Stone", spawn: { x: 23, y: 18 } },
+];
 
 function BossDragonMini({ enraged }: { enraged: boolean }) {
   return (
@@ -486,6 +587,10 @@ export function RPGWorld() {
       return false;
     }
   });
+  const [inv, setInv] = useState<Record<string, number>>(() => getInventory());
+  const [openedLoot, setOpenedLoot] = useState<Set<string>>(() => getOpened());
+  const [teleportFrom, setTeleportFrom] = useState<NPC | null>(null);
+  const [playerTitle] = useState(() => getTitle());
 
   const moveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const keysRef = useRef<Set<string>>(new Set());
@@ -532,8 +637,13 @@ export function RPGWorld() {
 
   /** NPCs with night positions applied; optionally include the boss. */
   const makeActiveList = (night: boolean, includeBoss: boolean): NPC[] => {
+    const halloween = isHalloween();
     const list: NPC[] = npcs
-      .filter((n) => !n.nightOnly || night)
+      .filter(
+        (n) =>
+          (!n.nightOnly || night) &&
+          (!n.halloweenOnly || halloween)
+      )
       .map((n) => ({
         ...n,
         position: night && n.nightPosition ? n.nightPosition : n.position,
@@ -593,6 +703,65 @@ export function RPGWorld() {
     }
   };
 
+  const victoryBattle = (lastLog: string) => {
+    localStorage.setItem("pq_dragon_defeated", "1");
+    setDragonDefeated(true);
+    updateBattle((cur) => ({
+      ...cur,
+      hp: 0,
+      busy: false,
+      timing: null,
+      itemMenu: false,
+      phase: "victory",
+      log: pushLog(cur.log, lastLog),
+    }));
+    notifyNewly(track("dragon"));
+    showToast("BOSS DEFEATED — THE END...?");
+    sfx.achievement();
+    window.setTimeout(() => {
+      battleRef.current = null;
+      setBattle(null);
+    }, 6000);
+  };
+
+  const handleUseItem = (id: string) => {
+    const b = battleRef.current;
+    if (!b || b.phase !== "fight" || b.busy || b.timing) return;
+    if (!removeItem(id, 1)) return;
+    setInv(getInventory());
+    sfx.link();
+    if (id === "coffee" || id === "candy") {
+      const playerHp = Math.min(3, b.playerHp + 1);
+      const label = id === "coffee" ? "Coffee Potion" : "Halloween Candy";
+      updateBattle((cur) => ({
+        ...cur,
+        playerHp,
+        itemMenu: false,
+        busy: true,
+        log: pushLog(cur.log, `You drink the ${label}. +1 ♥!`),
+      }));
+      window.setTimeout(dragonCounter, 950);
+      return;
+    }
+    if (id === "holy_water") {
+      const hp = Math.max(0, b.hp - 15);
+      sfx.crit();
+      shake(400);
+      if (hp <= 0) {
+        victoryBattle("Blessed Water! Holy light vaporizes the dragon... THE END...?");
+        return;
+      }
+      updateBattle((cur) => ({
+        ...cur,
+        hp,
+        itemMenu: false,
+        busy: true,
+        log: pushLog(cur.log, "Blessed Water! Holy light sears the dragon for 15 HP!"),
+      }));
+      window.setTimeout(dragonCounter, 950);
+    }
+  };
+
   const judgeStrike = () => {
     const b = battleRef.current;
     if (!b || !b.timing || b.phase !== "fight" || b.busy) return;
@@ -622,23 +791,9 @@ export function RPGWorld() {
     if (crit) { sfx.crit(); shake(350); } else { sfx.advance(); }
 
     if (hp <= 0) {
-      localStorage.setItem("pq_dragon_defeated", "1");
-      setDragonDefeated(true);
-      updateBattle((cur) => ({
-        ...cur,
-        hp: 0,
-        busy: false,
-        timing: null,
-        phase: "victory",
-        log: pushLog(cur.log, `${atk.name}${crit ? " CRIT!" : ""} -${dmg} HP. The dragon explodes into semicolons...`),
-      }));
-      notifyNewly(track("dragon"));
-      showToast("BOSS DEFEATED — THE END...?");
-      sfx.achievement();
-      window.setTimeout(() => {
-        battleRef.current = null;
-        setBattle(null);
-      }, 6000);
+      victoryBattle(
+        `${atk.name}${crit ? " CRIT!" : ""} -${dmg} HP. The dragon explodes into semicolons...`
+      );
       return;
     }
 
@@ -694,6 +849,7 @@ export function RPGWorld() {
       enraged: false,
       taunt25: false,
       busy: false,
+      itemMenu: false,
       timing: null,
     };
     battleRef.current = fresh;
@@ -818,10 +974,12 @@ export function RPGWorld() {
       const f = fishingRef.current;
       const hit = f.pos >= HOOK_ZONE.start && f.pos <= HOOK_ZONE.end;
       if (hit) {
-        const fish = rollFish();
+        const fish = rollFish(periodRef.current.night);
         const isNew = addFish(fish.id);
         setCaughtFish(getCaughtFish());
         notifyNewly(track("fish"));
+        if (fish.id === "golden_koi") notifyNewly(track("golden"));
+        if (fish.id === "moon_eel") notifyNewly(track("nightfish"));
         sfx.link();
         showToast(`CAUGHT: ${fish.name}${isNew ? " (NEW SPECIES!)" : ""}`);
         setFishing({ ...f, done: true, result: fish.name });
@@ -871,18 +1029,65 @@ export function RPGWorld() {
             "RRAAAWR! The Debug Dragon blocks the plaza!",
             "Time the STRIKE bar — gold core = CRIT + free turn!",
           ],
-          phase: "fight",
+          phase: "intro",
           enraged: false,
           taunt25: false,
-          busy: false,
+          busy: true,
+          itemMenu: false,
           timing: null,
         };
         battleRef.current = fresh;
         setBattle(fresh);
+        window.setTimeout(() => {
+          const cur = battleRef.current;
+          if (cur && cur.phase === "intro") {
+            const next = { ...cur, phase: "fight" as const, busy: false };
+            battleRef.current = next;
+            setBattle(next);
+          }
+        }, 1700);
+        return;
+      }
+      if (entity.type === "chest" || entity.type === "pumpkin") {
+        sfx.interact();
+        if (getOpened().has(entity.id)) {
+          setDialogue({
+            npc: { ...entity, dialogue: ["Empty. Someone got here first..."] },
+            lineIndex: 0,
+          });
+          return;
+        }
+        markOpened(entity.id);
+        const lootLines = (entity.loot ?? []).map((l) => {
+          addItem(l.id, l.count);
+          const def = ITEMS.find((d) => d.id === l.id);
+          return `${def?.icon ?? ""} ${def?.name ?? l.id} x${l.count}`;
+        });
+        setInv(getInventory());
+        setOpenedLoot(getOpened());
+        notifyNewly(track(entity.type === "pumpkin" ? "candy" : "chest"));
+        sfx.link();
+        showToast(`FOUND: ${lootLines.join(", ")}`);
+        setDialogue({
+          npc: { ...entity, dialogue: [entity.dialogue[0], ...lootLines] },
+          lineIndex: 0,
+        });
+        return;
+      }
+      if (entity.type === "shrine") {
+        sfx.interact();
+        setTeleportFrom(entity);
+        return;
+      }
+      if (entity.type === "portal") {
+        sfx.link();
+        notifyNewly(track("portal"));
+        showToast("THE PORTAL HUMS — SCROLL TO CONTACT");
+        setVisitLink("#contact");
         return;
       }
       let lines = entity.dialogue;
-      if (entity.type !== "sign") {
+      if (entity.type === "npc" || entity.type === "secret") {
         const h = bumpFriendship(entity.id);
         setHearts(h);
         if (h >= 3 && entity.secretLine) lines = [...lines, entity.secretLine];
@@ -1201,6 +1406,7 @@ export function RPGWorld() {
                 npc={npc}
                 isNearby={nearbyEntity?.id === npc.id}
                 enraged={!!(battle?.enraged && npc.id === "boss-dragon")}
+                opened={openedLoot.has(npc.id)}
               />
             </div>
           );
@@ -1209,6 +1415,23 @@ export function RPGWorld() {
         {/* Player */}
         <div className="absolute" style={{ left: (playerPos.x - offsetX) * TILE_SIZE, top: (playerPos.y - offsetY) * TILE_SIZE }}>
           <PlayerSprite moving={moving} />
+        </div>
+
+        {/* Player title */}
+        <div
+          className="absolute pointer-events-none z-[10] text-center"
+          style={{
+            left: (playerPos.x - offsetX) * TILE_SIZE - 24,
+            top: (playerPos.y - offsetY) * TILE_SIZE - 11,
+            width: TILE_SIZE + 48,
+          }}
+        >
+          <span
+            className="retro-font text-[5px] text-gold whitespace-nowrap"
+            style={{ textShadow: "0 1px 2px rgba(0,0,0,0.9)" }}
+          >
+            {playerTitle}
+          </span>
         </div>
 
         {/* Pet slime companion */}
@@ -1554,13 +1777,18 @@ export function RPGWorld() {
             </div>
 
             {/* Actions */}
+            {battle.phase === "intro" && (
+              <p className="pixel-font text-[9px] text-hp text-center py-3 animate-blink">
+                ⚠ THE DEBUG DRAGON DESCENDS! ⚠
+              </p>
+            )}
             {battle.phase === "fight" && !battle.timing && battle.busy && (
               <p className="retro-font text-[6px] text-text-secondary text-center py-2 animate-pulse">
                 THE DRAGON IS ATTACKING...
               </p>
             )}
-            {battle.phase === "fight" && !battle.timing && !battle.busy && (
-              <div className="grid grid-cols-3 gap-2">
+            {battle.phase === "fight" && !battle.timing && !battle.busy && !battle.itemMenu && (
+              <div className="grid grid-cols-2 gap-2">
                 {BATTLE_ATTACKS.map((a, i) => (
                   <button
                     key={a.name}
@@ -1570,6 +1798,43 @@ export function RPGWorld() {
                     {a.name}
                   </button>
                 ))}
+                <button
+                  onClick={() =>
+                    updateBattle((cur) => ({ ...cur, itemMenu: true }))
+                  }
+                  className="game-btn text-[6px] py-2"
+                >
+                  ITEM 💼
+                </button>
+              </div>
+            )}
+            {battle.phase === "fight" && battle.itemMenu && !battle.busy && (
+              <div className="space-y-2">
+                {ITEMS.filter((it) => (inv[it.id] ?? 0) > 0).length === 0 && (
+                  <p className="retro-font text-[6px] text-text-secondary text-center">
+                    NO ITEMS — TRY THE CHESTS!
+                  </p>
+                )}
+                {ITEMS.filter((it) => (inv[it.id] ?? 0) > 0).map((it) => (
+                  <button
+                    key={it.id}
+                    onClick={() => handleUseItem(it.id)}
+                    className="block w-full game-btn text-[6px] py-2 flex items-center justify-between"
+                  >
+                    <span>
+                      {it.icon} {it.name}
+                    </span>
+                    <span className="text-[5px] opacity-80">
+                      x{inv[it.id]} — USE
+                    </span>
+                  </button>
+                ))}
+                <button
+                  onClick={() => updateBattle((cur) => ({ ...cur, itemMenu: false }))}
+                  className="retro-font text-[6px] text-text-secondary hover:text-cream w-full px-3 py-1.5 border border-border rounded transition-colors"
+                >
+                  BACK
+                </button>
               </div>
             )}
             {battle.phase === "fight" && battle.timing && (
@@ -1621,6 +1886,43 @@ export function RPGWorld() {
                 THE END...?
               </p>
             )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Waypoint teleport */}
+      <AnimatePresence>
+        {teleportFrom && (
+          <motion.div
+            className="dialogue-box rounded-lg p-4 mt-3 max-w-md w-full"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+          >
+            <p className="pixel-font text-[9px] text-gold mb-3">⚡ WAYPOINT STONES</p>
+            <div className="space-y-2">
+              {SHRINES.filter((s) => s.id !== teleportFrom.id).map((s) => (
+                <button
+                  key={s.id}
+                  className="block w-full game-btn text-[7px] py-2"
+                  onClick={() => {
+                    setPlayerPos(s.spawn);
+                    notifyNewly(track("wayfinder"));
+                    sfx.achievement();
+                    showToast(`TELEPORTED — ${s.name.toUpperCase()}`);
+                    setTeleportFrom(null);
+                  }}
+                >
+                  {s.name}
+                </button>
+              ))}
+              <button
+                className="retro-font text-[7px] text-text-secondary hover:text-cream w-full px-3 py-1.5 border border-border rounded transition-colors"
+                onClick={() => setTeleportFrom(null)}
+              >
+                CANCEL
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

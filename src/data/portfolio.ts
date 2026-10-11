@@ -223,3 +223,26 @@ export const updates = [
     ],
   },
 ];
+
+export const devlog = [
+  {
+    date: "Oct 2026",
+    entry:
+      "Debug Dragon boss battle shipped: timing bar, enrage phase, free-turn crits, Blessed Water items.",
+  },
+  {
+    date: "Oct 2026",
+    entry:
+      "NPC night schedule + friendship hearts system. The village feels alive after dark.",
+  },
+  {
+    date: "Sep 2026",
+    entry:
+      "Fishing minigame born from one pond tile and a dream. Golden Koi still uncaught... by most.",
+  },
+  {
+    date: "Sep 2026",
+    entry:
+      "Rebuilt the whole portfolio as an RPG. Best career decision so far.",
+  },
+];

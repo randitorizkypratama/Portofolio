@@ -13,6 +13,12 @@ export interface Stats {
   daily?: boolean;
   dragon?: boolean;
   friends?: number;
+  loot?: number;
+  wayfinder?: boolean;
+  golden?: boolean;
+  nightfish?: boolean;
+  candy?: number;
+  hired?: boolean;
 }
 
 export interface AchievementDef {
@@ -57,6 +63,12 @@ export const ACHIEVEMENT_DEFS: AchievementDef[] = [
   { id: "dragon_slayer", name: "Dragon Slayer", desc: "Defeat the Debug Dragon", check: (s) => !!s.dragon },
   { id: "daily_devotee", name: "Daily Devotee", desc: "Complete a daily quest", check: (s) => !!s.daily },
   { id: "best_friend", name: "Best Friend", desc: "Earn 8 friendship hearts", check: (s) => (s.friends ?? 0) >= 8 },
+  { id: "treasure_hunter", name: "Treasure Hunter", desc: "Open a treasure chest", check: (s) => (s.loot ?? 0) >= 1 },
+  { id: "wayfinder", name: "Wayfinder", desc: "Travel via a waypoint stone", check: (s) => !!s.wayfinder },
+  { id: "master_angler", name: "Master Angler", desc: "Catch the Golden Koi", check: (s) => !!s.golden },
+  { id: "night_fisher", name: "Night Fisher", desc: "Catch a Moon Eel after dark", check: (s) => !!s.nightfish },
+  { id: "trick_or_treat", name: "Trick or Treat", desc: "Find a jack-o-lantern", check: (s) => (s.candy ?? 0) >= 1 },
+  { id: "well_connected", name: "Well Connected", desc: "Open the Hire Me portal", check: (s) => !!s.hired },
   {
     id: "completionist",
     name: "Completionist",
@@ -92,7 +104,13 @@ export type TrackEvent =
   | "cartographer"
   | "daily"
   | "dragon"
-  | "friend";
+  | "friend"
+  | "chest"
+  | "wayfinder"
+  | "golden"
+  | "nightfish"
+  | "candy"
+  | "portal";
 
 /** Increment a stat; returns ids newly unlocked by this event. */
 export function track(event: TrackEvent, payload?: string): string[] {
@@ -114,6 +132,12 @@ export function track(event: TrackEvent, payload?: string): string[] {
   if (event === "daily") s.daily = true;
   if (event === "dragon") s.dragon = true;
   if (event === "friend") s.friends = (s.friends ?? 0) + 1;
+  if (event === "chest") s.loot = (s.loot ?? 0) + 1;
+  if (event === "wayfinder") s.wayfinder = true;
+  if (event === "golden") s.golden = true;
+  if (event === "nightfish") s.nightfish = true;
+  if (event === "candy") s.candy = (s.candy ?? 0) + 1;
+  if (event === "portal") s.hired = true;
   localStorage.setItem(KEY, JSON.stringify(s));
   const after = getUnlockedIds(s);
   const newly = after.filter((id) => !before.has(id));

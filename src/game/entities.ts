@@ -11,13 +11,17 @@ export interface NPC {
   position: Position;
   sprite: string;
   dialogue: string[];
-  type: "npc" | "sign" | "quest" | "secret";
+  type: "npc" | "sign" | "quest" | "secret" | "chest" | "shrine" | "portal" | "pumpkin";
   /** Moves here at night (if set). */
   nightPosition?: Position;
   /** Only appears at night. */
   nightOnly?: boolean;
+  /** Only appears during October (Halloween). */
+  halloweenOnly?: boolean;
   /** Bonus dialogue unlocked at 3+ friendship hearts. */
   secretLine?: string;
+  /** Chest/pumpkin contents. */
+  loot?: { id: string; count: number }[];
 }
 
 export const npcs: NPC[] = [
@@ -200,6 +204,151 @@ export const npcs: NPC[] = [
       "They say a Debug Dragon appears in the plaza once all 3 quests are done...",
     ],
     type: "npc",
+  },
+  {
+    id: "npc-client-1",
+    name: "Satisfied Client",
+    position: { x: 10, y: 16 },
+    sprite: "🤝",
+    dialogue: [
+      "I hired this developer for our storefront — 16,200 products, zero downtime.",
+      "Fast, communicative, and the UI actually converts. Five stars.",
+      "If you need Vue/Nuxt work, find the Hire Me portal in the plaza!",
+    ],
+    secretLine: "Between us — he delivered a day BEFORE the deadline.",
+    type: "npc",
+  },
+  {
+    id: "npc-client-2",
+    name: "Deck Builder Enthusiast",
+    position: { x: 26, y: 8 },
+    sprite: "🃏",
+    dialogue: [
+      "He built my card-deck explorer from scratch — Elysia + Bun, blazing fast.",
+      "Smart search, clean data model, deployed same week. Impressive craft.",
+      "Check the quest boards if you want to see the receipts!",
+    ],
+    secretLine: "He even fixed a bug I found at 2 AM. On a Sunday.",
+    type: "npc",
+  },
+  {
+    id: "portal-hire",
+    name: "Hire Me Portal",
+    position: { x: 16, y: 10 },
+    sprite: "🌀",
+    dialogue: [
+      "✨ The Hire Me Portal hums with opportunity...",
+      "Step through to send a message — freelance & full-time welcomes.",
+    ],
+    type: "portal",
+  },
+  {
+    id: "chest-west",
+    name: "Weathered Chest",
+    position: { x: 2, y: 13 },
+    sprite: "📦",
+    dialogue: ["It creaks open... coffee potions inside!"],
+    type: "chest",
+    loot: [
+      { id: "coffee", count: 2 },
+    ],
+  },
+  {
+    id: "chest-east",
+    name: "Mossy Chest",
+    position: { x: 27, y: 16 },
+    sprite: "📦",
+    dialogue: ["Bottled starlight — Blessed Water!"],
+    type: "chest",
+    loot: [
+      { id: "holy_water", count: 1 },
+    ],
+  },
+  {
+    id: "chest-south",
+    name: "Forgotten Chest",
+    position: { x: 2, y: 20 },
+    sprite: "📦",
+    dialogue: ["A mixed stash: coffee and blessed water."],
+    type: "chest",
+    loot: [
+      { id: "coffee", count: 1 },
+      { id: "holy_water", count: 1 },
+    ],
+  },
+  {
+    id: "shrine-west",
+    name: "West Grove Stone",
+    position: { x: 3, y: 4 },
+    sprite: "🗿",
+    dialogue: ["The waypoint stone glows. Where to?"],
+    type: "shrine",
+  },
+  {
+    id: "shrine-east",
+    name: "East Gate Stone",
+    position: { x: 26, y: 11 },
+    sprite: "🗿",
+    dialogue: ["The waypoint stone glows. Where to?"],
+    type: "shrine",
+  },
+  {
+    id: "shrine-south",
+    name: "South Inn Stone",
+    position: { x: 23, y: 19 },
+    sprite: "🗿",
+    dialogue: ["The waypoint stone glows. Where to?"],
+    type: "shrine",
+  },
+  {
+    id: "pumpkin-1",
+    name: "Jack-o'-Lantern",
+    position: { x: 5, y: 13 },
+    sprite: "🎃",
+    dialogue: ["A grinning jack-o'-lantern... candy inside!"],
+    type: "pumpkin",
+    halloweenOnly: true,
+    loot: [{ id: "candy", count: 1 }],
+  },
+  {
+    id: "pumpkin-2",
+    name: "Jack-o'-Lantern",
+    position: { x: 10, y: 20 },
+    sprite: "🎃",
+    dialogue: ["Trick or treat! You scored some candy."],
+    type: "pumpkin",
+    halloweenOnly: true,
+    loot: [{ id: "candy", count: 1 }],
+  },
+  {
+    id: "pumpkin-3",
+    name: "Jack-o'-Lantern",
+    position: { x: 18, y: 18 },
+    sprite: "🎃",
+    dialogue: ["This one cackles as it opens. Candy!"],
+    type: "pumpkin",
+    halloweenOnly: true,
+    loot: [{ id: "candy", count: 1 }],
+  },
+  {
+    id: "pumpkin-4",
+    name: "Jack-o'-Lantern",
+    position: { x: 22, y: 12 },
+    sprite: "🎃",
+    dialogue: ["Candlelight and caramel — happy Halloween."],
+    type: "pumpkin",
+    halloweenOnly: true,
+    loot: [{ id: "candy", count: 1 }],
+  },
+  {
+    id: "pumpkin-5",
+    name: "Jack-o'-Lantern",
+    position: { x: 7, y: 5 },
+    sprite: "🎃",
+    dialogue: ["A lone pumpkin watches the road. Candy!"],
+    type: "pumpkin",
+    halloweenOnly: true,
+    loot: [{ id: "candy", count: 1 }],
   },
 ];
 

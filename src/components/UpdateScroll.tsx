@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
-import { ScrollText } from "lucide-react";
-import { updates } from "../data/portfolio";
+import { ScrollText, BookOpen } from "lucide-react";
+import { updates, devlog } from "../data/portfolio";
 
 export function UpdateScroll() {
   return (
@@ -45,6 +45,36 @@ export function UpdateScroll() {
               </ul>
             </motion.div>
           ))}
+        </div>
+
+        {/* Quest Archive — dev journal */}
+        <div className="mt-12">
+          <span className="retro-font text-[8px] text-gold block mb-2 flex items-center justify-center gap-2">
+            <BookOpen size={12} />
+            QUEST ARCHIVE
+          </span>
+          <p className="text-sm text-text-secondary text-center mb-6">
+            Field notes from the developer's journal.
+          </p>
+          <div className="space-y-3 max-w-2xl mx-auto">
+            {devlog.map((d, i) => (
+              <motion.div
+                key={`${d.date}-${i}`}
+                className="flex items-start gap-3 border-l-2 border-gold/40 pl-3"
+                initial={{ opacity: 0, x: -8 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ delay: i * 0.06 }}
+              >
+                <span className="retro-font text-[5px] text-gold shrink-0 mt-1 w-16">
+                  {d.date}
+                </span>
+                <p className="text-xs text-text-secondary leading-relaxed">
+                  {d.entry}
+                </p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

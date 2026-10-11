@@ -10,10 +10,17 @@ An interactive pixel-art RPG portfolio. Explore a living 2D village, talk to NPC
 - **Explore a 30×22 tile village** — WASD/Arrow keys to move, E/Space to interact (touch D-pad + E button on mobile)
 - **Day/night cycle** based on your real local time — NPCs head home at night, and the Night Watch only appears after dark
 - **Quest boards** — 3 real projects (HIBIKISHOP, DuelDex, Family Tree) with live demo links
-- **Debug Dragon boss battle** — appears in the plaza after all 3 quests are cleared; 3 attack moves, HP bar, victory easter egg
-- **Fishing minigame** — cast a line at any water tile; 5 fish species to collect
+- **Debug Dragon boss battle** — appears in the plaza after all 3 quests are cleared; JRPG-style battle box, timing-bar CRIT (gold core = free turn!), player HP + game over/retry, enrage phase with MERGE CONFLICT, Blessed Water items, victory confetti
+- **Inventory & loot** — treasure chests on the map, coffee potions, Blessed Water (boss damage), Halloween candy
+- **Waypoint stones** — 3 teleport shrines for fast travel
+- **Fishing minigame** — cast a line at any water tile; 7 species incl. rare Golden Koi and night-only Moon Eel
+- **Titles** — earned titles (Dragon Slayer, Master Angler...) float above your player
 - **Friendship hearts** — talk to villagers to build hearts (♥ up to 5 per NPC); 3+ hearts unlock secret dialogue lines
 - **Weather** — random rain & storm bursts
+- **Testimonial NPCs + Hire Me portal** — real client stories and a glowing portal to contact
+- **Halloween event (October)** — jack-o'-lanterns with candy, glowing pumpkins
+- **Mini music player** — bottom-left corner track cycler
+- **Water shimmer** — animated sparkle on ponds and the fountain
 - **Pet slime** — a slime companion follows you everywhere
 - **Hidden grove** — a secret warp tile and a hidden cat NPC (Momo)
 - **Terrain-aware footstep sounds** — grass, stone path, and wooden bridge each sound different

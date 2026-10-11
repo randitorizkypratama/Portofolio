@@ -244,6 +244,41 @@ h1, h2, h3 {
 
 .tile-water {
   animation: water-anim 1.5s steps(1, end) infinite;
+  position: relative;
+}
+
+.tile-water::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.14) 45%, transparent 60%);
+  background-size: 250% 250%;
+  animation: water-shimmer 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes water-shimmer {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+@keyframes portal-spin {
+  0%, 100% { filter: hue-rotate(0deg) drop-shadow(0 0 5px rgba(155, 89, 182, 0.8)); }
+  50% { filter: hue-rotate(40deg) drop-shadow(0 0 10px rgba(91, 184, 201, 0.9)); }
+}
+
+.portal-sprite {
+  animation: portal-spin 2.4s ease-in-out infinite;
+}
+
+@keyframes pumpkin-glow {
+  0%, 100% { filter: drop-shadow(0 0 3px rgba(243, 156, 18, 0.7)); }
+  50% { filter: drop-shadow(0 0 8px rgba(243, 156, 18, 1)); }
+}
+
+.pumpkin-sprite {
+  animation: pumpkin-glow 1.6s ease-in-out infinite;
 }
 
 @keyframes firefly {

@@ -12,6 +12,8 @@ import {
 import { trackAndNotify } from "../game/toast";
 import { isSfxMuted, toggleSfxMuted } from "../game/sfx";
 import { isBgmOn, toggleBgm } from "../game/music";
+import { getTitle } from "../game/titles";
+import { ITEMS, getInventory } from "../game/inventory";
 
 export function PlayerProfile() {
   const [downloadState, setDownloadState] = useState<
@@ -25,9 +27,16 @@ export function PlayerProfile() {
   const [crtOn, setCrtOn] = useState(
     () => localStorage.getItem("pq_crt") !== "0"
   );
+  const [title, setTitle] = useState(() => getTitle());
+  const [inv, setInv] = useState<Record<string, number>>(() => getInventory());
 
   useEffect(
-    () => subscribe(() => setUnlocked(getUnlockedIds(getStats()))),
+    () =>
+      subscribe(() => {
+        setUnlocked(getUnlockedIds(getStats()));
+        setTitle(getTitle());
+        setInv(getInventory());
+      }),
     []
   );
 
@@ -107,6 +116,9 @@ export function PlayerProfile() {
               <p className="retro-font text-[5px] text-text-secondary mt-1">
                 {siteConfig.location}
               </p>
+              <p className="retro-font text-[6px] text-accent mt-1">
+                ★ {title}
+              </p>
             </div>
           </div>
 
@@ -171,6 +183,30 @@ export function PlayerProfile() {
               {crtOn ? <Monitor size={12} /> : <MonitorOff size={12} />}
               {crtOn ? "CRT: ON" : "CRT: OFF"}
             </button>
+          </div>
+
+          {/* Inventory */}
+          <div className="mb-3">
+            <span className="retro-font text-[6px] text-gold block mb-1.5">
+              INVENTORY
+            </span>
+            {ITEMS.filter((it) => (inv[it.id] ?? 0) > 0).length === 0 ? (
+              <p className="retro-font text-[5px] text-text-secondary/60">
+                EMPTY — OPEN CHESTS IN THE WORLD!
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {ITEMS.filter((it) => (inv[it.id] ?? 0) > 0).map((it) => (
+                  <span
+                    key={it.id}
+                    title={`${it.name} — ${it.desc}`}
+                    className="retro-font text-[6px] text-cream border border-border/60 rounded px-2 py-1 bg-bg-main/50"
+                  >
+                    {it.icon} {it.name} x{inv[it.id]}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Achievements */}

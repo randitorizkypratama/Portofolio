@@ -19,7 +19,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { markSection } from "../game/journal";
 import { track } from "../game/achievements";
 import { notifyNewly, showToast } from "../game/toast";
-import { startBgm } from "../game/music";
+import { startBgm, cycleBgmTrack, getBgmTrackName } from "../game/music";
 
 const RPGWorld = lazy(() =>
   import("../components/RPGWorld").then((m) => ({ default: m.RPGWorld }))
@@ -58,6 +58,29 @@ function ExpBar() {
         </span>
       </div>
     </div>
+  );
+}
+
+function MiniPlayer() {
+  const [trackName, setTrackName] = useState(getBgmTrackName());
+
+  return (
+    <button
+      onClick={() => {
+        cycleBgmTrack();
+        const name = getBgmTrackName();
+        setTrackName(name);
+        showToast(`NOW PLAYING — ${name}`);
+      }}
+      className="fixed bottom-4 left-4 z-[55] game-border rounded-lg px-2.5 py-1.5 flex items-center gap-1.5 bg-bg-main/90 backdrop-blur-sm hover:border-gold/40 transition-colors"
+      aria-label="Cycle background music track"
+      title="Next track"
+    >
+      <span className="text-gold text-[10px] leading-none">♪</span>
+      <span className="retro-font text-[5px] text-cream hidden sm:inline max-w-[90px] truncate">
+        {trackName}
+      </span>
+    </button>
   );
 }
 
@@ -147,6 +170,7 @@ function RootLayout() {
           <ExpBar />
           <GlobalToast />
           <QuestJournal />
+          <MiniPlayer />
           <main>
             <HeroSection />
 
