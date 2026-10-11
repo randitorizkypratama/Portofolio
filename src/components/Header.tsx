@@ -89,7 +89,8 @@ export function Header() {
           </div>
 
           <a
-            href="#"
+            href={siteConfig.cvPath}
+            download={siteConfig.cvFileName}
             className="game-btn text-[7px] py-1 px-3"
           >
             CV

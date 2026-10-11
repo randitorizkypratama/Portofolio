@@ -13,56 +13,54 @@ function QuestCard({ project, index }: { project: Project; index: number }) {
   const Icon = questIcons[project.slug] || Swords;
 
   return (
-    <ScrollReveal delay={index * 0.12}>
-      <motion.div
-        className="game-border rounded-lg overflow-hidden group cursor-pointer"
-        whileHover={{ y: -4 }}
+    <ScrollReveal delay={index * 0.1}>
+      <motion.a
+        href={project.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block game-border rounded-lg overflow-hidden group cursor-pointer no-underline"
+        whileHover={{ y: -3 }}
         transition={{ duration: 0.2 }}
-        onClick={() => window.open(project.url, "_blank")}
-        role="link"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") window.open(project.url, "_blank");
-        }}
       >
-        {/* Quest header */}
-        <div
-          className="px-4 py-3 flex items-center gap-3 border-b-2 border-border"
-          style={{ background: `linear-gradient(135deg, ${project.color}15, transparent)` }}
-        >
-          <div
-            className="w-10 h-10 rounded flex items-center justify-center border-2"
-            style={{ borderColor: `${project.color}40`, background: `${project.color}10` }}
-          >
-            <Icon size={18} style={{ color: project.color }} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="pixel-font text-[9px] text-cream truncate">
-                {project.title}
-              </h3>
-              <span className="retro-font text-[5px] px-1.5 py-0.5 rounded bg-xp/20 text-xp border border-xp/30">
-                CLEAR
-              </span>
-            </div>
-            <span className="retro-font text-[5px] text-text-secondary">
-              QUEST #{String(index + 1).padStart(2, "0")}
-            </span>
-          </div>
+        {/* Quest header bar */}
+        <div className="flex items-center justify-between px-3 py-2 border-b-2 border-border bg-bg-main/50">
+          <span className="retro-font text-[5px] text-text-secondary">
+            QUEST #{String(index + 1).padStart(2, "0")}
+          </span>
+          <span className="retro-font text-[5px] px-1.5 py-0.5 rounded bg-xp/15 text-xp border border-xp/30">
+            ✓ CLEAR
+          </span>
         </div>
 
         {/* Quest body */}
-        <div className="px-4 py-3">
+        <div className="p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div
+              className="w-10 h-10 rounded flex items-center justify-center border-2 shrink-0"
+              style={{
+                borderColor: `${project.color}40`,
+                background: `${project.color}10`,
+              }}
+            >
+              <Icon size={18} style={{ color: project.color }} />
+            </div>
+            <div className="min-w-0">
+              <h3 className="pixel-font text-[9px] text-cream group-hover:text-gold transition-colors truncate">
+                {project.title}
+              </h3>
+            </div>
+          </div>
+
           <p className="text-xs text-text-secondary leading-relaxed mb-3 line-clamp-2">
             {project.description}
           </p>
 
           {/* Tech tags */}
-          <div className="flex flex-wrap gap-1.5 mb-3">
+          <div className="flex flex-wrap gap-1 mb-3">
             {project.tags.map((tag) => (
               <span
                 key={tag}
-                className="retro-font text-[5px] px-2 py-0.5 rounded bg-bg-main text-text-secondary border border-border"
+                className="retro-font text-[5px] px-1.5 py-0.5 rounded bg-bg-main text-text-secondary border border-border"
               >
                 {tag}
               </span>
@@ -75,7 +73,7 @@ function QuestCard({ project, index }: { project: Project; index: number }) {
             <span className="retro-font text-[6px]">OPEN QUEST</span>
           </div>
         </div>
-      </motion.div>
+      </motion.a>
     </ScrollReveal>
   );
 }
@@ -85,20 +83,20 @@ export function ProjectsSection() {
     <section id="projects" className="py-20 sm:py-28 dot-grid">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <ScrollReveal>
-          <div className="text-center mb-12">
-            <span className="retro-font text-[8px] text-gold block mb-3">
+          <div className="text-center mb-10">
+            <span className="retro-font text-[8px] text-gold block mb-2">
               ✦ QUEST LOG ✦
             </span>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-cream mb-3">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-cream mb-2">
               Things I've Built
             </h2>
             <p className="text-text-secondary text-sm max-w-md mx-auto">
-              Completed quests from my developer journey.
+              Completed quests from my developer journey. Click to explore.
             </p>
           </div>
         </ScrollReveal>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {projects.map((project, i) => (
             <QuestCard key={project.slug} project={project} index={i} />
           ))}

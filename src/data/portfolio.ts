@@ -12,6 +12,8 @@ export const siteConfig = {
   role: "Frontend Developer",
   interests: "Game · Tech · Anime",
   email: "hello@fixdiriloe.dev",
+  cvPath: "/cv/FixDiriloe-CV.pdf",
+  cvFileName: "FixDiriloe-CV.pdf",
   socials: {
     github: "https://github.com/fixdiriloe",
     x: "https://x.com/fixdiriloe",

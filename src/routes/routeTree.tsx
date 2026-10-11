@@ -9,6 +9,7 @@ import { ProjectsSection } from "../components/ProjectsSection";
 import { ContactSection } from "../components/ContactSection";
 import { SectionDivider } from "../components/SectionDivider";
 import { StartScreen } from "../components/StartScreen";
+import { PlayerProfile } from "../components/PlayerProfile";
 
 function RootLayout() {
   const [started, setStarted] = useState(false);
@@ -27,6 +28,8 @@ function RootLayout() {
             <HeroSection />
             <SectionDivider />
             <AboutSection />
+            <SectionDivider />
+            <PlayerProfile />
             <SectionDivider />
             <ProjectsSection />
             <SectionDivider />
