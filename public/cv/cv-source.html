@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FixDiriloe — CV</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: #1a1a2e;
+    background: #fff;
+    font-size: 10.5px;
+    line-height: 1.45;
+  }
+  .page { width: 210mm; min-height: 297mm; padding: 14mm 16mm; }
+  header { border-bottom: 3px solid #6c5ce7; padding-bottom: 10px; margin-bottom: 14px; }
+  h1 { font-size: 26px; color: #6c5ce7; letter-spacing: 1px; }
+  .role { font-size: 12px; color: #d63031; font-weight: 600; margin-top: 2px; text-transform: uppercase; letter-spacing: 1.5px; }
+  .contact { margin-top: 8px; font-size: 9.5px; color: #444; }
+  .contact span { margin-right: 14px; }
+  h2 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 2px;
+    color: #6c5ce7; border-bottom: 1px solid #dfe6e9; padding-bottom: 3px; margin: 14px 0 8px;
+  }
+  p.summary { color: #333; font-size: 10.5px; }
+  .project { margin-bottom: 9px; }
+  .project h3 { font-size: 11.5px; color: #1a1a2e; }
+  .project h3 .status { font-size: 8.5px; color: #27ae60; font-weight: 600; margin-left: 6px; }
+  .project .url { font-size: 9px; color: #6c5ce7; }
+  .project ul { margin: 3px 0 0 14px; }
+  .project li { margin-bottom: 1.5px; }
+  .tags { margin-top: 3px; font-size: 9px; color: #636e72; }
+  .grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    border: 1px solid #b2bec3; border-radius: 3px; padding: 3px 8px; font-size: 9px; background: #f8f9ff;
+  }
+  .chip b { color: #6c5ce7; }
+  .chip small { display: block; color: #636e72; font-size: 7.5px; }
+  .cols { display: flex; gap: 18px; }
+  .cols > div { flex: 1; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>FIXDIRILOE</h1>
+    <div class="role">Frontend Developer</div>
+    <div class="contact">
+      <span>Indonesia</span>
+      <span>hello@fixdiriloe.dev</span>
+      <span>github.com/fixdiriloe</span>
+      <span>linkedin.com/in/fixdiriloe</span>
+      <span>x.com/fixdiriloe</span>
+    </div>
+  </header>
+
+  <h2>Profile</h2>
+  <p class="summary">
+    Web developer who loves turning ideas into interactive experiences. Focused on modern web
+    technologies, clean code, and pixel-perfect designs. I build modern web applications with a focus
+    on clean code, performance, and great user experience — turning complex problems into simple,
+    beautiful, and intuitive solutions.
+  </p>
+
+  <h2>Featured Projects</h2>
+
+  <div class="project">
+    <h3>HIBIKISHOP PC <span class="status">COMPLETED</span></h3>
+    <div class="url">https://kpop-tracker-six.vercel.app/</div>
+    <p>Full-stack K-Pop photocard database with 16,200+ cards, faceted filters, price tracking, collection binder, and release timeline.</p>
+    <ul>
+      <li>16,200+ photocards with faceted filters (group, member, card type, store, price)</li>
+      <li>Top price movers — biggest drops and risers over the last 36 hours</li>
+      <li>Collection binder with wishlist/owned tracking, command palette, ID/EN toggle</li>
+      <li>Daily auto-sync from Pocamarket + MusicBrainz / Apple Music enrichment</li>
+    </ul>
+    <div class="tags">Nuxt 4 · Vue 3 · Tailwind · Turso · Vercel Cron</div>
+  </div>
+
+  <div class="project">
+    <h3>DuelDex <span class="status">COMPLETED</span></h3>
+    <div class="url">https://dueldex-web.onrender.com/</div>
+    <p>Full-stack Yu-Gi-Oh! card explorer and smart deck builder with synergy scoring and archetype detection.</p>
+    <ul>
+      <li>Full-text search with filters (type, attribute, level, archetype, ATK/DEF)</li>
+      <li>Smart deck recommendation with synergy explanations</li>
+      <li>TCG banlist enforcement, per-user favorites, JWT auth</li>
+    </ul>
+    <div class="tags">Nuxt 4 · Elysia · Bun · Turso · JWT Auth</div>
+  </div>
+
+  <div class="project">
+    <h3>Family Tree <span class="status">COMPLETED</span></h3>
+    <div class="url">https://family-tree-delta-peach.vercel.app/</div>
+    <p>Family genealogy management app — 4-step wizard, interactive D3 tree charts, birthdays, roles, and export.</p>
+    <ul>
+      <li>Dashboard with family statistics, gender ratio, average age</li>
+      <li>Interactive tree visualization (family-chart / D3)</li>
+      <li>Role-based access control, multi-language (ID, EN, Sunda), CSV export, dark mode</li>
+    </ul>
+    <div class="tags">Nuxt 3 · Vue 3 · Drizzle · Turso · Tailwind</div>
+  </div>
+
+  <h2>Tech Stack</h2>
+  <div class="grid">
+    <div class="chip"><b>Nuxt</b><small>Vue Framework, SSR</small></div>
+    <div class="chip"><b>Vue 3</b><small>Reactive UI</small></div>
+    <div class="chip"><b>Bun</b><small>Runtime, Bundler</small></div>
+    <div class="chip"><b>Tailwind CSS</b><small>Utility-First Styling</small></div>
+    <div class="chip"><b>TypeScript</b><small>Type Safety</small></div>
+    <div class="chip"><b>Drizzle ORM</b><small>Type-Safe Queries</small></div>
+    <div class="chip"><b>Turso</b><small>Edge SQLite</small></div>
+    <div class="chip"><b>Elysia</b><small>Bun Web Framework</small></div>
+    <div class="chip"><b>HuggingFace</b><small>AI/ML Image Search</small></div>
+    <div class="chip"><b>Zod</b><small>Schema Validation</small></div>
+    <div class="chip"><b>Vercel</b><small>Deployment</small></div>
+    <div class="chip"><b>Vitest</b><small>Unit Testing</small></div>
+  </div>
+</div>
+</body>
+</html>

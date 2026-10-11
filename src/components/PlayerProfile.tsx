@@ -133,7 +133,7 @@ export function PlayerProfile() {
         {/* Footer */}
         <div className="px-4 py-2 border-t border-border/50">
           <p className="retro-font text-[5px] text-text-secondary/40 text-center">
-            PLACEHOLDER — ADD CV PDF TO /public/cv/
+            PDF DOCUMENT — /cv/FixDiriloe-CV.pdf
           </p>
         </div>
       </div>
