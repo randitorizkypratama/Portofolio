@@ -42,7 +42,7 @@ export const npcs: NPC[] = [
   {
     id: "quest-kpop",
     name: "HIBIKISHOP Quest Board",
-    position: { x: 4, y: 15 },
+    position: { x: 3, y: 17 },
     sprite: "📋",
     dialogue: [
       "═══ QUEST: HIBIKISHOP PC ═══",
@@ -56,7 +56,7 @@ export const npcs: NPC[] = [
   {
     id: "quest-dueldex",
     name: "DuelDex Quest Board",
-    position: { x: 22, y: 15 },
+    position: { x: 23, y: 17 },
     sprite: "📋",
     dialogue: [
       "═══ QUEST: DUELDEX ═══",

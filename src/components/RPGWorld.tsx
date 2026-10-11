@@ -179,6 +179,7 @@ export function RPGWorld() {
   const showMenuRef = useRef(showMenu);
   const playerPosRef = useRef(playerPos);
   const directionRef = useRef(direction);
+  const advanceDialogueRef = useRef<(() => void) | null>(null);
 
   useEffect(() => { dialogueRef.current = dialogue; }, [dialogue]);
   useEffect(() => { showMenuRef.current = showMenu; }, [showMenu]);
@@ -208,6 +209,7 @@ export function RPGWorld() {
       const hasDialogue = dialogueRef.current !== null;
       const hasMenu = showMenuRef.current;
 
+      // Escape — always works
       if (key === "escape") {
         e.preventDefault();
         if (hasDialogue) { setDialogue(null); return; }
@@ -216,20 +218,29 @@ export function RPGWorld() {
         return;
       }
 
-      if (hasDialogue || hasMenu) return;
-
-      if ((key === "e" || key === " ") && !e.repeat && !interactCooldownRef.current) {
+      // E / Space — works during dialogue (to advance) AND during gameplay (to interact)
+      if ((key === "e" || key === " ") && !e.repeat) {
         e.preventDefault();
-        interactCooldownRef.current = true;
-        setTimeout(() => { interactCooldownRef.current = false; }, 300);
-        const pos = playerPosRef.current;
-        const dir = directionRef.current;
-        const entity = getNearbyEntity(pos, dir);
-        if (entity) {
-          setDialogue({ npc: entity, lineIndex: 0 });
+        if (hasDialogue) {
+          // Advance dialogue — handled by a separate function via ref
+          advanceDialogueRef.current?.();
+          return;
+        }
+        if (!interactCooldownRef.current) {
+          interactCooldownRef.current = true;
+          setTimeout(() => { interactCooldownRef.current = false; }, 300);
+          const pos = playerPosRef.current;
+          const dir = directionRef.current;
+          const entity = getNearbyEntity(pos, dir);
+          if (entity) {
+            setDialogue({ npc: entity, lineIndex: 0 });
+          }
         }
         return;
       }
+
+      // Block movement when dialogue or menu is open
+      if (hasDialogue || hasMenu) return;
 
       if (key === "w" || key === "arrowup") { e.preventDefault(); keysRef.current.add("up"); }
       if (key === "s" || key === "arrowdown") { e.preventDefault(); keysRef.current.add("down"); }
@@ -266,10 +277,11 @@ export function RPGWorld() {
   }, [movePlayer]);
 
   const handleDialogueAdvance = useCallback(() => {
-    if (!dialogue) return;
-    const nextIndex = dialogue.lineIndex + 1;
-    if (nextIndex >= dialogue.npc.dialogue.length) {
-      const npc = dialogue.npc;
+    if (!dialogueRef.current) return;
+    const dlg = dialogueRef.current;
+    const nextIndex = dlg.lineIndex + 1;
+    if (nextIndex >= dlg.npc.dialogue.length) {
+      const npc = dlg.npc;
       setDialogue(null);
       if (npc.type === "quest") {
         const urlMap: Record<string, string> = {
@@ -281,9 +293,14 @@ export function RPGWorld() {
         if (url) setVisitLink(url);
       }
     } else {
-      setDialogue({ npc: dialogue.npc, lineIndex: nextIndex });
+      setDialogue({ npc: dlg.npc, lineIndex: nextIndex });
     }
-  }, [dialogue]);
+  }, []);
+
+  // Keep the ref pointing to the latest advance function
+  useEffect(() => {
+    advanceDialogueRef.current = handleDialogueAdvance;
+  }, [handleDialogueAdvance]);
 
   const offsetX = Math.max(0, Math.min(playerPos.x - Math.floor(VIEWPORT_TILES_X / 2), MAP_WIDTH - VIEWPORT_TILES_X));
   const offsetY = Math.max(0, Math.min(playerPos.y - Math.floor(VIEWPORT_TILES_Y / 2), MAP_HEIGHT - VIEWPORT_TILES_Y));
