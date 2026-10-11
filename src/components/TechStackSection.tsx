@@ -80,7 +80,7 @@ export function TechStackSection() {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {techStack.map((tech, i) => (
               <ScrollReveal key={tech.name} delay={i * 0.05}>
-                <div className="glow-border rounded-xl p-4 bg-bg-elevated hover:bg-bg-secondary transition-colors group">
+                <div className="glow-border rounded-xl p-4 bg-bg-elevated hover:bg-bg-secondary hover:shadow-card-hover transition-all group">
                   <div className="flex items-center gap-3 mb-2">
                     <TechIcon name={tech.icon} />
                     <span className="font-semibold text-sm text-text-main group-hover:text-primary transition-colors">

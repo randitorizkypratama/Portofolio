@@ -62,7 +62,7 @@ function ProjectThumbnail({ color, title }: { color: string; title: string }) {
 function ProjectCard({ project, index }: { project: Project; index: number }) {
   return (
     <ScrollReveal delay={index * 0.1}>
-      <div className="glow-border rounded-xl overflow-hidden bg-bg-elevated group hover:-translate-y-1 transition-all duration-300">
+      <div className="glow-border rounded-xl overflow-hidden bg-bg-elevated group hover:-translate-y-1 hover:shadow-card-hover transition-all duration-300">
         <ProjectThumbnail color={project.color} title={project.title} />
         <div className="p-5">
           <h3 className="font-semibold text-text-main mb-2 group-hover:text-primary transition-colors">

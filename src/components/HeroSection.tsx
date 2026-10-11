@@ -73,7 +73,7 @@ export function HeroSection() {
           >
             <a
               href="#projects"
-              className="px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors text-sm text-center"
+              className="px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 shadow-pixel-btn hover:shadow-pixel-glow transition-all text-sm text-center"
             >
               View My Projects
             </a>

@@ -10,8 +10,13 @@
   --color-text-main: #F4F6FF;
   --color-text-secondary: #A7B8D6;
   --color-border: #183455;
-  --font-pixel: "Press Start 2P", monospace;
+  --font-pixel: "Silkscreen", monospace;
+  --font-retro: "Press Start 2P", monospace;
   --font-sans: "Inter", system-ui, sans-serif;
+
+  --shadow-pixel-btn: 0 4px 0 0 #5b21b6;
+  --shadow-pixel-glow: 0 0 15px rgba(168, 85, 247, 0.4);
+  --shadow-card-hover: 0 10px 25px -5px rgba(14, 23, 42, 0.8), 0 0 12px 1px rgba(99, 102, 241, 0.15);
 }
 
 html {
@@ -71,6 +76,22 @@ body {
 
 .pixel-font {
   font-family: var(--font-pixel);
+}
+
+.retro-font {
+  font-family: var(--font-retro);
+}
+
+.shadow-pixel-btn {
+  box-shadow: var(--shadow-pixel-btn);
+}
+
+.shadow-pixel-glow {
+  box-shadow: var(--shadow-pixel-glow);
+}
+
+.shadow-card-hover {
+  box-shadow: var(--shadow-card-hover);
 }
 
 .gradient-text {
