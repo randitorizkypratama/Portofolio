@@ -35,8 +35,8 @@ export const projects: Project[] = [
     title: "HIBIKISHOP PC",
     slug: "kpop-photocard-tracker",
     description:
-      "K-Pop photocard database — explore album PCs, POBs, lucky draws, and special photocards by group, member, album, and market reference.",
-    tags: ["React", "TanStack", "Tailwind CSS"],
+      "K-Pop photocard database — explore album PCs, POBs, lucky draws, and special photocards by group, member, album, and market reference. Powered by AI image search.",
+    tags: ["Nuxt 4", "Vue 3", "Tailwind", "Bun", "HuggingFace AI"],
     color: "#C04BFF",
     url: "https://kpop-tracker-six.vercel.app/",
     status: "completed",
@@ -45,8 +45,8 @@ export const projects: Project[] = [
     title: "DuelDex",
     slug: "dueldex",
     description:
-      "Card game deck builder — explore cards, build smarter decks, and strategize your next duel.",
-    tags: ["React", "Tailwind CSS", "Lucide"],
+      "Monorepo card game platform — explore cards, build smarter decks, and strategize your next duel. Separate API (Elysia) and web (Nuxt) apps.",
+    tags: ["Nuxt 4", "Elysia", "Bun", "Turso", "Tailwind"],
     color: "#35D9F2",
     url: "https://dueldex-web.onrender.com/",
     status: "completed",
@@ -55,8 +55,8 @@ export const projects: Project[] = [
     title: "Family Tree",
     slug: "family-tree",
     description:
-      "Interactive family tree application for creating, editing, and visualizing family relationships and genealogy.",
-    tags: ["Nuxt", "Vue", "Tailwind CSS"],
+      "Interactive family tree application for creating, editing, and visualizing family relationships and genealogy with auth and database.",
+    tags: ["Nuxt 3", "Vue 3", "Drizzle", "Turso", "Tailwind"],
     color: "#27ae60",
     url: "https://family-tree-delta-peach.vercel.app/",
     status: "completed",
@@ -71,24 +71,24 @@ export interface TechItem {
 
 export const techStack: TechItem[] = [
   {
-    name: "TanStack Start",
-    description: "Routing, SSR, Server Functions",
-    icon: "tanstack",
+    name: "Nuxt",
+    description: "Vue Framework, SSR, File Routing",
+    icon: "nuxt",
   },
   {
-    name: "React",
-    description: "Component Architecture",
-    icon: "react",
+    name: "Vue 3",
+    description: "Reactive UI Components",
+    icon: "vue",
+  },
+  {
+    name: "Bun",
+    description: "Runtime, Bundler, Package Manager",
+    icon: "bun",
   },
   {
     name: "Tailwind CSS",
-    description: "Styling and Design System",
+    description: "Utility-First Styling",
     icon: "tailwind",
-  },
-  {
-    name: "Motion",
-    description: "Transitions and Animations",
-    icon: "motion",
   },
   {
     name: "TypeScript",
@@ -96,34 +96,39 @@ export const techStack: TechItem[] = [
     icon: "typescript",
   },
   {
-    name: "Lucide React",
-    description: "Icons",
-    icon: "lucide",
+    name: "Drizzle ORM",
+    description: "Type-Safe Database Queries",
+    icon: "drizzle",
+  },
+  {
+    name: "Turso",
+    description: "Edge SQLite Database",
+    icon: "turso",
+  },
+  {
+    name: "Elysia",
+    description: "Bun Web Framework, API",
+    icon: "elysia",
+  },
+  {
+    name: "HuggingFace",
+    description: "AI/ML Image Search",
+    icon: "huggingface",
   },
   {
     name: "Zod",
-    description: "Validation",
+    description: "Schema Validation",
     icon: "zod",
   },
   {
-    name: "React Hook Form",
-    description: "Form Handling",
-    icon: "rhf",
-  },
-  {
-    name: "Vite",
-    description: "Build Tool",
-    icon: "vite",
-  },
-  {
     name: "Vercel",
-    description: "Deployment",
+    description: "Deployment & Hosting",
     icon: "vercel",
   },
   {
-    name: "Playwright",
-    description: "Testing",
-    icon: "playwright",
+    name: "Vitest",
+    description: "Unit Testing",
+    icon: "vitest",
   },
 ];
 
