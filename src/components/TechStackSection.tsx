@@ -44,7 +44,7 @@ export function TechStackSection() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <ScrollReveal>
           <div className="text-center mb-12">
-            <span className="pixel-font text-[10px] text-primary block mb-3">
+            <span className="retro-font text-[10px] text-primary block mb-3">
               Tech Stack
             </span>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
@@ -68,7 +68,7 @@ export function TechStackSection() {
               />
             </div>
             <div className="glow-border rounded-lg p-4 bg-bg-elevated text-center">
-              <p className="pixel-font text-[7px] text-text-secondary leading-relaxed">
+              <p className="retro-font text-[7px] text-text-secondary leading-relaxed">
                 Always learning,
                 <br />
                 always building.

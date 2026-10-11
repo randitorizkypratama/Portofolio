@@ -34,7 +34,7 @@ export function AboutSection() {
                 alt={siteConfig.name}
                 className="w-8 h-8 rounded-md object-cover"
               />
-              <span className="pixel-font text-[10px] text-primary">
+              <span className="retro-font text-[10px] text-primary">
                 About Me
               </span>
             </div>

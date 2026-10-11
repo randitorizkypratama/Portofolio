@@ -20,7 +20,7 @@ export function Footer() {
               alt={siteConfig.name}
               className="w-6 h-6 rounded-md object-cover"
             />
-            <span className="pixel-font text-[8px] text-text-main">
+            <span className="retro-font text-[8px] text-text-main">
               {siteConfig.name}
             </span>
           </div>

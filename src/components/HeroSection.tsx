@@ -39,16 +39,16 @@ export function HeroSection() {
             className="flex items-center gap-2 mb-4"
           >
             <Heart size={16} className="text-accent fill-accent" />
-            <span className="pixel-font text-[8px] sm:text-[10px] text-text-secondary tracking-wider">
-              Hi, I'm {siteConfig.name}
-            </span>
+            <span className="retro-font text-[8px] sm:text-[10px] text-text-secondary tracking-wider">
+                Hi, I'm {siteConfig.name}
+              </span>
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight mb-6"
+              className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight mb-6 retro-font"
           >
             Building Digital{" "}
             <span className="gradient-text">Worlds</span>

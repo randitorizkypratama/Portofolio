@@ -48,7 +48,7 @@ export function ContactSection() {
             <div className="grid lg:grid-cols-2 gap-10 relative">
               {/* Left */}
               <div>
-                <span className="pixel-font text-[10px] text-primary block mb-3">
+                <span className="retro-font text-[10px] text-primary block mb-3">
                   Get In Touch
                 </span>
                 <h2 className="text-2xl sm:text-3xl font-bold mb-4">
@@ -70,7 +70,7 @@ export function ContactSection() {
                     />
                   </div>
                   <div className="glow-border rounded-lg p-3 bg-bg-secondary">
-                    <p className="pixel-font text-[7px] text-cyan">
+                    <p className="retro-font text-[7px] text-cyan">
                       Thanks for visiting!
                     </p>
                   </div>

@@ -100,7 +100,7 @@ export function ProjectsSection() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <ScrollReveal>
           <div className="text-center mb-12">
-            <span className="pixel-font text-[10px] text-primary block mb-3">
+            <span className="retro-font text-[10px] text-primary block mb-3">
               Featured Projects
             </span>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold">

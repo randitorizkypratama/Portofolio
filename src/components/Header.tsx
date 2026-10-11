@@ -40,7 +40,7 @@ export function Header() {
             alt={siteConfig.name}
             className="w-7 h-7 rounded-md object-cover"
           />
-          <span className="pixel-font text-[10px] text-text-main group-hover:text-primary transition-colors">
+          <span className="retro-font text-[10px] text-text-main group-hover:text-primary transition-colors">
             {siteConfig.name}
           </span>
         </a>
