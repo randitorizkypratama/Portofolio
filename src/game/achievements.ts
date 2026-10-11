@@ -10,6 +10,9 @@ export interface Stats {
   fish?: number;
   speedrun?: boolean;
   cartographer?: boolean;
+  daily?: boolean;
+  dragon?: boolean;
+  friends?: number;
 }
 
 export interface AchievementDef {
@@ -51,6 +54,9 @@ export const ACHIEVEMENT_DEFS: AchievementDef[] = [
   { id: "fish_master", name: "Fish Master", desc: "Catch all 5 species", check: (s) => (s.fish ?? 0) >= 5 },
   { id: "speedrunner", name: "Speedrunner", desc: "Clear all 3 quests under 2 minutes", check: (s) => !!s.speedrun },
   { id: "cartographer", name: "Cartographer", desc: "Find the hidden grove", check: (s) => !!s.cartographer },
+  { id: "dragon_slayer", name: "Dragon Slayer", desc: "Defeat the Debug Dragon", check: (s) => !!s.dragon },
+  { id: "daily_devotee", name: "Daily Devotee", desc: "Complete a daily quest", check: (s) => !!s.daily },
+  { id: "best_friend", name: "Best Friend", desc: "Earn 8 friendship hearts", check: (s) => (s.friends ?? 0) >= 8 },
   {
     id: "completionist",
     name: "Completionist",
@@ -83,7 +89,10 @@ export type TrackEvent =
   | "secret"
   | "fish"
   | "speedrun"
-  | "cartographer";
+  | "cartographer"
+  | "daily"
+  | "dragon"
+  | "friend";
 
 /** Increment a stat; returns ids newly unlocked by this event. */
 export function track(event: TrackEvent, payload?: string): string[] {
@@ -102,6 +111,9 @@ export function track(event: TrackEvent, payload?: string): string[] {
   if (event === "fish") s.fish = (s.fish ?? 0) + 1;
   if (event === "speedrun") s.speedrun = true;
   if (event === "cartographer") s.cartographer = true;
+  if (event === "daily") s.daily = true;
+  if (event === "dragon") s.dragon = true;
+  if (event === "friend") s.friends = (s.friends ?? 0) + 1;
   localStorage.setItem(KEY, JSON.stringify(s));
   const after = getUnlockedIds(s);
   const newly = after.filter((id) => !before.has(id));

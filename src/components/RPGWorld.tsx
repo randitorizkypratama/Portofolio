@@ -9,6 +9,7 @@ import {
 } from "../game/tileMap";
 import {
   npcs,
+  bossDragon,
   getNearbyEntity,
   type Direction,
   type Position,
@@ -22,6 +23,7 @@ import { notifyNewly, showToast } from "../game/toast";
 import { getDayPeriod, type DayPeriod } from "../game/dayNight";
 import { FISH, HOOK_ZONE, addFish, rollFish, getCaughtFish } from "../game/fishing";
 import { cycleBgmTrack, getBgmTrackName } from "../game/music";
+import { bumpFriendship, heartsLabel } from "../game/friendship";
 import { Minimap } from "./Minimap";
 import { NPCPortrait } from "./NPCPortrait";
 
@@ -139,7 +141,7 @@ function PlayerSprite({ moving }: { moving: boolean }) {
 function NPCSprite({ npc, isNearby }: { npc: NPC; isNearby: boolean }) {
   return (
     <div className="absolute flex items-center justify-center" style={{ width: TILE_SIZE, height: TILE_SIZE }}>
-      <EntityShadow size={npc.type === "quest" ? 22 : 18} />
+      <EntityShadow size={npc.id === "boss-dragon" ? 28 : npc.type === "quest" ? 22 : 18} />
 
       {/* Quest marker */}
       {npc.type === "quest" && (
@@ -303,6 +305,43 @@ function NPCSprite({ npc, isNearby }: { npc: NPC; isNearby: boolean }) {
             <rect x="13" y="4" width="1" height="11" fill="#8b6239" />
             <rect x="13" y="2" width="2" height="2" fill="#d4a847" />
           </>
+        ) : npc.id === "boss-dragon" ? (
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            className="pet-bounce"
+            style={{ imageRendering: "pixelated", position: "relative", zIndex: 1, overflow: "visible" }}
+          >
+            {/* Horns */}
+            <rect x="13" y="1" width="2" height="3" fill="#f5b041" />
+            <rect x="18" y="1" width="2" height="3" fill="#f5b041" />
+            {/* Head */}
+            <rect x="12" y="4" width="9" height="5" fill="#c0392b" />
+            <rect x="12" y="4" width="9" height="1" fill="#a93226" />
+            {/* Eye */}
+            <rect x="17" y="5" width="2" height="2" fill="#f1c40f" />
+            <rect x="18" y="5" width="1" height="1" fill="#1a2438" />
+            {/* Snout + fire */}
+            <rect x="20" y="7" width="3" height="2" fill="#c0392b" />
+            <rect x="22" y="6" width="2" height="1" fill="#f39c12" />
+            <rect x="23" y="7" width="1" height="1" fill="#e67e22" />
+            {/* Wing */}
+            <rect x="2" y="5" width="4" height="6" fill="#922b21" />
+            <rect x="1" y="4" width="3" height="4" fill="#7b241c" />
+            {/* Body */}
+            <rect x="6" y="9" width="12" height="8" fill="#c0392b" />
+            <rect x="6" y="9" width="12" height="1" fill="#a93226" />
+            {/* Belly */}
+            <rect x="9" y="13" width="7" height="4" fill="#e74c3c" />
+            {/* Legs */}
+            <rect x="7" y="17" width="3" height="3" fill="#922b21" />
+            <rect x="14" y="17" width="3" height="3" fill="#922b21" />
+            {/* Tail */}
+            <rect x="18" y="15" width="3" height="2" fill="#c0392b" />
+            <rect x="20" y="13" width="2" height="3" fill="#a93226" />
+            <rect x="21" y="11" width="1" height="3" fill="#c0392b" />
+          </svg>
         ) : (
           <>
             {/* Headband */}
@@ -363,6 +402,19 @@ export function RPGWorld() {
   });
   const [visitors, setVisitors] = useState<number | null>(null);
   const [caughtFish, setCaughtFish] = useState<string[]>(() => getCaughtFish());
+  const [hearts, setHearts] = useState(0);
+  const [bossAwake, setBossAwake] = useState<boolean>(() => {
+    try {
+      return (JSON.parse(localStorage.getItem("pq_quests_cleared") || "[]") as string[]).length >= 3;
+    } catch {
+      return false;
+    }
+  });
+  const [battle, setBattle] = useState<{
+    hp: number;
+    log: string;
+    phase: "fight" | "victory";
+  } | null>(null);
 
   const moveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const keysRef = useRef<Set<string>>(new Set());
@@ -386,11 +438,33 @@ export function RPGWorld() {
   // Fishing / speedrun
   const fishingRef = useRef<typeof fishing>(null);
   const runStartRef = useRef<number | null>(null);
-  const clearedQuestsRef = useRef<Set<string>>(new Set());
+  const clearedQuestsRef = useRef<Set<string>>((() => {
+    try {
+      return new Set(JSON.parse(localStorage.getItem("pq_quests_cleared") || "[]") as string[]);
+    } catch {
+      return new Set<string>();
+    }
+  })());
   const visitorsRef = useRef<number | null>(null);
+  const periodRef = useRef(period);
+  const bossAwakeRef = useRef(bossAwake);
 
   useEffect(() => { fishingRef.current = fishing; }, [fishing]);
   useEffect(() => { visitorsRef.current = visitors; }, [visitors]);
+  useEffect(() => { periodRef.current = period; }, [period]);
+  useEffect(() => { bossAwakeRef.current = bossAwake; }, [bossAwake]);
+
+  /** NPCs with night positions applied; optionally include the boss. */
+  const makeActiveList = (night: boolean, includeBoss: boolean): NPC[] => {
+    const list: NPC[] = npcs
+      .filter((n) => !n.nightOnly || night)
+      .map((n) => ({
+        ...n,
+        position: night && n.nightPosition ? n.nightPosition : n.position,
+      }));
+    if (includeBoss && bossAwakeRef.current) list.push(bossDragon);
+    return list;
+  };
 
   useEffect(() => { dialogueRef.current = dialogue; }, [dialogue]);
   useEffect(() => { showMenuRef.current = showMenu; }, [showMenu]);
@@ -540,19 +614,33 @@ export function RPGWorld() {
       return;
     }
 
-    const entity = getNearbyEntity(playerPosRef.current, directionRef.current);
+    const entity = getNearbyEntity(
+      playerPosRef.current,
+      directionRef.current,
+      makeActiveList(periodRef.current.night, true)
+    );
     if (entity) {
       sfx.interact();
-      let dlg = entity;
+      if (entity.id === "boss-dragon") {
+        setBattle({ hp: 100, log: entity.dialogue[1] ?? entity.dialogue[0], phase: "fight" });
+        return;
+      }
+      let lines = entity.dialogue;
+      if (entity.type !== "sign") {
+        const h = bumpFriendship(entity.id);
+        setHearts(h);
+        if (h >= 3 && entity.secretLine) lines = [...lines, entity.secretLine];
+      }
+      let dlg: NPC = { ...entity, dialogue: lines };
       if (entity.id === "npc-inn") {
         const count = visitorsRef.current;
         dlg = {
-          ...entity,
+          ...dlg,
           dialogue: [
             count != null
               ? `Welcome to the Pixel Inn! You are visitor #${count}.`
               : "Welcome to the Pixel Inn! The ledger is being rewritten...",
-            ...entity.dialogue.slice(1),
+            ...dlg.dialogue.slice(1),
           ],
         };
       }
@@ -592,11 +680,15 @@ export function RPGWorld() {
         setMoving(true);
         if (moveTimerRef.current) clearTimeout(moveTimerRef.current);
         moveTimerRef.current = setTimeout(() => setMoving(false), 100);
-        const entity = getNearbyEntity({ x: newX, y: newY }, dir);
+        const entity = getNearbyEntity(
+          { x: newX, y: newY },
+          dir,
+          makeActiveList(periodRef.current.night, true)
+        );
         setNearbyEntity(entity);
         historyRef.current.push({ x: newX, y: newY });
         if (historyRef.current.length > 20) historyRef.current.shift();
-        sfx.step();
+        sfx.stepOn(getTileAt(newX, newY));
         notifyNewly(track("step"));
         // Speedrun starts on first move
         if (runStartRef.current == null) {
@@ -699,6 +791,11 @@ export function RPGWorld() {
           notifyNewly(track("link"));
           // Speedrun: quest cleared
           clearedQuestsRef.current.add(npc.id);
+          localStorage.setItem(
+            "pq_quests_cleared",
+            JSON.stringify([...clearedQuestsRef.current])
+          );
+          if (clearedQuestsRef.current.size >= 3) setBossAwake(true);
           if (clearedQuestsRef.current.size >= 3 && runStartRef.current != null) {
             const elapsed = Date.now() - runStartRef.current;
             setRunning(false);
@@ -722,6 +819,43 @@ export function RPGWorld() {
   useEffect(() => {
     advanceDialogueRef.current = handleDialogueAdvance;
   }, [handleDialogueAdvance]);
+
+  const attacks = [
+    { name: "STACK OVERFLOW SLASH", min: 18, max: 32, line: "Critical hit! 404 feelings not found." },
+    { name: "COFFEE BURST", min: 14, max: 38, line: "Caffeinated damage! The dragon is jittering." },
+    { name: "RUBBER DUCK", min: 10, max: 26, line: "The dragon explains its bugs to the duck... confusion +10." },
+  ];
+
+  const doAttack = (i: number) => {
+    if (!battle || battle.phase !== "fight") return;
+    const a = attacks[i];
+    const dmg = a.min + Math.floor(Math.random() * (a.max - a.min + 1));
+    const hp = Math.max(0, battle.hp - dmg);
+    sfx.advance();
+    if (hp <= 0) {
+      setBattle({
+        hp: 0,
+        log: "The Debug Dragon explodes into harmless semicolons... THE END...?",
+        phase: "victory",
+      });
+      notifyNewly(track("dragon"));
+      showToast("BOSS DEFEATED — THE END...?");
+      sfx.achievement();
+      window.setTimeout(() => setBattle(null), 4000);
+    } else {
+      const quips = [
+        "RRAWR! Have you tried turning it off and on again?",
+        "*dragon commits a bug on purpose*",
+        "Your code compiles... THIS TIME.",
+        "*debug breath incoming*",
+      ];
+      setBattle({
+        hp,
+        log: `${a.line} (-${dmg} HP) ${quips[Math.floor(Math.random() * quips.length)]}`,
+        phase: "fight",
+      });
+    }
+  };
 
   const offsetX = Math.max(0, Math.min(playerPos.x - Math.floor(VIEWPORT_TILES_X / 2), MAP_WIDTH - VIEWPORT_TILES_X));
   const offsetY = Math.max(0, Math.min(playerPos.y - Math.floor(VIEWPORT_TILES_Y / 2), MAP_HEIGHT - VIEWPORT_TILES_Y));
@@ -778,8 +912,8 @@ export function RPGWorld() {
           ))}
         </div>
 
-        {/* NPCs */}
-        {npcs.map((npc) => {
+        {/* NPCs (night-aware schedule) */}
+        {makeActiveList(period.night, true).map((npc) => {
           const nx = (npc.position.x - offsetX) * TILE_SIZE;
           const ny = (npc.position.y - offsetY) * TILE_SIZE;
           if (nx < -TILE_SIZE || ny < -TILE_SIZE || nx > viewportWidth || ny > viewportHeight) return null;
@@ -870,7 +1004,7 @@ export function RPGWorld() {
         {/* Minimap */}
         <Minimap
           player={playerPos}
-          npcs={npcs
+          npcs={makeActiveList(period.night, true)
             .filter((n) => n.type !== "secret")
             .map((n) => ({ id: n.id, x: n.position.x, y: n.position.y, type: n.type }))}
         />
@@ -968,6 +1102,14 @@ export function RPGWorld() {
               <div className="flex items-center gap-2">
                 <NPCPortrait npc={dialogue.npc} size={36} />
                 <span className="pixel-font text-[9px] text-gold">{dialogue.npc.name}</span>
+                {dialogue.npc.type !== "sign" && (
+                  <span
+                    className="retro-font text-[6px] text-hp"
+                    title={`Friendship ${hearts}/5`}
+                  >
+                    {heartsLabel(hearts)}
+                  </span>
+                )}
               </div>
               <button onClick={() => setDialogue(null)}
                 className="retro-font text-[6px] text-text-secondary hover:text-cream px-1.5 py-0.5 border border-border hover:border-gold/40 rounded transition-all"
@@ -1018,6 +1160,43 @@ export function RPGWorld() {
                   PRESS / TAP E WHEN THE MARKER IS IN THE GREEN
                 </p>
               </>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Boss battle */}
+      <AnimatePresence>
+        {battle && (
+          <motion.div className="dialogue-box rounded-lg p-4 mt-3 max-w-md w-full"
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="pixel-font text-[9px] text-hp">🐉 DEBUG DRAGON</span>
+              <span className="retro-font text-[6px] text-hp">{battle.hp}/100 HP</span>
+            </div>
+            <div className="h-3 bg-bg-main border-2 border-border rounded-sm overflow-hidden mb-2">
+              <div
+                className="h-full bg-gradient-to-r from-hp to-red-400 transition-[width] duration-300"
+                style={{ width: `${battle.hp}%` }}
+              />
+            </div>
+            <p className="text-sm text-cream leading-relaxed mb-3">{battle.log}</p>
+            {battle.phase === "victory" ? (
+              <p className="retro-font text-[8px] text-gold text-center animate-blink">
+                THE END...?
+              </p>
+            ) : (
+              <div className="grid grid-cols-3 gap-2">
+                {attacks.map((a, i) => (
+                  <button
+                    key={a.name}
+                    onClick={() => doAttack(i)}
+                    className="game-btn text-[5px] py-2 leading-tight"
+                  >
+                    {a.name}
+                  </button>
+                ))}
+              </div>
             )}
           </motion.div>
         )}

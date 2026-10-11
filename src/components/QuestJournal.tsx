@@ -10,16 +10,19 @@ import {
   subscribeJournal,
 } from "../game/journal";
 import { FISH, getCaughtFish } from "../game/fishing";
+import { getDaily, type DailyQuest } from "../game/daily";
 
 export function QuestJournal() {
   const [open, setOpen] = useState(false);
   const [journal, setJournal] = useState(getJournal());
   const [caught, setCaught] = useState<string[]>(() => getCaughtFish());
+  const [daily, setDaily] = useState<DailyQuest | null>(null);
 
   useEffect(() => subscribeJournal(() => setJournal(getJournal())), []);
   useEffect(() => {
     if (!open) return;
     setCaught(getCaughtFish());
+    setDaily(getDaily());
   }, [open]);
 
   const pct = getCompletion(journal);
@@ -96,6 +99,44 @@ export function QuestJournal() {
                       style={{ width: `${pct}%` }}
                     />
                   </div>
+                </div>
+
+                {/* Daily quest */}
+                <div>
+                  <h3 className="retro-font text-[6px] text-gold mb-2">
+                    ✦ DAILY QUEST
+                  </h3>
+                  {daily ? (
+                    <>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-cream">{daily.label}</span>
+                        <span
+                          className={`retro-font text-[6px] ${
+                            daily.done ? "text-xp" : "text-gold"
+                          }`}
+                        >
+                          {daily.done
+                            ? "DONE ✓"
+                            : `${daily.progress}/${daily.target}`}
+                        </span>
+                      </div>
+                      <div className="h-2 bg-bg-main border border-border rounded-sm overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-xp to-gold transition-[width] duration-500"
+                          style={{
+                            width: `${Math.min(
+                              100,
+                              (daily.progress / daily.target) * 100
+                            )}%`,
+                          }}
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-xs text-text-secondary/60">
+                      A new quest arrives each day.
+                    </p>
+                  )}
                 </div>
 
                 {/* Sections */}

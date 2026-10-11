@@ -185,3 +185,41 @@ export const navLinks = [
   { label: "Skills", href: "#skills" },
   { label: "Contact", href: "#contact" },
 ];
+
+export const updates = [
+  {
+    version: "1.5",
+    date: "Oct 2026",
+    title: "The Debug Dragon Update",
+    items: [
+      "Final boss: Debug Dragon battle after clearing all 3 quests",
+      "Daily quests - a new task every day",
+      "NPCs head home at night - meet the Night Watch",
+      "Friendship hearts: talk often to unlock secret lines",
+      "Terrain-aware footstep sounds",
+      "Scroll of Updates (you are reading it!)",
+    ],
+  },
+  {
+    version: "1.4",
+    date: "Sep 2026",
+    title: "Fishing & Weather Update",
+    items: [
+      "Fishing minigame with 5 rare fish species",
+      "Random rain & storm weather",
+      "6-track jukebox & speedrun timer",
+      "Hidden grove warp - find the quiet meadow",
+    ],
+  },
+  {
+    version: "1.3",
+    date: "Sep 2026",
+    title: "Sound & Stats Update",
+    items: [
+      "8-bit SFX + procedural BGM soundtrack",
+      "EXP bar, quest journal & achievements",
+      "Day/night cycle + pet slime companion",
+      "Contact form, minimap & GitHub stats panel",
+    ],
+  },
+];

@@ -14,6 +14,8 @@ import { SkillStatusPanel } from "../components/SkillStatusPanel";
 import { GlobalToast } from "../components/GlobalToast";
 import { QuestJournal } from "../components/QuestJournal";
 import { GitHubStats } from "../components/GitHubStats";
+import { UpdateScroll } from "../components/UpdateScroll";
+import { Analytics } from "@vercel/analytics/react";
 import { markSection } from "../game/journal";
 import { track } from "../game/achievements";
 import { notifyNewly, showToast } from "../game/toast";
@@ -136,6 +138,7 @@ function RootLayout() {
 
   return (
     <div className="min-h-screen bg-bg-main">
+      <Analytics />
       {crtOn && <div className="crt-overlay" aria-hidden="true" />}
       <StartScreen onStart={handleStart} onSkip={handleSkip} />
       {started && (
@@ -225,6 +228,7 @@ function RootLayout() {
             <GitHubStats />
             <SectionDivider />
             <TechStackSection />
+            <UpdateScroll />
             <SectionDivider />
             <SkillStatusPanel />
             <SectionDivider />

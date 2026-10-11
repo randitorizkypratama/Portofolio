@@ -1,4 +1,4 @@
-const CACHE = "pq-v1";
+const CACHE = "pq-v2";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -42,15 +42,17 @@ self.addEventListener("fetch", (event) => {
 
   if (url.origin !== self.location.origin) return;
 
+  // Same-origin assets: network-first so users always get fresh builds,
+  // cache as offline fallback.
   event.respondWith(
-    caches.match(req).then(
-      (cached) =>
-        cached ||
-        fetch(req).then((res) => {
+    fetch(req)
+      .then((res) => {
+        if (res.ok) {
           const copy = res.clone();
           caches.open(CACHE).then((c) => c.put(req, copy));
-          return res;
-        })
-    )
+        }
+        return res;
+      })
+      .catch(() => caches.match(req))
   );
 });

@@ -12,6 +12,12 @@ export interface NPC {
   sprite: string;
   dialogue: string[];
   type: "npc" | "sign" | "quest" | "secret";
+  /** Moves here at night (if set). */
+  nightPosition?: Position;
+  /** Only appears at night. */
+  nightOnly?: boolean;
+  /** Bonus dialogue unlocked at 3+ friendship hearts. */
+  secretLine?: string;
 }
 
 export const npcs: NPC[] = [
@@ -31,12 +37,14 @@ export const npcs: NPC[] = [
     id: "npc-guide",
     name: "Quest Guide",
     position: { x: 12, y: 9 },
+    nightPosition: { x: 6, y: 6 },
     sprite: "🧙",
     dialogue: [
       "Greetings, traveler! I am the Quest Guide.",
       "There are 3 completed quests in this realm.",
       "Visit the Quest Boards to learn about each one!",
     ],
+    secretLine: "Between us... I once got lost in my own documentation. Embarrassing.",
     type: "npc",
   },
   {
@@ -99,6 +107,7 @@ export const npcs: NPC[] = [
     id: "npc-sensei",
     name: "Code Sensei",
     position: { x: 6, y: 10 },
+    nightPosition: { x: 5, y: 7 },
     sprite: "⛩️",
     dialogue: [
       "Ah, a fellow traveler of the digital path...",
@@ -106,12 +115,14 @@ export const npcs: NPC[] = [
       "HIBIKISHOP, DuelDex, Family Tree — three dungeons cleared.",
       "Keep building. The grind never stops, and neither does the XP.",
     ],
+    secretLine: "Secret: the real stack is the friends we refactored along the way.",
     type: "npc",
   },
   {
     id: "npc-github",
     name: "GitHub Guardian",
     position: { x: 11, y: 19 },
+    nightPosition: { x: 12, y: 18 },
     sprite: "🛡️",
     dialogue: [
       "I guard the Repository of Commits...",
@@ -119,12 +130,14 @@ export const npcs: NPC[] = [
       "Streaks are forged one commit at a time, traveler.",
       "Visit: github.com/fixdiriloe",
     ],
+    secretLine: "The green squares... forged in late-night commits and strong coffee.",
     type: "npc",
   },
   {
     id: "npc-faq",
     name: "Village Elder",
     position: { x: 19, y: 12 },
+    nightPosition: { x: 16, y: 13 },
     sprite: "👴",
     dialogue: [
       "Ah, a visitor with questions. Ask away — I answer in riddles no more.",
@@ -133,6 +146,7 @@ export const npcs: NPC[] = [
       "Q: Favorite stack? A: Vue/Nuxt, TypeScript, Tailwind, Bun & Turso.",
       "Q: How to start? A: Use the Message Board south of the plaza — I always read it.",
     ],
+    secretLine: "Between you and me: he replies fastest in the morning (UTC+7).",
     type: "npc",
   },
   {
@@ -151,12 +165,14 @@ export const npcs: NPC[] = [
     id: "npc-bard",
     name: "Traveling Bard",
     position: { x: 16, y: 18 },
+    nightPosition: { x: 15, y: 12 },
     sprite: "🎻",
     dialogue: [
       "Ho ho! Care for a tune, traveler?",
-      "The jukebox in the pause menu holds three melodies — cycle them freely!",
-      "Music sooths the soul... and makes quests 100% more epic.",
+      "The jukebox in the pause menu holds six melodies — cycle them freely!",
+      "Music soothes the soul... and makes quests 100% more epic.",
     ],
+    secretLine: "psst... listen close at the bridge — the water keeps its own rhythm.",
     type: "npc",
   },
   {
@@ -169,13 +185,41 @@ export const npcs: NPC[] = [
       "Rest your feet — the plaza fountain is just west of here.",
       "Every traveler who signs the ledger makes this village a little brighter.",
     ],
+    secretLine: "Room 3 is free... just mind the slime. He pays in compliments.",
+    type: "npc",
+  },
+  {
+    id: "npc-watch",
+    name: "Night Watch",
+    position: { x: 14, y: 15 },
+    sprite: "🌙",
+    nightOnly: true,
+    dialogue: [
+      "Halt — just kidding. Welcome to the night shift.",
+      "I guard the village while the sun sleeps. Quiet hours are the best hours.",
+      "They say a Debug Dragon appears in the plaza once all 3 quests are done...",
+    ],
     type: "npc",
   },
 ];
 
+/** The final boss — appears in the plaza after all 3 quests are cleared. */
+export const bossDragon: NPC = {
+  id: "boss-dragon",
+  name: "Debug Dragon",
+  position: { x: 14, y: 7 },
+  sprite: "🐉",
+  dialogue: [
+    "RRAAAWR! I am the Debug Dragon — eater of deadlines, breaker of builds!",
+    "You cleared the three quests? Then face the final stack trace!",
+  ],
+  type: "npc",
+};
+
 export function getNearbyEntity(
   playerPos: Position,
-  direction: Direction
+  direction: Direction,
+  list: NPC[] = npcs
 ): NPC | null {
   const offsets: Record<Direction, Position> = {
     up: { x: 0, y: -1 },
@@ -190,7 +234,7 @@ export function getNearbyEntity(
   };
 
   return (
-    npcs.find(
+    list.find(
       (npc) => npc.position.x === checkPos.x && npc.position.y === checkPos.y
     ) || null
   );

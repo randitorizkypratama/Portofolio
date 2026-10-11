@@ -71,4 +71,10 @@ export const sfx = {
   },
   hover: () => blip(880, 0.04, "square", 0.012),
   type: () => blip(920, 0.03, "square", 0.01),
+  /** Terrain-aware footstep. */
+  stepOn: (tile: number) => {
+    if (tile === 9) blip(140, 0.06, "triangle", 0.022);
+    else if (tile === 1 || tile === 8) blip(210, 0.04, "square", 0.014);
+    else blip(170, 0.05, "triangle", 0.02);
+  },
 };

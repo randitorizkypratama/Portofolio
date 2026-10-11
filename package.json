@@ -13,6 +13,7 @@
     "@hookform/resolvers": "^5.9.1",
     "@tanstack/react-router": "^1.170.42",
     "@tanstack/router-devtools": "^1.167.2",
+    "@vercel/analytics": "^2.0.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.55.0",
     "motion": "^14.1.0",
