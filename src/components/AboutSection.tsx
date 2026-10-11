@@ -22,7 +22,7 @@ export function AboutSection() {
               transition={{ duration: 0.3 }}
             >
               <img
-                src="/images/workspace.webp"
+                src="/images/coding_workspace.gif"
                 alt="Developer workspace at night"
                 className="w-full h-auto"
                 loading="lazy"
