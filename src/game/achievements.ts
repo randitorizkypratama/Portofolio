@@ -22,6 +22,7 @@ export interface Stats {
   harvest?: number;
   gems?: number;
   dailyChest?: boolean;
+  brews?: number;
 }
 
 export interface AchievementDef {
@@ -119,7 +120,8 @@ export type TrackEvent =
   | "portal"
   | "harvest"
   | "gems"
-  | "dailychest";
+  | "dailychest"
+  | "brew";
 
 /** Increment a stat; returns ids newly unlocked by this event. */
 export function track(event: TrackEvent, payload?: string): string[] {
@@ -150,6 +152,7 @@ export function track(event: TrackEvent, payload?: string): string[] {
   if (event === "harvest") s.harvest = (s.harvest ?? 0) + 1;
   if (event === "gems") s.gems = (s.gems ?? 0) + (payload ? Number(payload) || 0 : 0);
   if (event === "dailychest") s.dailyChest = true;
+  if (event === "brew") s.brews = (s.brews ?? 0) + 1;
   localStorage.setItem(KEY, JSON.stringify(s));
   const after = getUnlockedIds(s);
   const newly = after.filter((id) => !before.has(id));

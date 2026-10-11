@@ -18,7 +18,7 @@ import {
 import { tileBackground } from "../game/tileArt";
 import { getTileAt } from "../game/tileMap";
 import { sfx } from "../game/sfx";
-import { track } from "../game/achievements";
+import { track, subscribe } from "../game/achievements";
 import { notifyNewly, showToast } from "../game/toast";
 import { getDayPeriod, type DayPeriod } from "../game/dayNight";
 import { FISH, HOOK_ZONE, addFish, rollFish, getCaughtFish } from "../game/fishing";
@@ -34,6 +34,8 @@ import {
 } from "../game/inventory";
 import { getTitle } from "../game/titles";
 import { plotStage, plantPlot, waterPlot, harvestPlot } from "../game/garden";
+import { getGold, addGold, subscribeGold } from "../game/gold";
+import { getLevel, levelProgress } from "../game/level";
 import { Minimap } from "./Minimap";
 import { NPCPortrait } from "./NPCPortrait";
 import { TypewriterText } from "./TypewriterText";
@@ -309,6 +311,11 @@ function NPCSprite({
   return (
     <div className="absolute flex items-center justify-center" style={{ width: TILE_SIZE, height: TILE_SIZE }}>
       <EntityShadow size={npc.id === "boss-dragon" ? 28 : npc.type === "quest" ? 22 : 18} />
+
+      {/* Nameplate when the player is near */}
+      {isNearby && npc.type !== "garden" && (
+        <span className="nameplate">{npc.name}</span>
+      )}
 
       {/* Quest marker */}
       {npc.type === "quest" && (
@@ -806,6 +813,12 @@ export function RPGWorld() {
   const [rideUnlocked, setRideUnlocked] = useState(() => getTotalHearts() >= 10);
   const [showCave, setShowCave] = useState(false);
   const [, setGardenTick] = useState(0);
+  const [gold, setGold] = useState(() => getGold());
+  const [level, setLevel] = useState(() => getLevel());
+  const [expPct, setExpPct] = useState(() => levelProgress());
+  const [floats, setFloats] = useState<{ id: number; text: string; color: string; x: number; y: number }[]>([]);
+  const floatIdRef = useRef(0);
+  const levelRef = useRef(level);
   const [, forcePatrolRender] = useReducer((c: number) => c + 1, 0);
   const swimmingRef = useRef(false);
   const ridingRef = useRef(false);
@@ -831,6 +844,63 @@ export function RPGWorld() {
   useEffect(() => {
     const iv = setInterval(() => setGardenTick((t) => t + 1), 2000);
     return () => clearInterval(iv);
+  }, []);
+
+  /** Floating "+10G" / "+6 EXP" text above the player. */
+  const spawnFloat = useCallback((text: string, color: string) => {
+    const p = playerPosRef.current;
+    const id = ++floatIdRef.current;
+    setFloats((f) => [...f.slice(-5), { id, text, color, x: p.x, y: p.y }]);
+    window.setTimeout(() => setFloats((f) => f.filter((n) => n.id !== id)), 1000);
+  }, []);
+
+  /** Gold changes from anywhere (hotbar sales, etc). */
+  useEffect(() => subscribeGold(() => setGold(getGold())), []);
+
+  /** Hotbar: use portable items outside battle. */
+  const brewItem = useCallback((id: string) => {
+    if (dialogueRef.current || caveOpenRef.current || battleRef.current) return;
+    if (id === "holy_water") {
+      showToast("Holy Water is for the DRAGON only.");
+      return;
+    }
+    if (!removeItem(id, 1)) {
+      showToast("None left in the bag!");
+      return;
+    }
+    setInv(getInventory());
+    sfx.advance();
+    const label = id === "coffee" ? "☕ Coffee Potion" : "🍬 Halloween Candy";
+    notifyNewly(track("brew"));
+    spawnFloat("+6 EXP", "#8ae6b0");
+    showToast(`${label} — brewed! (+6 EXP)`);
+  }, []);
+  const brewItemRef = useRef(brewItem);
+  useEffect(() => { brewItemRef.current = brewItem; }, [brewItem]);
+
+  // Level-up detection — flash the screen + toast
+  useEffect(() => {
+    const check = () => {
+      const lv = getLevel();
+      setExpPct(levelProgress());
+      if (lv > levelRef.current) {
+        levelRef.current = lv;
+        setLevel(lv);
+        sfx.achievement();
+        showToast(`LEVEL UP! — REACHED LV ${lv}`);
+        const el = viewportFrameRef.current;
+        if (el) {
+          el.classList.remove("level-flash");
+          void el.offsetWidth;
+          el.classList.add("level-flash");
+          window.setTimeout(() => el.classList.remove("level-flash"), 800);
+        }
+      }
+    };
+    check();
+    const unsub = subscribe(check);
+    const unsubGold = subscribeGold(() => { setGold(getGold()); check(); });
+    return () => { unsub(); unsubGold(); };
   }, []);
 
   // Pet slime
@@ -947,7 +1017,9 @@ export function RPGWorld() {
       log: pushLog(cur.log, lastLog),
     }));
     notifyNewly(track("dragon"));
-    showToast("BOSS DEFEATED — THE END...?");
+    addGold(100);
+    spawnFloat("+100G", "#d4a847");
+    showToast("BOSS DEFEATED — ◆100 GOLD! THE END...?");
     sfx.achievement();
     window.setTimeout(() => {
       battleRef.current = null;
@@ -1242,6 +1314,9 @@ export function RPGWorld() {
         if (fish.id === "moon_eel") notifyNewly(track("nightfish"));
         sfx.link();
         showToast(`CAUGHT: ${fish.name}${isNew ? " (NEW SPECIES!)" : ""}`);
+        const gained = fish.id === "golden_koi" ? 50 : 5 + Math.floor(Math.random() * 6);
+        addGold(gained);
+        spawnFloat(`+${gained}G`, "#d4a847");
         setFishing({ ...f, done: true, result: fish.name });
       } else {
         sfx.close();
@@ -1331,6 +1406,8 @@ export function RPGWorld() {
           notifyNewly(track("harvest"));
           setInv(getInventory());
           sfx.link();
+          addGold(8);
+          spawnFloat("+8G", "#d4a847");
           showToast(`HARVEST: ${crop === "coffee" ? "☕ Coffee Potion" : "🍬 Candy"} +1`);
           setDialogue({
             npc: { ...entity, dialogue: ["A ripe harvest! The plot is bare again — plant anew."] },
@@ -1368,7 +1445,9 @@ export function RPGWorld() {
           setOpenedLoot(getOpened());
           notifyNewly(track("dailychest"));
           sfx.link();
-          showToast("DAILY GIFT: ☕ Coffee + 🍬 Candy");
+          addGold(30);
+          spawnFloat("+30G", "#d4a847");
+          showToast("DAILY GIFT: ☕ Coffee + 🍬 Candy + ◆30");
           setDialogue({
             npc: { ...entity, dialogue: ["A daily gift!", "☕ Coffee Potion x1", "🍬 Halloween Candy x1"] },
             lineIndex: 0,
@@ -1392,6 +1471,8 @@ export function RPGWorld() {
         setOpenedLoot(getOpened());
         notifyNewly(track(entity.type === "pumpkin" ? "candy" : "chest"));
         sfx.link();
+        addGold(15);
+        spawnFloat("+15G", "#d4a847");
         showToast(`FOUND: ${lootLines.join(", ")}`);
         setDialogue({
           npc: { ...entity, dialogue: [entity.dialogue[0], ...lootLines] },
@@ -1629,6 +1710,13 @@ export function RPGWorld() {
         return;
       }
 
+      // 1/2/3 — hotbar: brew portable items outside battle
+      if ((key === "1" || key === "2" || key === "3") && !e.repeat) {
+        const itemId = key === "1" ? "coffee" : key === "2" ? "candy" : "holy_water";
+        brewItemRef.current?.(itemId);
+        return;
+      }
+
       // Block movement when dialogue or menu is open
       if (hasDialogue || hasMenu) return;
 
@@ -1817,7 +1905,7 @@ export function RPGWorld() {
       >
       <div
         ref={containerRef}
-        className="relative overflow-hidden rounded-lg border-2 border-border focus:outline-none focus:border-gold/50"
+        className="relative overflow-hidden rounded-lg border-2 border-border focus:outline-none focus:border-gold/50 pixel-cursor"
         style={{
           width: viewportWidth,
           height: viewportHeight,
@@ -1908,6 +1996,41 @@ export function RPGWorld() {
           >
             {playerTitle}
           </span>
+        </div>
+
+        {/* Floating gain text (+10G, +6 EXP…) */}
+        {floats.map((f) => (
+          <span
+            key={f.id}
+            className="float-text"
+            style={{
+              left: (f.x - offsetX) * TILE_SIZE + TILE_SIZE / 2,
+              top: (f.y - offsetY) * TILE_SIZE - 6,
+              color: f.color,
+            }}
+          >
+            {f.text}
+          </span>
+        ))}
+
+        {/* Inventory hotbar */}
+        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 z-[18] flex gap-1 game-border rounded px-1.5 py-1 bg-bg-main/85">
+          {([["coffee", "☕"], ["candy", "🍬"], ["holy_water", "💧"]] as const).map(([id, icon], i) => (
+            <button
+              key={id}
+              onClick={() => brewItemRef.current?.(id)}
+              className="relative w-8 h-8 rounded border border-border bg-bg-elevated/70 flex items-center justify-center text-[12px] hover:border-gold/60 transition-colors"
+              title={`${i + 1} — ${id.replace("_", " ")} x${inv[id] ?? 0}`}
+            >
+              <span className={(inv[id] ?? 0) === 0 ? "opacity-30 grayscale" : ""}>{icon}</span>
+              {(inv[id] ?? 0) > 0 && (
+                <span className="absolute -top-1 -right-1 retro-font text-[6px] text-gold bg-bg-main border border-gold/50 rounded px-0.5 leading-tight">
+                  {inv[id]}
+                </span>
+              )}
+              <span className="absolute -bottom-0.5 left-0.5 retro-font text-[4px] text-text-secondary/70">{i + 1}</span>
+            </button>
+          ))}
         </div>
 
         {/* Footstep dust puffs */}
@@ -2076,21 +2199,37 @@ export function RPGWorld() {
             .map((n) => ({ id: n.id, x: n.position.x, y: n.position.y, type: n.type }))}
         />
 
-        {/* Speedrun timer + fish log */}
-        <div className="absolute top-2 left-2 z-[17] game-border rounded px-2 py-1 bg-bg-main/80 flex items-center gap-2">
-          <span className="retro-font text-[5px] text-text-secondary">TIME</span>
-          <span className="retro-font text-[7px] text-gold">{fmtTime(runTime)}</span>
-          {bestTime != null && (
-            <>
-              <span className="retro-font text-[5px] text-text-secondary">BEST</span>
-              <span className="retro-font text-[6px] text-xp">{fmtTime(bestTime)}</span>
-            </>
-          )}
-          {caughtFish.length > 0 && (
-            <span className="retro-font text-[5px] text-cyan">
-              🎣 {caughtFish.length}/{FISH.length}
+        {/* JRPG HUD — LV / EXP / hearts / gold / time / fish */}
+        <div className="absolute top-2 left-2 z-[17] game-border rounded px-2 py-1.5 bg-bg-main/85 flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <span className="retro-font text-[6px] px-1.5 py-0.5 rounded bg-gold/20 border border-gold/50 text-gold font-bold">
+              LV {level}
             </span>
-          )}
+            <div className="w-16 h-1.5 bg-bg-main border border-border rounded-sm overflow-hidden" title="EXP">
+              <div className="h-full bg-xp rounded-sm transition-all duration-500" style={{ width: `${Math.round(expPct * 100)}%` }} />
+            </div>
+            <span className="retro-font text-[6px] text-hp" title={`Friendship ${getTotalHearts()}`}>
+              ♥{getTotalHearts()}
+            </span>
+            <span className="retro-font text-[6px] text-gold" title="Gold">
+              ◆{gold}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="retro-font text-[5px] text-text-secondary">TIME</span>
+            <span className="retro-font text-[7px] text-cream">{fmtTime(runTime)}</span>
+            {bestTime != null && (
+              <>
+                <span className="retro-font text-[5px] text-text-secondary">BEST</span>
+                <span className="retro-font text-[6px] text-xp">{fmtTime(bestTime)}</span>
+              </>
+            )}
+            {caughtFish.length > 0 && (
+              <span className="retro-font text-[5px] text-cyan">
+                🎣 {caughtFish.length}/{FISH.length}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Weather */}
@@ -2556,6 +2695,7 @@ export function RPGWorld() {
       <div className="hidden lg:flex gap-4 mt-2 retro-font text-[6px] text-text-secondary/50">
         <span>WASD / Arrows — Move</span>
         <span>E / Space — Interact / Fish / Swim</span>
+        <span>1/2/3 — Use Hotbar</span>
         {rideUnlocked && <span className="text-gold/70">R — Ride Slime</span>}
         <span>ESC — Menu</span>
       </div>
@@ -2605,6 +2745,9 @@ export function RPGWorld() {
         onClose={() => setShowCave(false)}
         onEnd={(score) => {
           notifyNewly(track("gems", String(score)));
+          const gained = score * 2;
+          addGold(gained);
+          spawnFloat(`+${gained}G`, "#d4a847");
           showToast(score >= 10 ? `💎 ${score} GEMS — CAVE LEGEND!` : `💎 ${score} gems mined`);
         }}
       />

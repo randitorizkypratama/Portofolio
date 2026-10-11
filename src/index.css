@@ -573,6 +573,57 @@ body.konami-rainbow {
   to { transform: scale(1); opacity: 1; }
 }
 
+/* ── RPG: floating gain text over the player ───────────────────── */
+.float-text {
+  position: absolute;
+  z-index: 30;
+  pointer-events: none;
+  white-space: nowrap;
+  font-family: "Press Start 2P", monospace;
+  font-size: 7px;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.9);
+  animation: float-rise 1s ease-out forwards;
+}
+
+@keyframes float-rise {
+  0% { transform: translate(-50%, 0); opacity: 1; }
+  70% { opacity: 1; }
+  100% { transform: translate(-50%, -28px); opacity: 0; }
+}
+
+/* ── RPG: level-up screen flash ────────────────────────────────── */
+.level-flash {
+  animation: level-flash-anim 0.7s ease-out;
+}
+
+@keyframes level-flash-anim {
+  0% { box-shadow: inset 0 0 0 9999px rgba(212, 168, 71, 0.45); }
+  100% { box-shadow: inset 0 0 0 9999px rgba(212, 168, 71, 0); }
+}
+
+/* ── RPG: NPC nameplate above sprite ───────────────────────────── */
+.nameplate {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(10, 14, 20, 0.82);
+  border: 1px solid rgba(212, 168, 71, 0.35);
+  font-family: "Press Start 2P", monospace;
+  font-size: 5px;
+  color: #f0e6d2;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 25;
+}
+
+/* ── RPG: pixel sword cursor inside the game viewport ──────────── */
+.pixel-cursor {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23d0d8e0' d='M20 2h2v2h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h2v1h1v1h1v1h1v1h1v1h-2v-1h-1v-1h-1v-1h-1v-1h-1v-2h-1v-1H9V9H8V8H7V7H6V6H5V5h2v1h1v1h1v1h1v1h1V8h1V7h1V6h1V5h1V4h1V3h1V2z'/%3E%3Cpath fill='%238b5a2b' d='M4 16h2v2H4v2H2v-2h2v-2z'/%3E%3Cpath fill='%23d4a847' d='M6 14h2v2H6z'/%3E%3C/svg%3E") 2 2, crosshair;
+}
+
 @keyframes confetti-fall {
   0% { transform: translateY(-8px) rotate(0deg); opacity: 1; }
   100% { transform: translateY(140px) rotate(540deg); opacity: 0; }
