@@ -19,6 +19,9 @@ export interface Stats {
   nightfish?: boolean;
   candy?: number;
   hired?: boolean;
+  harvest?: number;
+  gems?: number;
+  dailyChest?: boolean;
 }
 
 export interface AchievementDef {
@@ -69,6 +72,9 @@ export const ACHIEVEMENT_DEFS: AchievementDef[] = [
   { id: "night_fisher", name: "Night Fisher", desc: "Catch a Moon Eel after dark", check: (s) => !!s.nightfish },
   { id: "trick_or_treat", name: "Trick or Treat", desc: "Find a jack-o-lantern", check: (s) => (s.candy ?? 0) >= 1 },
   { id: "well_connected", name: "Well Connected", desc: "Open the Hire Me portal", check: (s) => !!s.hired },
+  { id: "gardener", name: "Gardener", desc: "Harvest your first crop", check: (s) => (s.harvest ?? 0) >= 1 },
+  { id: "gem_miner", name: "Gem Miner", desc: "Mine 10 gems in the Crystal Cavern", check: (s) => (s.gems ?? 0) >= 10 },
+  { id: "daily_gift", name: "Daily Gift", desc: "Open the daily gift chest", check: (s) => !!s.dailyChest },
   {
     id: "completionist",
     name: "Completionist",
@@ -110,7 +116,10 @@ export type TrackEvent =
   | "golden"
   | "nightfish"
   | "candy"
-  | "portal";
+  | "portal"
+  | "harvest"
+  | "gems"
+  | "dailychest";
 
 /** Increment a stat; returns ids newly unlocked by this event. */
 export function track(event: TrackEvent, payload?: string): string[] {
@@ -138,6 +147,9 @@ export function track(event: TrackEvent, payload?: string): string[] {
   if (event === "nightfish") s.nightfish = true;
   if (event === "candy") s.candy = (s.candy ?? 0) + 1;
   if (event === "portal") s.hired = true;
+  if (event === "harvest") s.harvest = (s.harvest ?? 0) + 1;
+  if (event === "gems") s.gems = (s.gems ?? 0) + (payload ? Number(payload) || 0 : 0);
+  if (event === "dailychest") s.dailyChest = true;
   localStorage.setItem(KEY, JSON.stringify(s));
   const after = getUnlockedIds(s);
   const newly = after.filter((id) => !before.has(id));

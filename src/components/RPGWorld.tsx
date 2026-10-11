@@ -33,9 +33,11 @@ import {
   markOpened,
 } from "../game/inventory";
 import { getTitle } from "../game/titles";
+import { plotStage, plantPlot, waterPlot, harvestPlot } from "../game/garden";
 import { Minimap } from "./Minimap";
 import { NPCPortrait } from "./NPCPortrait";
 import { TypewriterText } from "./TypewriterText";
+import { CrystalCave } from "./CrystalCave";
 
 const VIEWPORT_TILES_X = 17;
 const VIEWPORT_TILES_Y = 13;
@@ -586,6 +588,60 @@ function NPCSprite({
             <rect x="6" y="10" width="1" height="1" fill="#1a2438" />
             <rect x="10" y="10" width="1" height="1" fill="#1a2438" />
           </svg>
+        ) : npc.type === "garden" ? (
+          (() => {
+            const stage = plotStage(npc.id);
+            return (
+              <>
+                {/* Tilled soil */}
+                <rect x="1" y="10" width="14" height="5" fill="#6b4423" />
+                <rect x="1" y="10" width="14" height="1" fill="#7d5230" />
+                <rect x="2" y="12" width="3" height="1" fill="#54331a" />
+                <rect x="7" y="12" width="3" height="1" fill="#54331a" />
+                <rect x="12" y="12" width="2" height="1" fill="#54331a" />
+                {stage !== "empty" && (
+                  <rect x="7" y="6" width="2" height="4" fill="#3a8f48" />
+                )}
+                {stage === "seed" && (
+                  <>
+                    <rect x="6" y="9" width="1" height="1" fill="#d4a847" />
+                    <rect x="9" y="9" width="1" height="1" fill="#d4a847" />
+                  </>
+                )}
+                {stage === "sprout" && (
+                  <>
+                    <rect x="5" y="5" width="3" height="2" fill="#5ec26a" />
+                    <rect x="8" y="4" width="3" height="3" fill="#5ec26a" />
+                    <rect x="5" y="5" width="2" height="1" fill="#8de08a" />
+                  </>
+                )}
+                {stage === "ready" && (
+                  <>
+                    <rect x="4" y="3" width="3" height="3" fill="#5ec26a" />
+                    <rect x="9" y="3" width="3" height="3" fill="#5ec26a" />
+                    <rect x="6" y="1" width="4" height="3" fill="#e74c3c" />
+                    <rect x="6" y="1" width="4" height="1" fill="#c0392b" />
+                    <rect x="7" y="2" width="1" height="1" fill="#ff8a7a" />
+                  </>
+                )}
+              </>
+            );
+          })()
+        ) : npc.type === "cave" ? (
+          <>
+            {/* Rock mound */}
+            <rect x="1" y="8" width="14" height="7" fill="#4a5560" />
+            <rect x="1" y="8" width="14" height="1" fill="#5c6874" />
+            <rect x="2" y="6" width="12" height="2" fill="#5c6874" />
+            <rect x="4" y="4" width="8" height="2" fill="#6e7a87" />
+            {/* Dark entrance */}
+            <rect x="5" y="9" width="6" height="6" fill="#0a0e14" />
+            <rect x="5" y="9" width="6" height="1" fill="#1a2438" />
+            {/* Crystal glints */}
+            <rect x="3" y="10" width="1" height="2" fill="#5bb8c9" />
+            <rect x="12" y="11" width="1" height="2" fill="#9b59b6" />
+            <rect x="11" y="7" width="1" height="1" fill="#a8e8f8" />
+          </>
         ) : (
           <>
             {/* Headband */}
@@ -748,6 +804,8 @@ export function RPGWorld() {
   const [swimming, setSwimming] = useState(false);
   const [riding, setRiding] = useState(false);
   const [rideUnlocked, setRideUnlocked] = useState(() => getTotalHearts() >= 10);
+  const [showCave, setShowCave] = useState(false);
+  const [, setGardenTick] = useState(0);
   const [, forcePatrolRender] = useReducer((c: number) => c + 1, 0);
   const swimmingRef = useRef(false);
   const ridingRef = useRef(false);
@@ -767,6 +825,13 @@ export function RPGWorld() {
   const directionRef = useRef(direction);
   const advanceDialogueRef = useRef<(() => void) | null>(null);
   const interactRef = useRef<(() => void) | null>(null);
+  const caveOpenRef = useRef(false);
+
+  // Garden plots grow in real time — tick to refresh sprites
+  useEffect(() => {
+    const iv = setInterval(() => setGardenTick((t) => t + 1), 2000);
+    return () => clearInterval(iv);
+  }, []);
 
   // Pet slime
   const historyRef = useRef<Position[]>([START_POS, START_POS, START_POS]);
@@ -1156,6 +1221,8 @@ export function RPGWorld() {
   }, []);
 
   const doInteract = useCallback(() => {
+    // Crystal Cavern minigame owns its own input
+    if (caveOpenRef.current) return;
     // Boss battle: judge a timing strike
     const bt = battleRef.current;
     if (bt && bt.phase === "fight" && bt.timing) {
@@ -1241,8 +1308,73 @@ export function RPGWorld() {
         }, 1700);
         return;
       }
+      if (entity.type === "cave") {
+        sfx.open();
+        setShowCave(true);
+        return;
+      }
+      if (entity.type === "garden") {
+        const stage = plotStage(entity.id);
+        if (stage === "empty") {
+          plantPlot(entity.id);
+          setGardenTick((t) => t + 1);
+          sfx.interact();
+          setDialogue({
+            npc: { ...entity, dialogue: ["You plant a pixel seed. Water it to grow faster!"] },
+            lineIndex: 0,
+          });
+          return;
+        }
+        if (stage === "ready") {
+          const crop = harvestPlot(entity.id);
+          setGardenTick((t) => t + 1);
+          notifyNewly(track("harvest"));
+          setInv(getInventory());
+          sfx.link();
+          showToast(`HARVEST: ${crop === "coffee" ? "☕ Coffee Potion" : "🍬 Candy"} +1`);
+          setDialogue({
+            npc: { ...entity, dialogue: ["A ripe harvest! The plot is bare again — plant anew."] },
+            lineIndex: 0,
+          });
+          return;
+        }
+        const watered = waterPlot(entity.id);
+        setGardenTick((t) => t + 1);
+        sfx.interact();
+        setDialogue({
+          npc: {
+            ...entity,
+            dialogue: [watered ? "You water the sprout — it grows 40% faster!" : "Already watered. Let nature take its course."],
+          },
+          lineIndex: 0,
+        });
+        return;
+      }
       if (entity.type === "chest" || entity.type === "pumpkin") {
         sfx.interact();
+        if (entity.id === "chest-daily") {
+          const today = new Date().toISOString().slice(0, 10);
+          if (localStorage.getItem("pq_daily_chest") === today) {
+            setDialogue({
+              npc: { ...entity, dialogue: ["Already claimed today. Come back tomorrow, adventurer!"] },
+              lineIndex: 0,
+            });
+            return;
+          }
+          localStorage.setItem("pq_daily_chest", today);
+          addItem("coffee", 1);
+          addItem("candy", 1);
+          setInv(getInventory());
+          setOpenedLoot(getOpened());
+          notifyNewly(track("dailychest"));
+          sfx.link();
+          showToast("DAILY GIFT: ☕ Coffee + 🍬 Candy");
+          setDialogue({
+            npc: { ...entity, dialogue: ["A daily gift!", "☕ Coffee Potion x1", "🍬 Halloween Candy x1"] },
+            lineIndex: 0,
+          });
+          return;
+        }
         if (getOpened().has(entity.id)) {
           setDialogue({
             npc: { ...entity, dialogue: ["Empty. Someone got here first..."] },
@@ -1311,6 +1443,7 @@ export function RPGWorld() {
   }, []);
 
   useEffect(() => { interactRef.current = doInteract; }, [doInteract]);
+  useEffect(() => { caveOpenRef.current = showCave; }, [showCave]);
 
   const toggleMenu = useCallback(() => {
     if (dialogueRef.current) { sfx.close(); dialogueRef.current = null; setDialogue(null); return; }
@@ -1320,6 +1453,9 @@ export function RPGWorld() {
     showMenuRef.current = true;
     setShowMenu(true);
   }, []);
+
+  const toggleMenuRef = useRef(toggleMenu);
+  useEffect(() => { toggleMenuRef.current = toggleMenu; }, [toggleMenu]);
 
   const bindDir = (dir: string) => ({
     onPointerDown: (e: React.PointerEvent) => {
@@ -1520,7 +1656,7 @@ export function RPGWorld() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (dialogueRef.current || showMenuRef.current) return;
+      if (dialogueRef.current || showMenuRef.current || caveOpenRef.current) return;
       const keys = keysRef.current;
       if (keys.has("up")) movePlayer(0, -1, "up");
       else if (keys.has("down")) movePlayer(0, 1, "down");
@@ -1529,6 +1665,52 @@ export function RPGWorld() {
     }, 120);
     return () => clearInterval(interval);
   }, [movePlayer]);
+
+  // Gamepad support — dpad/left stick moves, A interacts, B closes, Start = menu
+  useEffect(() => {
+    let raf = 0;
+    let prevA = false;
+    let prevB = false;
+    let prevStart = false;
+    const poll = () => {
+      const pads = navigator.getGamepads?.();
+      const gp = pads ? Array.from(pads).find(Boolean) : null;
+      if (gp) {
+        const set = (dir: string, on: boolean) => {
+          if (on) keysRef.current.add(dir);
+          else keysRef.current.delete(dir);
+        };
+        if (!dialogueRef.current && !showMenuRef.current && !caveOpenRef.current) {
+          const ax = gp.axes[0] ?? 0;
+          const ay = gp.axes[1] ?? 0;
+          set("left", !!gp.buttons[14]?.pressed || ax < -0.4);
+          set("right", !!gp.buttons[15]?.pressed || ax > 0.4);
+          set("up", !!gp.buttons[12]?.pressed || ay < -0.4);
+          set("down", !!gp.buttons[13]?.pressed || ay > 0.4);
+        } else {
+          keysRef.current.clear();
+        }
+        const a = !!gp.buttons[0]?.pressed;
+        if (a && !prevA) interactRef.current?.();
+        prevA = a;
+        const b = !!gp.buttons[1]?.pressed;
+        if (b && !prevB) {
+          if (caveOpenRef.current) {
+            setShowCave(false);
+          } else {
+            window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+          }
+        }
+        prevB = b;
+        const st = !!gp.buttons[9]?.pressed;
+        if (st && !prevStart) toggleMenuRef.current?.();
+        prevStart = st;
+      }
+      raf = requestAnimationFrame(poll);
+    };
+    raf = requestAnimationFrame(poll);
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   const handleDialogueAdvance = useCallback(() => {
     if (!dialogueRef.current) return;
@@ -2416,6 +2598,16 @@ export function RPGWorld() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Crystal Cavern minigame */}
+      <CrystalCave
+        open={showCave}
+        onClose={() => setShowCave(false)}
+        onEnd={(score) => {
+          notifyNewly(track("gems", String(score)));
+          showToast(score >= 10 ? `💎 ${score} GEMS — CAVE LEGEND!` : `💎 ${score} gems mined`);
+        }}
+      />
     </div>
   );
 }

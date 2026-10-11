@@ -11,7 +11,7 @@ export interface NPC {
   position: Position;
   sprite: string;
   dialogue: string[];
-  type: "npc" | "sign" | "quest" | "secret" | "chest" | "shrine" | "portal" | "pumpkin";
+  type: "npc" | "sign" | "quest" | "secret" | "chest" | "shrine" | "portal" | "pumpkin" | "garden" | "cave";
   /** Moves here at night (if set). */
   nightPosition?: Position;
   /** Only appears at night. */
@@ -364,6 +364,54 @@ export const npcs: NPC[] = [
     type: "pumpkin",
     halloweenOnly: true,
     loot: [{ id: "candy", count: 1 }],
+  },
+  {
+    id: "garden-1",
+    name: "Garden Plot",
+    position: { x: 5, y: 20 },
+    sprite: "🌱",
+    dialogue: [""],
+    type: "garden",
+  },
+  {
+    id: "garden-2",
+    name: "Garden Plot",
+    position: { x: 6, y: 20 },
+    sprite: "🌱",
+    dialogue: [""],
+    type: "garden",
+  },
+  {
+    id: "garden-3",
+    name: "Garden Plot",
+    position: { x: 7, y: 20 },
+    sprite: "🌱",
+    dialogue: [""],
+    type: "garden",
+  },
+  {
+    id: "garden-4",
+    name: "Garden Plot",
+    position: { x: 8, y: 20 },
+    sprite: "🌱",
+    dialogue: [""],
+    type: "garden",
+  },
+  {
+    id: "cave-crystal",
+    name: "Crystal Cavern",
+    position: { x: 2, y: 8 },
+    sprite: "⛰️",
+    dialogue: ["Echoes of clinking gems drift from the dark..."],
+    type: "cave",
+  },
+  {
+    id: "chest-daily",
+    name: "Daily Gift Chest",
+    position: { x: 13, y: 16 },
+    sprite: "🎁",
+    dialogue: ["A gift chest that restocks every day!"],
+    type: "chest",
   },
 ];
 
