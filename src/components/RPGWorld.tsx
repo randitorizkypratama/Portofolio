@@ -392,6 +392,7 @@ interface BattleState {
   phase: "fight" | "victory" | "gameover";
   enraged: boolean;
   taunt25: boolean;
+  busy: boolean;
   timing: BattleTiming | null;
 }
 
@@ -552,6 +553,15 @@ export function RPGWorld() {
     window.setTimeout(() => el.classList.remove("battle-shake"), ms);
   };
 
+  /** Apply a battle state change synchronously (ref stays in lockstep with state). */
+  const updateBattle = (fn: (b: BattleState) => BattleState) => {
+    const cur = battleRef.current;
+    if (!cur) return;
+    const next = fn(cur);
+    battleRef.current = next;
+    setBattle(next);
+  };
+
   const dragonCounter = () => {
     const b = battleRef.current;
     if (!b || b.phase !== "fight") return;
@@ -563,27 +573,29 @@ export function RPGWorld() {
     sfx.hit();
     shake();
     if (playerHp <= 0) {
-      setBattle({
-        ...b,
+      updateBattle((cur) => ({
+        ...cur,
         playerHp: 0,
+        busy: false,
         timing: null,
         phase: "gameover",
-        log: pushLog(b.log, `${mv.name}! ${mv.line} GAME OVER — eaten by a semicolon.`),
-      });
+        log: pushLog(cur.log, `${mv.name}! ${mv.line} GAME OVER — eaten by a semicolon.`),
+      }));
       sfx.miss();
     } else {
-      setBattle({
-        ...b,
+      updateBattle((cur) => ({
+        ...cur,
         playerHp,
+        busy: false,
         timing: null,
-        log: pushLog(b.log, `${mv.name}! ${mv.line} (-1 ♥)`),
-      });
+        log: pushLog(cur.log, `${mv.name}! ${mv.line} (-1 ♥)`),
+      }));
     }
   };
 
   const judgeStrike = () => {
     const b = battleRef.current;
-    if (!b || !b.timing || b.phase !== "fight") return;
+    if (!b || !b.timing || b.phase !== "fight" || b.busy) return;
     const t = b.timing;
     const atk = BATTLE_ATTACKS[t.atk];
     const dist = Math.abs(t.pos - t.center);
@@ -592,12 +604,13 @@ export function RPGWorld() {
 
     if (!hit) {
       sfx.miss();
-      setBattle({
-        ...b,
+      updateBattle((cur) => ({
+        ...cur,
+        busy: true,
         timing: null,
-        log: pushLog(b.log, `${atk.name} — you hit a semicolon wall. MISS!`),
-      });
-      window.setTimeout(dragonCounter, 800);
+        log: pushLog(cur.log, `${atk.name} — you hit a semicolon wall. MISS!`),
+      }));
+      window.setTimeout(dragonCounter, 850);
       return;
     }
 
@@ -611,69 +624,75 @@ export function RPGWorld() {
     if (hp <= 0) {
       localStorage.setItem("pq_dragon_defeated", "1");
       setDragonDefeated(true);
-      setBattle({
-        ...b,
+      updateBattle((cur) => ({
+        ...cur,
         hp: 0,
+        busy: false,
         timing: null,
         phase: "victory",
-        log: pushLog(b.log, `${atk.name}${crit ? " CRIT!" : ""} -${dmg} HP. The dragon explodes into semicolons...`),
-      });
+        log: pushLog(cur.log, `${atk.name}${crit ? " CRIT!" : ""} -${dmg} HP. The dragon explodes into semicolons...`),
+      }));
       notifyNewly(track("dragon"));
       showToast("BOSS DEFEATED — THE END...?");
       sfx.achievement();
-      window.setTimeout(() => setBattle(null), 6000);
+      window.setTimeout(() => {
+        battleRef.current = null;
+        setBattle(null);
+      }, 6000);
       return;
     }
 
-    let enraged = b.enraged;
-    let taunt25 = b.taunt25;
-    const extra: string[] = [];
-    if (!enraged && hp <= 50) {
-      enraged = true;
-      extra.push("ENRAGE! The dragon glows crimson — MERGE CONFLICT unlocked!");
-      sfx.roar();
-      shake(600);
-    } else if (!taunt25 && hp <= 25) {
-      taunt25 = true;
-      extra.push('Dragon: "25% left and it still compiles? Impossible..."');
-    }
-    setBattle({
-      ...b,
+    const enraged = !b.enraged && hp <= 50;
+    const taunt25 = !b.taunt25 && !enraged && hp <= 25;
+    updateBattle((cur) => ({
+      ...cur,
       hp,
-      enraged,
-      taunt25,
+      enraged: cur.enraged || enraged,
+      taunt25: cur.taunt25 || taunt25,
+      busy: true,
       timing: null,
       log: pushLog(
-        pushLog(b.log, `${atk.name}${crit ? " CRIT!" : ""} -${dmg} HP. ${atk.line}`),
-        extra[0] ?? ""
+        pushLog(cur.log, `${atk.name}${crit ? " CRIT!" : ""} -${dmg} HP. ${atk.line}`),
+        enraged
+          ? "ENRAGE! The dragon glows crimson — MERGE CONFLICT unlocked!"
+          : taunt25
+            ? 'Dragon: "25% left and it still compiles? Impossible..."'
+            : ""
       ).filter(Boolean),
-    });
-    window.setTimeout(dragonCounter, 900);
+    }));
+    if (enraged) {
+      sfx.roar();
+      shake(600);
+    }
+    window.setTimeout(dragonCounter, 950);
   };
 
   const startAttack = (i: number) => {
     const b = battleRef.current;
-    if (!b || b.phase !== "fight" || b.timing) return;
+    if (!b || b.phase !== "fight" || b.timing || b.busy) return;
     sfx.advance();
     const center = 22 + Math.floor(Math.random() * 56);
-    setBattle({
-      ...b,
+    updateBattle((cur) => ({
+      ...cur,
       timing: { pos: 0, dir: 1, center, width: 18, atk: i },
-    });
+    }));
   };
 
   const retryBattle = () => {
     sfx.roar();
     shake(600);
-    setBattle({
+    const fresh: BattleState = {
       hp: 100,
       playerHp: 3,
       log: ["The Debug Dragon rises again... RRAAAWR!", "Round two — time your strikes!"],
       phase: "fight",
       enraged: false,
       taunt25: false,
+      busy: false,
       timing: null,
-    });
+    };
+    battleRef.current = fresh;
+    setBattle(fresh);
   };
 
   useEffect(() => { dialogueRef.current = dialogue; }, [dialogue]);
@@ -840,7 +859,7 @@ export function RPGWorld() {
       if (entity.id === "boss-dragon") {
         sfx.roar();
         shake(600);
-        setBattle({
+        const fresh: BattleState = {
           hp: 100,
           playerHp: 3,
           log: [
@@ -850,8 +869,11 @@ export function RPGWorld() {
           phase: "fight",
           enraged: false,
           taunt25: false,
+          busy: false,
           timing: null,
-        });
+        };
+        battleRef.current = fresh;
+        setBattle(fresh);
         return;
       }
       let lines = entity.dialogue;
@@ -882,9 +904,11 @@ export function RPGWorld() {
   useEffect(() => { interactRef.current = doInteract; }, [doInteract]);
 
   const toggleMenu = useCallback(() => {
-    if (dialogueRef.current) { sfx.close(); setDialogue(null); return; }
-    if (showMenuRef.current) { sfx.close(); setShowMenu(false); return; }
+    if (dialogueRef.current) { sfx.close(); dialogueRef.current = null; setDialogue(null); return; }
+    if (battleRef.current) { sfx.close(); battleRef.current = null; setBattle(null); return; }
+    if (showMenuRef.current) { sfx.close(); showMenuRef.current = false; setShowMenu(false); return; }
     sfx.open();
+    showMenuRef.current = true;
     setShowMenu(true);
   }, []);
 
@@ -941,6 +965,17 @@ export function RPGWorld() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore shortcuts while typing in forms
+      const t = e.target as HTMLElement | null;
+      if (
+        t &&
+        (t.tagName === "INPUT" ||
+          t.tagName === "TEXTAREA" ||
+          t.tagName === "SELECT" ||
+          t.isContentEditable)
+      ) {
+        return;
+      }
       const key = e.key.toLowerCase();
       const hasDialogue = dialogueRef.current !== null;
       const hasMenu = showMenuRef.current;
@@ -948,10 +983,32 @@ export function RPGWorld() {
       // Escape — always works
       if (key === "escape") {
         e.preventDefault();
-        if (hasDialogue) { sfx.close(); setDialogue(null); return; }
-        if (battleRef.current) { sfx.close(); setBattle(null); return; }
-        if (hasMenu) { sfx.close(); setShowMenu(false); return; }
+        if (hasDialogue) {
+          sfx.close();
+          dialogueRef.current = null;
+          setDialogue(null);
+          return;
+        }
+        if (battleRef.current) {
+          sfx.close();
+          battleRef.current = null;
+          setBattle(null);
+          return;
+        }
+        if (fishingRef.current) {
+          sfx.close();
+          fishingRef.current = null;
+          setFishing(null);
+          return;
+        }
+        if (hasMenu) {
+          sfx.close();
+          showMenuRef.current = false;
+          setShowMenu(false);
+          return;
+        }
         sfx.open();
+        showMenuRef.current = true;
         setShowMenu(true);
         return;
       }
@@ -1050,19 +1107,22 @@ export function RPGWorld() {
     advanceDialogueRef.current = handleDialogueAdvance;
   }, [handleDialogueAdvance]);
 
-  // Boss battle timing bar — marker bounces like the fishing minigame
+  // Boss battle timing bar — marker sweeps like the fishing minigame (slower)
   useEffect(() => {
     if (!battle || battle.phase !== "fight" || !battle.timing) return;
     let raf = 0;
     const tick = () => {
-      setBattle((cur) => {
-        if (!cur || !cur.timing || cur.phase !== "fight") return cur;
+      const cur = battleRef.current;
+      if (cur && cur.timing && cur.phase === "fight" && !cur.busy) {
         let { pos, dir } = cur.timing;
-        pos += dir * 2.4;
+        const speed = cur.enraged ? 1.85 : 1.4;
+        pos += dir * speed;
         if (pos >= 100) { pos = 100; dir = -1; }
         if (pos <= 0) { pos = 0; dir = 1; }
-        return { ...cur, timing: { ...cur.timing, pos, dir } };
-      });
+        const next: BattleState = { ...cur, timing: { ...cur.timing, pos, dir } };
+        battleRef.current = next;
+        setBattle(next);
+      }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -1406,45 +1466,77 @@ export function RPGWorld() {
                 />
               ))}
 
-            {/* Dragon name + HP */}
-            <div className="flex items-center justify-between mb-1">
-              <span className="pixel-font text-[9px] text-hp">
-                🐉 DEBUG DRAGON
+            {/* Enemy plate (top-left) + dragon sprite (right) */}
+            <div className="flex items-start justify-between gap-3 mb-2">
+              <div className="flex-1 max-w-[62%]">
+                <div
+                  className="bg-bg-elevated border-2 border-hp/60 rounded px-2.5 py-1.5"
+                  style={{ boxShadow: "2px 2px 0 rgba(0,0,0,0.45)" }}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="pixel-font text-[8px] text-hp">DEBUG DRAGON</span>
+                    <span className="retro-font text-[5px] text-text-secondary">Lv99</span>
+                  </div>
+                  <div className="h-2.5 bg-bg-main border border-border rounded-sm overflow-hidden">
+                    <div
+                      className={
+                        battle.enraged
+                          ? "h-full bg-gradient-to-r from-orange-500 to-hp transition-[width] duration-300"
+                          : "h-full bg-gradient-to-r from-hp to-red-400 transition-[width] duration-300"
+                      }
+                      style={{ width: `${battle.hp}%` }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="retro-font text-[5px] text-text-secondary">HP</span>
+                    <span className="retro-font text-[5px] text-cream">{battle.hp}/100</span>
+                  </div>
+                </div>
                 {battle.enraged && (
-                  <span className="retro-font text-[6px] text-red-400 ml-2 animate-pulse">
-                    (ENRAGED)
-                  </span>
+                  <p className="retro-font text-[5px] text-red-400 mt-1 animate-pulse">
+                    ⚠ ENRAGED — MERGE CONFLICT UNLOCKED
+                  </p>
                 )}
-              </span>
-              <span className="retro-font text-[6px] text-hp">{battle.hp}/100 HP</span>
-            </div>
-            <div className="h-3 bg-bg-main border-2 border-border rounded-sm overflow-hidden mb-2">
-              <div
-                className={
-                  battle.enraged
-                    ? "h-full bg-gradient-to-r from-orange-500 to-hp transition-[width] duration-300"
-                    : "h-full bg-gradient-to-r from-hp to-red-400 transition-[width] duration-300"
-                }
-                style={{ width: `${battle.hp}%` }}
-              />
+              </div>
+              <div className="relative shrink-0 mt-1">
+                <BossDragonMini enraged={battle.enraged} />
+                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-11 h-2 bg-black/45 rounded-full" />
+              </div>
             </div>
 
-            {/* Sprites facing off */}
-            <div
-              className="flex items-end justify-between px-6 py-2 bg-bg-main/50 border border-border rounded mb-2"
-              style={{ minHeight: 68 }}
-            >
-              <BossDragonMini enraged={battle.enraged} />
-              <PlayerSprite moving={false} />
-            </div>
+            {/* Battlefield divider */}
+            <div className="border-t border-dashed border-border/60 mb-2" />
 
-            {/* Player hearts */}
-            <div className="flex items-center justify-between mb-2">
-              <span className="retro-font text-[5px] text-text-secondary">HERO</span>
-              <span className="retro-font text-[8px] text-hp tracking-widest">
-                {"♥".repeat(battle.playerHp)}
-                {"♡".repeat(Math.max(0, 3 - battle.playerHp))}
-              </span>
+            {/* Hero sprite (left) + hero plate (bottom-right) */}
+            <div className="flex items-end justify-between gap-3 mb-2">
+              <div className="relative shrink-0">
+                <PlayerSprite moving={false} />
+                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-8 h-2 bg-black/45 rounded-full" />
+              </div>
+              <div className="flex-1 max-w-[62%]">
+                <div
+                  className="bg-bg-elevated border-2 border-gold/50 rounded px-2.5 py-1.5"
+                  style={{ boxShadow: "2px 2px 0 rgba(0,0,0,0.45)" }}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="pixel-font text-[8px] text-gold">HERO</span>
+                    <span className="retro-font text-[7px] text-hp tracking-widest">
+                      {"♥".repeat(battle.playerHp)}
+                      {"♡".repeat(Math.max(0, 3 - battle.playerHp))}
+                    </span>
+                  </div>
+                  <div className="h-2.5 bg-bg-main border border-border rounded-sm overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-xp to-gold transition-[width] duration-300"
+                      style={{ width: `${(battle.playerHp / 3) * 100}%` }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="retro-font text-[5px] text-text-secondary">LV</span>
+                    <span className="retro-font text-[5px] text-cream">1</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Battle log — last 3 lines */}
@@ -1457,7 +1549,12 @@ export function RPGWorld() {
             </div>
 
             {/* Actions */}
-            {battle.phase === "fight" && !battle.timing && (
+            {battle.phase === "fight" && !battle.timing && battle.busy && (
+              <p className="retro-font text-[6px] text-text-secondary text-center py-2 animate-pulse">
+                THE DRAGON IS ATTACKING...
+              </p>
+            )}
+            {battle.phase === "fight" && !battle.timing && !battle.busy && (
               <div className="grid grid-cols-3 gap-2">
                 {BATTLE_ATTACKS.map((a, i) => (
                   <button
