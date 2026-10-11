@@ -17,7 +17,7 @@ export function AboutSection() {
           {/* Left - Workspace Image */}
           <ScrollReveal direction="left">
             <motion.div
-              className="relative rounded-lg overflow-hidden border-2 border-border"
+              className="relative rounded-lg overflow-hidden border-2 border-border group"
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.3 }}
             >
@@ -27,6 +27,76 @@ export function AboutSection() {
                 className="w-full h-auto"
                 loading="lazy"
               />
+
+              {/* Animated code overlay */}
+              <div className="absolute inset-0 pointer-events-none">
+                {/* Screen glow */}
+                <div className="absolute top-[15%] left-[25%] w-[50%] h-[40%] bg-primary/5 rounded blur-xl animate-pulse" />
+
+                {/* Code lines appearing */}
+                <motion.div
+                  className="absolute top-[22%] left-[30%] flex flex-col gap-1"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <motion.div
+                    className="h-[3px] rounded bg-primary/40"
+                    animate={{ width: [0, 60, 60, 0] }}
+                    transition={{ duration: 3, repeat: Infinity, repeatDelay: 1 }}
+                  />
+                  <motion.div
+                    className="h-[3px] rounded bg-cyan/30"
+                    animate={{ width: [0, 45, 45, 0] }}
+                    transition={{ duration: 3, repeat: Infinity, repeatDelay: 1, delay: 0.4 }}
+                  />
+                  <motion.div
+                    className="h-[3px] rounded bg-accent/30"
+                    animate={{ width: [0, 70, 70, 0] }}
+                    transition={{ duration: 3, repeat: Infinity, repeatDelay: 1, delay: 0.8 }}
+                  />
+                  <motion.div
+                    className="h-[3px] rounded bg-primary/30"
+                    animate={{ width: [0, 35, 35, 0] }}
+                    transition={{ duration: 3, repeat: Infinity, repeatDelay: 1, delay: 1.2 }}
+                  />
+                  <motion.div
+                    className="h-[3px] rounded bg-cyan/40"
+                    animate={{ width: [0, 55, 55, 0] }}
+                    transition={{ duration: 3, repeat: Infinity, repeatDelay: 1, delay: 1.6 }}
+                  />
+                </motion.div>
+
+                {/* Blinking cursor */}
+                <motion.div
+                  className="absolute top-[22%] w-[2px] h-[16px] bg-gold"
+                  animate={{
+                    left: ["30%", "30%", "38%", "38%"],
+                    opacity: [1, 1, 1, 0],
+                  }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+
+                {/* Typing indicator dots */}
+                <div className="absolute bottom-[30%] right-[20%] flex gap-1">
+                  <motion.div
+                    className="w-1.5 h-1.5 rounded-full bg-xp"
+                    animate={{ opacity: [0.3, 1, 0.3] }}
+                    transition={{ duration: 1.2, repeat: Infinity }}
+                  />
+                  <motion.div
+                    className="w-1.5 h-1.5 rounded-full bg-xp"
+                    animate={{ opacity: [0.3, 1, 0.3] }}
+                    transition={{ duration: 1.2, repeat: Infinity, delay: 0.2 }}
+                  />
+                  <motion.div
+                    className="w-1.5 h-1.5 rounded-full bg-xp"
+                    animate={{ opacity: [0.3, 1, 0.3] }}
+                    transition={{ duration: 1.2, repeat: Infinity, delay: 0.4 }}
+                  />
+                </div>
+              </div>
+
               <div className="absolute inset-0 bg-gradient-to-t from-bg-main/50 via-transparent to-transparent" />
             </motion.div>
           </ScrollReveal>
