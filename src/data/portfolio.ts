@@ -180,7 +180,7 @@ export const techStack: TechItem[] = [
 
 export const navLinks = [
   { label: "Home", href: "#home" },
-  { label: "About", href: "#about" },
+  { label: "Explore", href: "#explore" },
   { label: "Projects", href: "#projects" },
   { label: "Skills", href: "#skills" },
   { label: "Contact", href: "#contact" },
