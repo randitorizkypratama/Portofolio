@@ -79,19 +79,23 @@ export function HeroSection() {
           {/* Right - Image */}
           <motion.div
             className="hidden lg:block"
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <div className="relative rounded-xl overflow-hidden border border-border/50">
+            <motion.div
+              className="relative"
+              whileHover={{ scale: 1.01 }}
+              transition={{ duration: 0.4 }}
+            >
               <img
                 src="/images/hero-bg.webp"
                 alt="Pixel art fantasy landscape"
-                className="w-full h-auto"
+                className="w-full h-auto rounded-2xl shadow-pixel-glow"
                 loading="eager"
               />
-              <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-bg-main/30" />
-            </div>
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-l from-transparent via-transparent to-bg-main/40" />
+            </motion.div>
           </motion.div>
         </div>
 

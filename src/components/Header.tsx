@@ -35,10 +35,12 @@ export function Header() {
     >
       <nav className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <a href="#home" className="flex items-center gap-2 group">
-          <img
+          <motion.img
             src="/images/avatar.webp"
             alt={siteConfig.name}
             className="w-7 h-7 rounded-md object-cover"
+            whileHover={{ rotate: 10, scale: 1.1 }}
+            transition={{ duration: 0.2 }}
           />
           <span className="retro-font text-[10px] text-text-main group-hover:text-primary transition-colors">
             {siteConfig.name}

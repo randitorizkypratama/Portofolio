@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { motion } from "motion/react";
 import { Send, CheckCircle, Loader2 } from "lucide-react";
 import { siteConfig } from "../data/portfolio";
 import { ScrollReveal } from "./ScrollReveal";
@@ -61,25 +62,27 @@ export function ContactSection() {
 
                 {/* Decorative elements */}
                 <div className="hidden lg:flex items-end gap-4 mt-auto">
-                  <div className="animate-float">
-                    <img
-                      src="/images/avatar.webp"
-                      alt=""
-                      aria-hidden="true"
-                      className="w-12 h-12 rounded-lg object-cover border border-border"
-                    />
-                  </div>
+                  <motion.img
+                    src="/images/avatar.webp"
+                    alt=""
+                    aria-hidden="true"
+                    className="w-12 h-12 rounded-lg object-cover border border-border"
+                    animate={{ y: [0, -5, 0] }}
+                    transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                  />
                   <div className="glow-border rounded-lg p-3 bg-bg-secondary">
                     <p className="retro-font text-[7px] text-cyan">
                       Thanks for visiting!
                     </p>
                   </div>
-                  <img
+                  <motion.img
                     src="/images/decoration.webp"
                     alt=""
                     aria-hidden="true"
                     className="w-16 h-16 object-contain opacity-60"
                     loading="lazy"
+                    animate={{ y: [0, -4, 0], rotate: [0, 2, -2, 0] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                   />
                 </div>
               </div>

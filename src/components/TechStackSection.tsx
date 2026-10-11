@@ -1,4 +1,5 @@
-import { techStack } from "../data/portfolio";
+import { motion } from "motion/react";
+import { techStack, siteConfig } from "../data/portfolio";
 import { ScrollReveal } from "./ScrollReveal";
 
 function TechIcon({ name }: { name: string }) {
@@ -42,37 +43,52 @@ export function TechStackSection() {
   return (
     <section id="tech-stack" className="py-20 sm:py-28 dot-grid">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <ScrollReveal>
-          <div className="text-center mb-12">
-            <span className="retro-font text-[10px] text-primary block mb-3">
-              Tech Stack
-            </span>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
-              Tools I Use
-            </h2>
-            <p className="text-text-secondary max-w-xl mx-auto text-sm sm:text-base">
-              I build my projects using modern technologies for faster, cleaner,
-              and scalable web applications.
-            </p>
-          </div>
-        </ScrollReveal>
+        <div className="grid lg:grid-cols-[1fr_2fr] gap-10 items-start">
+          {/* Left - Header + Avatar */}
+          <ScrollReveal direction="left">
+            <div className="lg:sticky lg:top-24">
+              <span className="retro-font text-[10px] text-primary block mb-3">
+                Tech Stack
+              </span>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
+                Tools I Use
+              </h2>
+              <p className="text-text-secondary text-sm sm:text-base mb-6">
+                I build my projects using modern technologies for faster,
+                cleaner, and scalable web applications.
+              </p>
+              <motion.img
+                src="/images/avatar.webp"
+                alt={siteConfig.name}
+                className="w-16 h-16 rounded-xl object-cover border border-border hidden lg:block"
+                animate={{ y: [0, -5, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </div>
+          </ScrollReveal>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
-          {techStack.map((tech, i) => (
-            <ScrollReveal key={tech.name} delay={i * 0.04}>
-              <div className="glow-border rounded-xl p-4 bg-bg-elevated hover:bg-bg-secondary hover:shadow-card-hover transition-all group h-full">
-                <div className="flex items-center gap-3 mb-2">
-                  <TechIcon name={tech.icon} />
-                  <span className="font-semibold text-sm text-text-main group-hover:text-primary transition-colors">
-                    {tech.name}
-                  </span>
-                </div>
-                <p className="text-xs text-text-secondary">
-                  {tech.description}
-                </p>
-              </div>
-            </ScrollReveal>
-          ))}
+          {/* Right - Tech Cards Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {techStack.map((tech, i) => (
+              <ScrollReveal key={tech.name} delay={i * 0.04} direction="right">
+                <motion.div
+                  className="glow-border rounded-xl p-4 bg-bg-elevated hover:bg-bg-secondary hover:shadow-card-hover transition-all group h-full"
+                  whileHover={{ y: -4 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    <TechIcon name={tech.icon} />
+                    <span className="font-semibold text-sm text-text-main group-hover:text-primary transition-colors">
+                      {tech.name}
+                    </span>
+                  </div>
+                  <p className="text-xs text-text-secondary">
+                    {tech.description}
+                  </p>
+                </motion.div>
+              </ScrollReveal>
+            ))}
+          </div>
         </div>
       </div>
     </section>

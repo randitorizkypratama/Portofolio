@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import { Mail } from "lucide-react";
 import { siteConfig, navLinks } from "../data/portfolio";
 import { GithubIcon, XIcon, LinkedinIcon } from "./SocialIcons";
@@ -15,10 +16,12 @@ export function Footer() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
-            <img
+            <motion.img
               src="/images/avatar.webp"
               alt={siteConfig.name}
               className="w-6 h-6 rounded-md object-cover"
+              whileHover={{ rotate: 10, scale: 1.1 }}
+              transition={{ duration: 0.2 }}
             />
             <span className="retro-font text-[8px] text-text-main">
               {siteConfig.name}

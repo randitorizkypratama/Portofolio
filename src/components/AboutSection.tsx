@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import { MapPin, Code, Gamepad2 } from "lucide-react";
 import { siteConfig } from "../data/portfolio";
 import { ScrollReveal } from "./ScrollReveal";
@@ -15,7 +16,11 @@ export function AboutSection() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left - Workspace Image */}
           <ScrollReveal direction="left">
-            <div className="relative rounded-xl overflow-hidden border border-border">
+            <motion.div
+              className="relative rounded-xl overflow-hidden border border-border"
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+            >
               <img
                 src="/images/workspace.webp"
                 alt="Developer workspace at night"
@@ -23,16 +28,18 @@ export function AboutSection() {
                 loading="lazy"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-bg-main/40 via-transparent to-transparent" />
-            </div>
+            </motion.div>
           </ScrollReveal>
 
           {/* Right - Content */}
           <ScrollReveal direction="right" delay={0.1}>
             <div className="flex items-center gap-3 mb-4">
-              <img
+              <motion.img
                 src="/images/avatar.webp"
                 alt={siteConfig.name}
                 className="w-8 h-8 rounded-md object-cover"
+                animate={{ y: [0, -3, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
               />
               <span className="retro-font text-[10px] text-primary">
                 About Me
