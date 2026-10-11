@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Monitor, MonitorOff } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { navLinks, siteConfig } from "../data/portfolio";
 import { sfx } from "../game/sfx";
@@ -20,7 +20,18 @@ export function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+  const [crtOn, setCrtOn] = useState(
+    () => typeof localStorage !== "undefined" && localStorage.getItem("pq_crt") !== "0"
+  );
   const lang = useLocale();
+
+  const toggleCrt = () => {
+    const next = !crtOn;
+    setCrtOn(next);
+    localStorage.setItem("pq_crt", next ? "1" : "0");
+    window.dispatchEvent(new CustomEvent("pq-crt-changed", { detail: next }));
+    sfx.hover();
+  };
 
   useEffect(() => {
     const onScroll = () => {
@@ -36,6 +47,13 @@ export function Header() {
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Sync CRT toggle when changed from PlayerProfile pause menu
+  useEffect(() => {
+    const onChange = (e: Event) => setCrtOn((e as CustomEvent<boolean>).detail);
+    window.addEventListener("pq-crt-changed", onChange);
+    return () => window.removeEventListener("pq-crt-changed", onChange);
   }, []);
 
   return (
@@ -97,6 +115,15 @@ export function Header() {
         {/* Right - Status + Download */}
         <div className="hidden md:flex items-center gap-3">
           <LanguageToggle />
+          <button
+            onClick={toggleCrt}
+            onMouseEnter={() => sfx.hover()}
+            aria-label={crtOn ? "Disable CRT scanlines" : "Enable CRT scanlines"}
+            title={crtOn ? "CRT: ON" : "CRT: OFF"}
+            className="w-7 h-7 flex items-center justify-center rounded border border-border text-text-secondary hover:text-gold hover:border-gold/40 transition-all"
+          >
+            {crtOn ? <Monitor size={12} /> : <MonitorOff size={12} />}
+          </button>
           {/* Mini status bars */}
           <div className="flex flex-col gap-0.5 w-16">
             <div className="flex items-center gap-1">
@@ -167,8 +194,15 @@ export function Header() {
                   {pick(ui.navUses, lang)}
                 </Link>
               </li>
-              <li className="px-3 pt-1">
+              <li className="px-3 pt-1 flex items-center gap-2">
                 <LanguageToggle />
+                <button
+                  onClick={toggleCrt}
+                  aria-label={crtOn ? "Disable CRT scanlines" : "Enable CRT scanlines"}
+                  className="w-7 h-7 flex items-center justify-center rounded border border-border text-text-secondary hover:text-gold hover:border-gold/40 transition-all"
+                >
+                  {crtOn ? <Monitor size={12} /> : <MonitorOff size={12} />}
+                </button>
               </li>
             </ul>
           </motion.div>

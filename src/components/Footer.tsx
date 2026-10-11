@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { motion } from "motion/react";
 import { Mail } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { siteConfig, navLinks } from "../data/portfolio";
 import { GithubIcon, XIcon, LinkedinIcon } from "./SocialIcons";
+import { SlimeWhack } from "./SlimeWhack";
 import { useLocale, pick } from "../i18n";
 import { ui, navLabels } from "../data/content";
 
@@ -15,19 +17,28 @@ const socialIcons = [
 
 export function Footer() {
   const lang = useLocale();
+  const [showWhack, setShowWhack] = useState(false);
 
   return (
     <footer className="border-t-2 border-border bg-bg-secondary/50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
-            <motion.img
-              src="/images/avatar.webp"
-              alt={siteConfig.name}
-              className="w-6 h-6 rounded object-cover border border-border"
+            <motion.button
+              onClick={() => setShowWhack(true)}
+              title="???"
+              aria-label="Secret: click the avatar"
+              className="w-6 h-6 rounded object-cover border border-border cursor-pointer hover:border-gold/60 transition-colors"
               whileHover={{ rotate: 10, scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
               transition={{ duration: 0.2 }}
-            />
+            >
+              <img
+                src="/images/avatar.webp"
+                alt={siteConfig.name}
+                className="w-full h-full rounded object-cover"
+              />
+            </motion.button>
             <span className="pixel-font text-[8px] text-gold">
               {siteConfig.name}
             </span>
@@ -73,6 +84,7 @@ export function Footer() {
           </p>
         </div>
       </div>
+      <SlimeWhack open={showWhack} onClose={() => setShowWhack(false)} />
     </footer>
   );
 }

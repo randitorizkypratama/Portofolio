@@ -28,6 +28,13 @@ export function HeroSection() {
       className="relative min-h-screen flex items-center overflow-hidden"
     >
       <div className="absolute inset-0 bg-gradient-to-b from-bg-main via-bg-secondary to-bg-main" />
+      {/* Parallax starfield + aurora backdrop */}
+      <div className="starfield" aria-hidden="true">
+        <div className="stars stars-far" />
+        <div className="stars stars-mid" />
+        <div className="stars stars-near" />
+        <div className="aurora" />
+      </div>
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 w-full pt-24 pb-16 lg:pt-24 lg:pb-12">
         <div className="grid lg:grid-cols-[1fr_1.2fr] gap-8 items-center">

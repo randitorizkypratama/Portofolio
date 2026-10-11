@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect, lazy, Suspense } from "react";
+import { useState, useCallback, useEffect, lazy, Suspense, type ReactNode } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import {
   createRootRoute,
   createRoute,
@@ -43,6 +44,39 @@ const KONAMI = [
   "arrowup", "arrowup", "arrowdown", "arrowdown",
   "arrowleft", "arrowright", "arrowleft", "arrowright", "b", "a",
 ];
+
+/** Fade-through-black + content fade-in between route changes. */
+function PageTransition({ pathname, children }: { pathname: string; children: ReactNode }) {
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={pathname}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.22, ease: "easeOut" }}
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
+/** Black curtain flash on route change — sits over everything briefly. */
+function RouteFlash({ pathname }: { pathname: string }) {
+  return (
+    <AnimatePresence>
+      <motion.div
+        key={pathname}
+        className="route-flash"
+        initial={{ opacity: 0.85 }}
+        animate={{ opacity: 0 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+      />
+    </AnimatePresence>
+  );
+}
 
 function ExpBar() {
   const [pct, setPct] = useState(0);
@@ -183,10 +217,13 @@ function RootLayout() {
       <div className="min-h-screen bg-bg-main">
         <Analytics />
         {crtOn && <div className="crt-overlay" aria-hidden="true" />}
+        <RouteFlash pathname={pathname} />
         <Header />
         <GlobalToast />
         <main>
-          <Outlet />
+          <PageTransition pathname={pathname}>
+            <Outlet />
+          </PageTransition>
         </main>
         <Footer />
       </div>
@@ -197,6 +234,7 @@ function RootLayout() {
     <div className="min-h-screen bg-bg-main">
       <Analytics />
       {crtOn && <div className="crt-overlay" aria-hidden="true" />}
+      <RouteFlash pathname={pathname} />
       <StartScreen onStart={handleStart} onSkip={handleSkip} />
       {started && (
         <>

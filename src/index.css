@@ -442,6 +442,137 @@ body.konami-rainbow {
   animation: battle-shake 0.45s linear;
 }
 
+/* ── Hero: parallax starfield + aurora ─────────────────────────── */
+.starfield {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.stars {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background-repeat: repeat;
+}
+
+.stars-far {
+  background-image:
+    radial-gradient(1px 1px at 20px 30px, rgba(255,255,255,0.35), transparent),
+    radial-gradient(1px 1px at 140px 80px, rgba(255,255,255,0.25), transparent),
+    radial-gradient(1px 1px at 90px 160px, rgba(255,255,255,0.3), transparent),
+    radial-gradient(1px 1px at 210px 120px, rgba(255,255,255,0.2), transparent),
+    radial-gradient(1px 1px at 280px 40px, rgba(255,255,255,0.28), transparent);
+  background-size: 320px 200px;
+  animation: star-drift 160s linear infinite;
+  opacity: 0.6;
+}
+
+.stars-mid {
+  background-image:
+    radial-gradient(1.5px 1.5px at 60px 50px, rgba(212,168,71,0.4), transparent),
+    radial-gradient(1.5px 1.5px at 180px 140px, rgba(155,89,182,0.35), transparent),
+    radial-gradient(1.5px 1.5px at 260px 90px, rgba(91,184,201,0.35), transparent),
+    radial-gradient(1.5px 1.5px at 120px 210px, rgba(212,168,71,0.3), transparent);
+  background-size: 340px 260px;
+  animation: star-drift 90s linear infinite;
+  opacity: 0.5;
+}
+
+.stars-near {
+  background-image:
+    radial-gradient(2px 2px at 100px 70px, rgba(255,255,255,0.5), transparent),
+    radial-gradient(2px 2px at 240px 180px, rgba(255,230,180,0.4), transparent),
+    radial-gradient(2px 2px at 40px 200px, rgba(255,255,255,0.35), transparent);
+  background-size: 300px 240px;
+  animation: star-twinkle 4s ease-in-out infinite alternate, star-drift 50s linear infinite;
+  opacity: 0.55;
+}
+
+@keyframes star-drift {
+  to { transform: translate3d(-160px, -130px, 0); }
+}
+
+@keyframes star-twinkle {
+  from { opacity: 0.35; }
+  to { opacity: 0.7; }
+}
+
+.aurora {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 25%,
+    rgba(91, 184, 201, 0.07) 42%,
+    rgba(155, 89, 182, 0.06) 55%,
+    rgba(212, 168, 71, 0.04) 65%,
+    transparent 80%
+  );
+  background-size: 220% 220%;
+  animation: aurora-shift 14s ease-in-out infinite;
+}
+
+@keyframes aurora-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* ── Quest cards: 3D tilt + glow trail ─────────────────────────── */
+.tilt-card {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.15s ease-out, box-shadow 0.2s ease-out;
+  will-change: transform;
+}
+
+.tilt-card:hover {
+  box-shadow: 0 14px 28px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(212, 168, 71, 0.18);
+}
+
+.tilt-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  background: radial-gradient(
+    220px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(212, 168, 71, 0.14),
+    rgba(91, 184, 201, 0.06) 45%,
+    transparent 65%
+  );
+}
+
+.tilt-card:hover .tilt-glow {
+  opacity: 1;
+}
+
+/* ── Route change: fade-through-black curtain ──────────────────── */
+.route-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  background: #000;
+}
+
+/* ── Footer easter egg: Slime Whack ────────────────────────────── */
+.whack-slime {
+  display: inline-block;
+  animation: whack-pop 0.18s ease-out;
+  filter: drop-shadow(0 0 4px rgba(155, 89, 182, 0.6));
+}
+
+@keyframes whack-pop {
+  from { transform: scale(0.4); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
 @keyframes confetti-fall {
   0% { transform: translateY(-8px) rotate(0deg); opacity: 1; }
   100% { transform: translateY(140px) rotate(540deg); opacity: 0; }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, type MouseEvent } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Link } from "@tanstack/react-router";
 import { ExternalLink, Swords, Shield, TreePine, X, ChevronRight, Share2, BookOpen } from "lucide-react";
@@ -218,13 +218,31 @@ function QuestCard({
   const lang = useLocale();
   const copy = projectCopy[project.slug];
   const desc = copy ? pick(copy.description, lang) : project.description;
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const onCardMove = (e: MouseEvent<HTMLDivElement>) => {
+    const el = cardRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width;
+    const py = (e.clientY - r.top) / r.height;
+    el.style.setProperty("--mx", `${px * 100}%`);
+    el.style.setProperty("--my", `${py * 100}%`);
+    el.style.transform = `perspective(700px) rotateX(${(0.5 - py) * 7}deg) rotateY(${(px - 0.5) * 7}deg) translateY(-3px)`;
+  };
+
+  const onCardLeave = () => {
+    const el = cardRef.current;
+    if (el) el.style.transform = "";
+  };
 
   return (
     <ScrollReveal delay={index * 0.1}>
       <motion.div
-        className="game-border rounded-lg overflow-hidden group cursor-pointer"
-        whileHover={{ y: -3 }}
-        transition={{ duration: 0.2 }}
+        ref={cardRef}
+        className="game-border rounded-lg overflow-hidden group cursor-pointer tilt-card"
+        onMouseMove={onCardMove}
+        onMouseLeave={onCardLeave}
         onMouseEnter={() => sfx.hover()}
         onClick={onSelect}
         role="button"
@@ -234,6 +252,7 @@ function QuestCard({
         }}
         aria-label={`View ${project.title} case study`}
       >
+        <div className="tilt-glow" aria-hidden="true" />
         {/* Screenshot thumbnail */}
         <div className="aspect-video overflow-hidden border-b-2 border-border">
           <img

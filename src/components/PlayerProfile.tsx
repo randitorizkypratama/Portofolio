@@ -43,6 +43,13 @@ export function PlayerProfile() {
     []
   );
 
+  // Sync CRT state when toggled from the Header
+  useEffect(() => {
+    const onChange = (e: Event) => setCrtOn((e as CustomEvent<boolean>).detail);
+    window.addEventListener("pq-crt-changed", onChange);
+    return () => window.removeEventListener("pq-crt-changed", onChange);
+  }, []);
+
   const handleToggleMute = useCallback(() => {
     setMuted(toggleSfxMuted());
   }, []);
