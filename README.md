@@ -1,6 +1,6 @@
 # Pixel Quest — FixDiriloe Developer Portfolio
 
-An interactive pixel-art RPG portfolio. Explore a living 2D village, talk to NPCs, clear quests (real projects!), fish, battle the final boss, and discover achievements — all while browsing a modern developer portfolio.
+An interactive pixel-art RPG portfolio with bilingual (EN/ID) content. Explore a living 2D village, talk to NPCs, clear quests (real projects!), fish, battle the final boss, and discover achievements — all while browsing a modern developer portfolio backed by full case studies, a timeline, and SEO-ready pages.
 
 🌐 **Live:** https://pixel-quest-portfolio.vercel.app
 
@@ -27,16 +27,24 @@ An interactive pixel-art RPG portfolio. Explore a living 2D village, talk to NPC
 - **Speedrun timer** with persisted best time
 
 ### Portfolio
+- **Case study pages** — full write-up per project at `/projects/[slug]`: problem → challenge → solution → results, features, architecture, tech stack, live demo + repo links
+- **EN/ID language toggle** — nearly all site copy (hero, about, projects, case studies, changelog, contact form, footer, start screen…) switches between English and Bahasa Indonesia; choice persists in localStorage
+- **Adventure Log** — work/project timeline from first freelance gigs to shipped products
+- **Currently** — what the developer is learning, building, reading, and playing right now
+- **Testimonials** — client quotes on-page
+- **FAQ ("Elder's Wisdom")** — accordion with hiring/stack/collaboration answers
+- **Uses page** (`/uses`) — hardware, workspace, and daily-driver tooling
+- **Custom 404** — pixel-art "You fell into a cave..." page
 - **Projects & skills** presented as quest boards and status panels
 - **Quest Journal** (floating button) — places visited, quests cleared, fish log, and a **daily quest** that resets every day
-- **Achievements system** — 20+ achievements with toast popups (Explorer, Angler, Dragon Slayer, Best Friend, Devotee…)
+- **Achievements system** — ~29 achievements with toast popups (Explorer, Angler, Dragon Slayer, Best Friend, Devotee, Wayfinder, Trick or Treat…)
 - **8-bit soundtrack** — 6 procedural chiptune tracks with an in-game jukebox + full SFX set
 - **EXP scroll bar** that tracks page progress
-- **Scroll of Updates** — changelog section
+- **Scroll of Updates + Quest Archive** — changelog section + dev journal
 - **GitHub stats panel** (repos, stars, followers)
 - **Contact form** (FormSubmit AJAX) and **visitor counter** at the Pixel Inn
 - **CRT scanline toggle**, Konami code easter egg, hover blips, typewriter hero text
-- **Vercel Analytics**, SEO meta/OG image, PWA manifest + service worker
+- **Vercel Analytics**, JSON-LD (Person + WebSite + per-project CreativeWork), sitemap.xml, robots.txt, RSS feed, OG image, PWA manifest + service worker
 
 ## Tech Stack
 
@@ -65,26 +73,37 @@ src/
   components/
     RPGWorld.tsx        # the game: map, player, NPCs, boss, fishing, battle UI
     QuestJournal.tsx    # journal modal (progress, fish log, daily quest)
-    UpdateScroll.tsx    # changelog section
-    PlayerProfile.tsx   # achievements + settings (SFX/BGM/CRT)
+    UpdateScroll.tsx    # changelog + quest archive
+    PlayerProfile.tsx   # achievements + inventory + settings (SFX/BGM/CRT)
+    CaseStudyPage.tsx   # /projects/[slug] full case study
+    UsesPage.tsx        # /uses gear & setup
+    LanguageToggle.tsx  # EN/ID switch
+    TimelineSection.tsx # adventure log (work/project timeline)
+    CurrentlySection.tsx, TestimonialsSection.tsx, FaqSection.tsx
+    NotFoundPage.tsx    # pixel-art 404
     ...                 # hero, about, projects, skills, contact, etc.
   game/
-    entities.ts         # NPCs, boss dragon, dialogue
+    entities.ts         # NPCs, chests, shrines, portals, boss dragon, dialogue
     tileMap.ts          # 30×22 tile map data
     achievements.ts     # stats + achievement definitions + track()
     daily.ts            # date-seeded daily quest
     friendship.ts       # per-NPC heart counter
-    fishing.ts          # fish species + minigame constants
+    fishing.ts          # weighted fish species (incl. Golden Koi, Moon Eel)
+    inventory.ts        # items, chests, loot persistence
+    titles.ts           # earned player titles
     music.ts / sfx.ts   # procedural chiptune BGM + sound effects
     dayNight.ts         # time-of-day tint + night flag
     journal.ts          # section/project visit tracking
     toast.ts            # global toast events
   data/
     portfolio.ts        # site config, projects, tech, changelog updates
+    content.ts          # bilingual UI strings, timeline, FAQ, testimonials, uses, case-study copy
   routes/
-    routeTree.tsx       # root layout: start screen, EXP bar, sections
+    routeTree.tsx       # root layout: start screen, EXP bar, sections, sub-routes
+  i18n.ts               # EN/ID locale store + useLocale hook
 public/
   sw.js                 # service worker (network-first assets)
+  sitemap.xml, robots.txt, rss.xml
 ```
 
 ## Controls
