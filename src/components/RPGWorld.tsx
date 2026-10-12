@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, useReducer, memo, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef, memo, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   TILE_SIZE,
@@ -822,13 +822,10 @@ export function RPGWorld() {
   const [floats, setFloats] = useState<{ id: number; text: string; color: string; x: number; y: number }[]>([]);
   const floatIdRef = useRef(0);
   const levelRef = useRef(level);
-  const [patrolTick, forcePatrolRender] = useReducer((c: number) => c + 1, 0);
   const swimmingRef = useRef(false);
   const ridingRef = useRef(false);
   const rideUnlockedRef = useRef(rideUnlocked);
   const lastMoveRef = useRef(0);
-  const patrolPosRef = useRef<Record<string, Position>>({});
-  const patrolIdxRef = useRef<Record<string, number>>({});
 
   const moveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const keysRef = useRef<Set<string>>(new Set());
@@ -972,8 +969,6 @@ export function RPGWorld() {
       )
       .map((n) => {
         if (night && n.nightPosition) return { ...n, position: n.nightPosition };
-        const p = patrolPosRef.current[n.id];
-        if (!night && n.patrol?.length && p) return { ...n, position: p };
         return n;
       });
     if (includeBoss && bossAwakeRef.current && !dragonDefeatedRef.current) {
@@ -1289,34 +1284,6 @@ export function RPGWorld() {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, []);
-
-  // NPC patrol — daytime stroll between waypoints (pause when player is close)
-  useEffect(() => {
-    const id = setInterval(() => {
-      if (!gameActiveRef.current) return;
-      if (dialogueRef.current || showMenuRef.current || battleRef.current || fishingRef.current) return;
-      if (periodRef.current.night) return;
-      const pp = playerPosRef.current;
-      const next = { ...patrolPosRef.current };
-      let changed = false;
-      for (const n of npcs) {
-        if (!n.patrol?.length) continue;
-        const cur = patrolPosRef.current[n.id] ?? n.position;
-        if (Math.abs(pp.x - cur.x) + Math.abs(pp.y - cur.y) <= 2) continue;
-        const idx = patrolIdxRef.current[n.id] ?? -1;
-        const nextIdx = (idx + 1) % n.patrol.length;
-        patrolIdxRef.current[n.id] = nextIdx;
-        next[n.id] = n.patrol[nextIdx];
-        changed = true;
-      }
-      if (changed) {
-        patrolPosRef.current = next;
-        forcePatrolRender();
-        setNearbyEntity(null);
-      }
-    }, 1700);
-    return () => clearInterval(id);
   }, []);
 
   // Scale game viewport to fit mobile screens (smaller cap on phones)
@@ -1959,7 +1926,7 @@ export function RPGWorld() {
         .filter((n) => n.type !== "secret")
         .map((n) => ({ id: n.id, x: n.position.x, y: n.position.y, type: n.type })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [period.night, patrolTick],
+    [period.night],
   );
 
   const fmtTime = (ms: number) => {
