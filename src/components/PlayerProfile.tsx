@@ -36,9 +36,23 @@ export function PlayerProfile() {
   useEffect(
     () =>
       subscribe(() => {
-        setUnlocked(getUnlockedIds(getStats()));
-        setTitle(getTitle());
-        setInv(getInventory());
+        const next = getUnlockedIds(getStats());
+        // Only re-render when the unlock list actually changed
+        setUnlocked((prev) =>
+          prev.length === next.length && prev.every((v, i) => v === next[i]) ? prev : next
+        );
+        setTitle((prev) => {
+          const t = getTitle();
+          return t === prev ? prev : t;
+        });
+        setInv((prev) => {
+          const inv = getInventory();
+          const keys = Object.keys(inv);
+          const same =
+            keys.length === Object.keys(prev).length &&
+            keys.every((k) => inv[k] === prev[k]);
+          return same ? prev : inv;
+        });
       }),
     []
   );

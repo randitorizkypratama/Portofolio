@@ -27,6 +27,30 @@ interface MinimapProps {
   scale?: number;
 }
 
+// Base map drawn once per scale — cached as an ImageBitmap-style data URL
+// so parent re-renders only redraw the cheap dots, not 660 base rects.
+let baseCache: { scale: number; img: HTMLImageElement } | null = null;
+
+function getBase(scale: number): HTMLImageElement {
+  if (baseCache && baseCache.scale === scale) return baseCache.img;
+  const canvas = document.createElement("canvas");
+  canvas.width = MAP_WIDTH * scale;
+  canvas.height = MAP_HEIGHT * scale;
+  const g = canvas.getContext("2d");
+  if (g) {
+    for (let y = 0; y < MAP_HEIGHT; y++) {
+      for (let x = 0; x < MAP_WIDTH; x++) {
+        g.fillStyle = COLORS[tileMap[y]?.[x] ?? 0] || "#333";
+        g.fillRect(x * scale, y * scale, scale, scale);
+      }
+    }
+  }
+  const img = new Image();
+  img.src = canvas.toDataURL();
+  baseCache = { scale, img };
+  return img;
+}
+
 export function Minimap({ player, npcs, scale = 3 }: MinimapProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -36,25 +60,23 @@ export function Minimap({ player, npcs, scale = 3 }: MinimapProps) {
     const g = canvas.getContext("2d");
     if (!g) return;
 
-    // Base map
-    for (let y = 0; y < MAP_HEIGHT; y++) {
-      for (let x = 0; x < MAP_WIDTH; x++) {
-        g.fillStyle = COLORS[tileMap[y]?.[x] ?? 0] || "#333";
-        g.fillRect(x * scale, y * scale, scale, scale);
+    const base = getBase(scale);
+    const paint = () => {
+      g.drawImage(base, 0, 0);
+      // NPCs
+      for (const npc of npcs) {
+        g.fillStyle = npc.type === "quest" ? "#d4a847" : "#5bb8c9";
+        g.fillRect(npc.x * scale - 1, npc.y * scale - 1, scale + 2, scale + 2);
       }
-    }
+      // Player
+      g.fillStyle = "#ffffff";
+      g.fillRect(player.x * scale - 1, player.y * scale - 1, scale + 2, scale + 2);
+      g.fillStyle = "#d4a847";
+      g.fillRect(player.x * scale, player.y * scale, scale, scale);
+    };
 
-    // NPCs
-    for (const npc of npcs) {
-      g.fillStyle = npc.type === "quest" ? "#d4a847" : "#5bb8c9";
-      g.fillRect(npc.x * scale - 1, npc.y * scale - 1, scale + 2, scale + 2);
-    }
-
-    // Player
-    g.fillStyle = "#ffffff";
-    g.fillRect(player.x * scale - 1, player.y * scale - 1, scale + 2, scale + 2);
-    g.fillStyle = "#d4a847";
-    g.fillRect(player.x * scale, player.y * scale, scale, scale);
+    if (base.complete) paint();
+    else base.onload = paint;
   }, [player, npcs, scale]);
 
   return (

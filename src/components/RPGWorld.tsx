@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, useReducer } from "react";
+import { useState, useEffect, useCallback, useRef, useReducer, memo, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   TILE_SIZE,
@@ -54,8 +54,11 @@ const FIREFLIES = [
   { left: "88%", top: "55%", delay: 1.8, duration: 5.8, color: "#ffd94a" },
 ];
 
+// Phones get fewer particles — half the DOM nodes, half the compositor work
+const IS_SMALL = typeof window !== "undefined" && window.innerWidth < 768;
+
 // Daytime pollen motes
-const POLLEN = Array.from({ length: 10 }, (_, i) => ({
+const POLLEN = Array.from({ length: IS_SMALL ? 4 : 10 }, (_, i) => ({
   left: `${(i * 29 + 7) % 100}%`,
   top: `${(i * 43 + 10) % 80}%`,
   delay: (i * 0.9) % 5,
@@ -77,8 +80,8 @@ const FOUNTAIN = { x: 14, y: 1 };
 // Smooth camera + entity glide (keep durations in sync)
 const GLIDE = "left 0.14s ease-out, top 0.14s ease-out";
 
-// Pixel-art tile renderer (SVG data-URI backgrounds)
-function TileSprite({ type, x, y }: { type: number; x: number; y: number }) {
+// Pixel-art tile renderer (SVG data-URI backgrounds) — memoized: props never change for a given tile
+const TileSprite = memo(function TileSprite({ type, x, y }: { type: number; x: number; y: number }) {
   const bg = tileBackground(type, x, y);
   return (
     <div
@@ -92,7 +95,7 @@ function TileSprite({ type, x, y }: { type: number; x: number; y: number }) {
       }}
     />
   );
-}
+});
 
 function EntityShadow({ size = 20 }: { size?: number }) {
   return (
@@ -819,7 +822,7 @@ export function RPGWorld() {
   const [floats, setFloats] = useState<{ id: number; text: string; color: string; x: number; y: number }[]>([]);
   const floatIdRef = useRef(0);
   const levelRef = useRef(level);
-  const [, forcePatrolRender] = useReducer((c: number) => c + 1, 0);
+  const [patrolTick, forcePatrolRender] = useReducer((c: number) => c + 1, 0);
   const swimmingRef = useRef(false);
   const ridingRef = useRef(false);
   const rideUnlockedRef = useRef(rideUnlocked);
@@ -839,10 +842,15 @@ export function RPGWorld() {
   const advanceDialogueRef = useRef<(() => void) | null>(null);
   const interactRef = useRef<(() => void) | null>(null);
   const caveOpenRef = useRef(false);
+  /** True while the game viewport is on-screen AND the tab is visible. */
+  const gameActiveRef = useRef(true);
 
-  // Garden plots grow in real time — tick to refresh sprites
+  // Garden plots grow in real time — tick to refresh sprites (paused off-screen)
   useEffect(() => {
-    const iv = setInterval(() => setGardenTick((t) => t + 1), 2000);
+    const iv = setInterval(() => {
+      if (!gameActiveRef.current) return;
+      setGardenTick((t) => t + 1);
+    }, 2000);
     return () => clearInterval(iv);
   }, []);
 
@@ -926,6 +934,25 @@ export function RPGWorld() {
   const battleRef = useRef<BattleState | null>(null);
   const dragonDefeatedRef = useRef(dragonDefeated);
   const viewportFrameRef = useRef<HTMLDivElement>(null);
+
+  // Pause every ambient loop when the game is scrolled off-screen or tab hidden
+  useEffect(() => {
+    const el = viewportFrameRef.current;
+    let inView = true;
+    const update = () => {
+      gameActiveRef.current = inView && !document.hidden;
+    };
+    const io = new IntersectionObserver(([entry]) => {
+      inView = entry.isIntersecting;
+      update();
+    }, { threshold: 0 });
+    if (el) io.observe(el);
+    document.addEventListener("visibilitychange", update);
+    return () => {
+      io.disconnect();
+      document.removeEventListener("visibilitychange", update);
+    };
+  }, []);
 
   useEffect(() => { fishingRef.current = fishing; }, [fishing]);
   useEffect(() => { visitorsRef.current = visitors; }, [visitors]);
@@ -1170,22 +1197,30 @@ export function RPGWorld() {
     return () => clearInterval(id);
   }, []);
 
-  // Fishing bar animation
+  // Fishing bar animation (~20fps — plenty smooth for a sweep bar, ⅓ the re-renders)
   useEffect(() => {
     if (!fishing || fishing.done) return;
     let raf = 0;
     let last = performance.now();
+    let acc = 0;
     const tick = (now: number) => {
       const dt = (now - last) / 1000;
       last = now;
-      setFishing((f) => {
-        if (!f || f.done) return f;
-        let pos = f.pos + f.dir * dt * 75;
-        let dir = f.dir;
-        if (pos >= 100) { pos = 100; dir = -1; }
-        if (pos <= 0) { pos = 0; dir = 1; }
-        return { ...f, pos, dir };
-      });
+      if (gameActiveRef.current) {
+        acc += dt;
+        if (acc >= 0.05) {
+          const step = acc;
+          acc = 0;
+          setFishing((f) => {
+            if (!f || f.done) return f;
+            let pos = f.pos + f.dir * step * 75;
+            let dir = f.dir;
+            if (pos >= 100) { pos = 100; dir = -1; }
+            if (pos <= 0) { pos = 0; dir = 1; }
+            return { ...f, pos, dir };
+          });
+        }
+      }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -1211,12 +1246,13 @@ export function RPGWorld() {
     return () => clearTimeout(t);
   }, []);
 
-  // Speedrun timer
+  // Speedrun timer (1s tick — only whole seconds are shown)
   useEffect(() => {
     if (!running) return;
     const id = setInterval(() => {
+      if (!gameActiveRef.current) return;
       if (runStartRef.current != null) setRunTime(Date.now() - runStartRef.current);
-    }, 200);
+    }, 1000);
     return () => clearInterval(id);
   }, [running]);
 
@@ -1239,13 +1275,15 @@ export function RPGWorld() {
   useEffect(() => {
     let raf = 0;
     const tick = () => {
-      const hist = historyRef.current;
-      const target = hist[Math.max(0, hist.length - 2)];
-      const p = petPosRef.current;
-      p.x += (target.x - p.x) * 0.18;
-      p.y += (target.y - p.y) * 0.18;
-      if (petRef.current) {
-        petRef.current.style.transform = `translate(${(p.x - offsetXRef.current) * TILE_SIZE}px, ${(p.y - offsetYRef.current) * TILE_SIZE}px)`;
+      if (gameActiveRef.current) {
+        const hist = historyRef.current;
+        const target = hist[Math.max(0, hist.length - 2)];
+        const p = petPosRef.current;
+        p.x += (target.x - p.x) * 0.18;
+        p.y += (target.y - p.y) * 0.18;
+        if (petRef.current) {
+          petRef.current.style.transform = `translate(${(p.x - offsetXRef.current) * TILE_SIZE}px, ${(p.y - offsetYRef.current) * TILE_SIZE}px)`;
+        }
       }
       raf = requestAnimationFrame(tick);
     };
@@ -1256,6 +1294,7 @@ export function RPGWorld() {
   // NPC patrol — daytime stroll between waypoints (pause when player is close)
   useEffect(() => {
     const id = setInterval(() => {
+      if (!gameActiveRef.current) return;
       if (dialogueRef.current || showMenuRef.current || battleRef.current || fishingRef.current) return;
       if (periodRef.current.night) return;
       const pp = playerPosRef.current;
@@ -1744,6 +1783,7 @@ export function RPGWorld() {
 
   useEffect(() => {
     const interval = setInterval(() => {
+      if (!gameActiveRef.current) return;
       if (dialogueRef.current || showMenuRef.current || caveOpenRef.current) return;
       const keys = keysRef.current;
       if (keys.has("up")) movePlayer(0, -1, "up");
@@ -1754,12 +1794,13 @@ export function RPGWorld() {
     return () => clearInterval(interval);
   }, [movePlayer]);
 
-  // Gamepad support — dpad/left stick moves, A interacts, B closes, Start = menu
+  // Gamepad support — loop starts ONLY when a controller connects (saves 60fps rAF on phones)
   useEffect(() => {
     let raf = 0;
     let prevA = false;
     let prevB = false;
     let prevStart = false;
+    let running = false;
     const poll = () => {
       const pads = navigator.getGamepads?.();
       const gp = pads ? Array.from(pads).find(Boolean) : null;
@@ -1796,8 +1837,26 @@ export function RPGWorld() {
       }
       raf = requestAnimationFrame(poll);
     };
-    raf = requestAnimationFrame(poll);
-    return () => cancelAnimationFrame(raf);
+    const start = () => {
+      if (running) return;
+      running = true;
+      raf = requestAnimationFrame(poll);
+    };
+    const stop = () => {
+      running = false;
+      cancelAnimationFrame(raf);
+      keysRef.current.clear();
+    };
+    window.addEventListener("gamepadconnected", start);
+    window.addEventListener("gamepaddisconnected", stop);
+    // A pad may already be connected before mount — probe once
+    const pads = navigator.getGamepads?.();
+    if (pads && Array.from(pads).some(Boolean)) start();
+    return () => {
+      stop();
+      window.removeEventListener("gamepadconnected", start);
+      window.removeEventListener("gamepaddisconnected", stop);
+    };
   }, []);
 
   const handleDialogueAdvance = useCallback(() => {
@@ -1850,21 +1909,28 @@ export function RPGWorld() {
     advanceDialogueRef.current = handleDialogueAdvance;
   }, [handleDialogueAdvance]);
 
-  // Boss battle timing bar — marker sweeps like the fishing minigame (slower)
+  // Boss battle timing bar — marker sweeps like the fishing minigame (~20fps)
   useEffect(() => {
     if (!battle || battle.phase !== "fight" || !battle.timing) return;
     let raf = 0;
-    const tick = () => {
-      const cur = battleRef.current;
-      if (cur && cur.timing && cur.phase === "fight" && !cur.busy) {
-        let { pos, dir } = cur.timing;
-        const speed = cur.enraged ? 1.85 : 1.4;
-        pos += dir * speed;
-        if (pos >= 100) { pos = 100; dir = -1; }
-        if (pos <= 0) { pos = 0; dir = 1; }
-        const next: BattleState = { ...cur, timing: { ...cur.timing, pos, dir } };
-        battleRef.current = next;
-        setBattle(next);
+    let acc = 0;
+    let last = performance.now();
+    const tick = (now: number) => {
+      acc += (now - last) / 1000;
+      last = now;
+      if (acc >= 0.05 && gameActiveRef.current) {
+        acc = 0;
+        const cur = battleRef.current;
+        if (cur && cur.timing && cur.phase === "fight" && !cur.busy) {
+          let { pos, dir } = cur.timing;
+          const speed = cur.enraged ? 1.85 : 1.4;
+          pos += dir * speed * 3; // ×3 — original was tuned per 60fps frame, we tick at ~20fps
+          if (pos >= 100) { pos = 100; dir = -1; }
+          if (pos <= 0) { pos = 0; dir = 1; }
+          const next: BattleState = { ...cur, timing: { ...cur.timing, pos, dir } };
+          battleRef.current = next;
+          setBattle(next);
+        }
       }
       raf = requestAnimationFrame(tick);
     };
@@ -1876,6 +1942,25 @@ export function RPGWorld() {
   const offsetY = Math.max(0, Math.min(playerPos.y - Math.floor(VIEWPORT_TILES_Y / 2), MAP_HEIGHT - VIEWPORT_TILES_Y));
   const viewportWidth = VIEWPORT_TILES_X * TILE_SIZE;
   const viewportHeight = VIEWPORT_TILES_Y * TILE_SIZE;
+
+  // Windowed tile range (+1 margin each side so the 0.14s camera glide never shows a gap)
+  const tileRange = useMemo(() => {
+    const x0 = Math.max(0, offsetX - 1);
+    const y0 = Math.max(0, offsetY - 1);
+    const x1 = Math.min(MAP_WIDTH, offsetX + VIEWPORT_TILES_X + 2);
+    const y1 = Math.min(MAP_HEIGHT, offsetY + VIEWPORT_TILES_Y + 2);
+    return { x0, y0, x1, y1 };
+  }, [offsetX, offsetY]);
+
+  // Minimap dots — memoized so the canvas only redraws when positions actually change
+  const minimapNpcs = useMemo(
+    () =>
+      makeActiveList(period.night, true)
+        .filter((n) => n.type !== "secret")
+        .map((n) => ({ id: n.id, x: n.position.x, y: n.position.y, type: n.type })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [period.night, patrolTick],
+  );
 
   const fmtTime = (ms: number) => {
     const s = Math.floor(ms / 1000);
@@ -1926,13 +2011,19 @@ export function RPGWorld() {
             transition: GLIDE,
           }}
         >
-          {Array.from({ length: MAP_HEIGHT }).map((_, y) => (
-            <div key={y} className="flex">
-              {Array.from({ length: MAP_WIDTH }).map((_, x) => (
-                <TileSprite key={`${x}-${y}`} type={mapData[y]?.[x] ?? 0} x={x} y={y} />
-              ))}
-            </div>
-          ))}
+          <div style={{ paddingTop: tileRange.y0 * TILE_SIZE }}>
+            {Array.from({ length: tileRange.y1 - tileRange.y0 }, (_, ry) => {
+              const y = tileRange.y0 + ry;
+              return (
+                <div key={y} className="flex" style={{ paddingLeft: tileRange.x0 * TILE_SIZE }}>
+                  {Array.from({ length: tileRange.x1 - tileRange.x0 }, (_, rx) => {
+                    const x = tileRange.x0 + rx;
+                    return <TileSprite key={`${x}-${y}`} type={mapData[y]?.[x] ?? 0} x={x} y={y} />;
+                  })}
+                </div>
+              );
+            })}
+          </div>
 
           {/* Fountain mist (world-anchored) */}
           {Array.from({ length: 3 }).map((_, i) => (
@@ -2192,12 +2283,7 @@ export function RPGWorld() {
         )}
 
         {/* Minimap */}
-        <Minimap
-          player={playerPos}
-          npcs={makeActiveList(period.night, true)
-            .filter((n) => n.type !== "secret")
-            .map((n) => ({ id: n.id, x: n.position.x, y: n.position.y, type: n.type }))}
-        />
+        <Minimap player={playerPos} npcs={minimapNpcs} />
 
         {/* JRPG HUD — LV / EXP / hearts / gold / time / fish */}
         <div className="absolute top-2 left-2 z-[17] game-border rounded px-2 py-1.5 bg-bg-main/85 flex flex-col gap-1">
@@ -2238,7 +2324,7 @@ export function RPGWorld() {
             className="absolute inset-0 pointer-events-none z-[16] overflow-hidden"
             aria-hidden="true"
           >
-            {Array.from({ length: 36 }).map((_, i) => (
+            {Array.from({ length: IS_SMALL ? 14 : 36 }).map((_, i) => (
               <span
                 key={i}
                 className="raindrop"

@@ -140,7 +140,8 @@ export function HeroSection() {
                 src="/images/hero-bg.webp"
                 alt="Pixel art fantasy landscape"
                 className="w-full h-auto rounded-lg border-2 border-border shadow-pixel-glow"
-                loading="eager"
+                loading="lazy"
+                decoding="async"
               />
               {/* Partial overlay — left side blends into bg, right stays visible */}
               <div className="absolute inset-0 rounded-lg pointer-events-none"

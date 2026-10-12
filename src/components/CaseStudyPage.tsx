@@ -104,6 +104,8 @@ export function CaseStudyPage() {
             src={project.screenshot}
             alt={`${project.title} preview`}
             className="w-full h-auto"
+            loading="lazy"
+            decoding="async"
           />
         </div>
 

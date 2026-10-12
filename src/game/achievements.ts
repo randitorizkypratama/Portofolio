@@ -86,15 +86,57 @@ export const ACHIEVEMENT_DEFS: AchievementDef[] = [
 ];
 
 export function getStats(): Stats {
-  try {
-    return JSON.parse(localStorage.getItem(KEY) || "{}") as Stats;
-  } catch {
-    return {};
-  }
+  return statsCache();
 }
 
 export function getUnlockedIds(s: Stats = getStats()): string[] {
   return ACHIEVEMENT_DEFS.filter((a) => a.check(s)).map((a) => a.id);
+}
+
+/* ── In-memory cache + debounced flush ───────────────────────────
+   track() can fire many times per second (every player step).
+   Reading + JSON-parsing localStorage and dispatching a global
+   event each time caused main-thread jank on mobile. Stats now
+   live in memory; localStorage is flushed on a trailing debounce
+   and on page hide. Subscribers are notified at most ~2×/s.      */
+let memStats: Stats | null = null;
+let flushTimer: number | null = null;
+
+function statsCache(): Stats {
+  if (!memStats) {
+    try {
+      memStats = JSON.parse(localStorage.getItem(KEY) || "{}") as Stats;
+    } catch {
+      memStats = {};
+    }
+  }
+  return memStats;
+}
+
+function flushNow(): void {
+  if (flushTimer != null) {
+    window.clearTimeout(flushTimer);
+    flushTimer = null;
+  }
+  if (!memStats) return;
+  try {
+    localStorage.setItem(KEY, JSON.stringify(memStats));
+  } catch {
+    /* quota / private mode — keep going in memory */
+  }
+  window.dispatchEvent(new CustomEvent(EVENT));
+}
+
+function scheduleFlush(): void {
+  if (flushTimer != null) return;
+  flushTimer = window.setTimeout(flushNow, 500);
+}
+
+if (typeof window !== "undefined") {
+  window.addEventListener("pagehide", flushNow);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") flushNow();
+  });
 }
 
 export type TrackEvent =
@@ -125,8 +167,8 @@ export type TrackEvent =
 
 /** Increment a stat; returns ids newly unlocked by this event. */
 export function track(event: TrackEvent, payload?: string): string[] {
-  const before = new Set(getUnlockedIds());
-  const s = getStats();
+  const s = statsCache();
+  const before = new Set(getUnlockedIds(s));
   if (event === "step") s.steps = (s.steps ?? 0) + 1;
   if (event === "dialogue") s.dialogues = (s.dialogues ?? 0) + 1;
   if (event === "link") s.linksOpened = (s.linksOpened ?? 0) + 1;
@@ -153,10 +195,14 @@ export function track(event: TrackEvent, payload?: string): string[] {
   if (event === "gems") s.gems = (s.gems ?? 0) + (payload ? Number(payload) || 0 : 0);
   if (event === "dailychest") s.dailyChest = true;
   if (event === "brew") s.brews = (s.brews ?? 0) + 1;
-  localStorage.setItem(KEY, JSON.stringify(s));
   const after = getUnlockedIds(s);
   const newly = after.filter((id) => !before.has(id));
-  window.dispatchEvent(new CustomEvent(EVENT));
+  if (newly.length) {
+    // Achievement unlocked — persist + notify immediately (toast needs it)
+    flushNow();
+  } else {
+    scheduleFlush();
+  }
   return newly;
 }
 

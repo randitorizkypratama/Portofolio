@@ -621,7 +621,23 @@ body.konami-rainbow {
 
 /* ── RPG: pixel sword cursor inside the game viewport ──────────── */
 .pixel-cursor {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23d0d8e0' d='M20 2h2v2h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h2v1h1v1h1v1h1v1h1v1h-2v-1h-1v-1h-1v-1h-1v-1h-1v-2h-1v-1H9V9H8V8H7V7H6V6H5V5h2v1h1v1h1v1h1v1h1V8h1V7h1V6h1V5h1V4h1V3h1V2z'/%3E%3Cpath fill='%238b5a2b' d='M4 16h2v2H4v2H2v-2h2v-2z'/%3E%3Cpath fill='%23d4a847' d='M6 14h2v2H6z'/%3E%3C/svg%3E") 2 2, crosshair;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23d0d8e0' d='M20 2h2v2h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h2v1h1v1h1v1h1v1h1v1h-2v-1h-1v-1h-1v-1h-1v-1h-1v-2h-1v-1H9V9H8V8H7V7H6V6H5V5h2v1h1v1h1v1h1v1h1V8h1V7h1V6h1V5h1V4h1V3h1V2z'/%3E%3Cpath fill='%238b5a2b' d='M4 16h2v2H4v2H2v-2h2v-2z'/%3E%3Cpath fill='%23d4a847' d='M6 14h2v2H6z'/%3E%3C/svg%3E") 2 2, crosshair;
+}
+
+/* ── Mobile: kill the heaviest continuous animations ───────────── */
+@media (max-width: 768px) {
+  /* Full-screen repaint every frame — not worth it on phones */
+  .aurora { display: none; }
+  /* 26 water tiles × 2 non-composited animations */
+  .tile-water::after { display: none; }
+  .tile-water { animation: none; }
+  /* Fixed full-screen gradient over the whole page */
+  .crt-overlay { display: none !important; }
+  /* Giant 200% star layers drift — freeze them (still visible, just static) */
+  .stars-far, .stars-mid, .stars-near { animation: none; }
+  /* Infinite motion loops → static */
+  .animate-float { animation: none; }
+  .animate-ping { animation: none; }
 }
 
 @keyframes confetti-fall {
