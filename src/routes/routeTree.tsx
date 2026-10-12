@@ -28,6 +28,7 @@ import { FaqSection } from "../components/FaqSection";
 import { CaseStudyPage } from "../components/CaseStudyPage";
 import { UsesPage } from "../components/UsesPage";
 import { NotFoundPage } from "../components/NotFoundPage";
+import { InstallPrompt } from "../components/InstallPrompt";
 import { Analytics } from "@vercel/analytics/react";
 import { markSection } from "../game/journal";
 import { track } from "../game/achievements";
@@ -228,6 +229,7 @@ function RootLayout() {
         <RouteFlash pathname={pathname} />
         <Header />
         <GlobalToast />
+        <InstallPrompt />
         <main>
           <PageTransition pathname={pathname}>
             <Outlet />
@@ -243,12 +245,13 @@ function RootLayout() {
       <Analytics />
       {crtOn && <div className="crt-overlay" aria-hidden="true" />}
       <RouteFlash pathname={pathname} />
-      <StartScreen onStart={handleStart} onSkip={handleSkip} />
+      {!started && <StartScreen onStart={handleStart} onSkip={handleSkip} />}
       {started && (
         <>
           <Header />
           <ExpBar />
           <GlobalToast />
+          <InstallPrompt />
           <QuestJournal />
           <MiniPlayer />
           <main>

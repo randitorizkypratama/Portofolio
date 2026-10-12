@@ -10,6 +10,8 @@ export const siteConfig = {
     "Have a project in mind, a collaboration opportunity, or just want to say hi? Feel free to reach out!",
   location: "Indonesia",
   role: "Frontend Developer",
+  /** Live badge in Header + game HUD — flip to false when booked out. */
+  availableForWork: true,
   interests: "Game · Tech · Anime",
   email: "hello@fixdiriloe.dev",
   cvPath: "/cv/FixDiriloe-CV.pdf",

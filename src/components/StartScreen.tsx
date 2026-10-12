@@ -30,6 +30,7 @@ export function StartScreen({ onStart, onSkip }: StartScreenProps) {
   }, [onSkip]);
 
   useEffect(() => {
+    if (!show) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
@@ -42,7 +43,7 @@ export function StartScreen({ onStart, onSkip }: StartScreenProps) {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [handleStart, handleSkip]);
+  }, [handleStart, handleSkip, show]);
 
   if (!show) return null;
 

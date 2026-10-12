@@ -34,12 +34,14 @@ import {
 } from "../game/inventory";
 import { getTitle } from "../game/titles";
 import { plotStage, plantPlot, waterPlot, harvestPlot } from "../game/garden";
-import { getGold, addGold, subscribeGold } from "../game/gold";
+import { getGold, addGold, spendGold, subscribeGold } from "../game/gold";
 import { getLevel, levelProgress } from "../game/level";
+import { SKINS, getActiveSkin, purchaseSkin, getOwnedSkins, subscribeSkin } from "../game/skins";
 import { Minimap } from "./Minimap";
 import { NPCPortrait } from "./NPCPortrait";
 import { TypewriterText } from "./TypewriterText";
 import { CrystalCave } from "./CrystalCave";
+import { devlog, updates, siteConfig } from "../data/portfolio";
 
 const VIEWPORT_TILES_X = 17;
 const VIEWPORT_TILES_Y = 13;
@@ -157,6 +159,7 @@ function PlayerSprite({ moving, swimming, riding }: { moving: boolean; swimming?
     );
   }
   if (riding) {
+    const sk = getActiveSkin().colors;
     return (
       <div
         className="absolute z-10 flex items-center justify-center"
@@ -201,18 +204,19 @@ function PlayerSprite({ moving, swimming, riding }: { moving: boolean; swimming?
           <rect x="19" y="6" width="2" height="2" fill="#1a2438" />
           <rect x="15" y="6" width="1" height="1" fill="#e8f0ff" />
           <rect x="19" y="6" width="1" height="1" fill="#e8f0ff" />
-          <rect x="12" y="9" width="12" height="3" fill="#d4a847" />
-          <rect x="12" y="9" width="12" height="1" fill="#e8c86a" />
-          <rect x="10" y="11" width="16" height="3" fill="#3d3d72" />
+          <rect x="12" y="9" width="12" height="3" fill={sk.scarf} />
+          <rect x="12" y="9" width="12" height="1" fill={sk.scarfLight} />
+          <rect x="10" y="11" width="16" height="3" fill={sk.body} />
           <rect x="9" y="12" width="2" height="2" fill="#f0c8a0" />
           <rect x="25" y="12" width="2" height="2" fill="#e0b088" />
           {/* dangling feet */}
-          <rect x="10" y="14" width="3" height="2" fill="#25253f" />
-          <rect x="23" y="14" width="3" height="2" fill="#25253f" />
+          <rect x="10" y="14" width="3" height="2" fill={sk.dark} />
+          <rect x="23" y="14" width="3" height="2" fill={sk.dark} />
         </svg>
       </div>
     );
   }
+  const sk = getActiveSkin().colors;
   return (
     <div
       className="absolute z-10 flex items-center justify-center"
@@ -259,26 +263,26 @@ function PlayerSprite({ moving, swimming, riding }: { moving: boolean; swimming?
         {/* Neck */}
         <rect x="14" y="13" width="4" height="2" fill="#e0b088" />
         {/* Scarf */}
-        <rect x="10" y="14" width="12" height="3" fill="#d4a847" />
-        <rect x="10" y="14" width="12" height="1" fill="#e8c86a" />
-        <rect x="10" y="16" width="12" height="1" fill="#b88e35" />
-        <rect x="22" y="16" width="2" height="4" fill="#d4a847" />
-        <rect x="22" y="16" width="1" height="4" fill="#e8c86a" />
-        <rect x="22" y="19" width="2" height="1" fill="#b88e35" />
+        <rect x="10" y="14" width="12" height="3" fill={sk.scarf} />
+        <rect x="10" y="14" width="12" height="1" fill={sk.scarfLight} />
+        <rect x="10" y="16" width="12" height="1" fill={sk.scarfDark} />
+        <rect x="22" y="16" width="2" height="4" fill={sk.scarf} />
+        <rect x="22" y="16" width="1" height="4" fill={sk.scarfLight} />
+        <rect x="22" y="19" width="2" height="1" fill={sk.scarfDark} />
         {/* Hoodie */}
-        <rect x="8" y="17" width="16" height="2" fill="#2f2f5a" />
-        <rect x="8" y="18" width="16" height="8" fill="#3d3d72" />
-        <rect x="6" y="19" width="2" height="6" fill="#3d3d72" />
-        <rect x="24" y="19" width="2" height="6" fill="#33335e" />
-        <rect x="8" y="24" width="16" height="2" fill="#33335e" />
-        <rect x="10" y="17" width="12" height="1" fill="#4a4a88" />
+        <rect x="8" y="17" width="16" height="2" fill={sk.dark} />
+        <rect x="8" y="18" width="16" height="8" fill={sk.body} />
+        <rect x="6" y="19" width="2" height="6" fill={sk.body} />
+        <rect x="24" y="19" width="2" height="6" fill={sk.dark} />
+        <rect x="8" y="24" width="16" height="2" fill={sk.dark} />
+        <rect x="10" y="17" width="12" height="1" fill={sk.highlight} />
         {/* Pocket + drawstrings */}
-        <rect x="12" y="22" width="8" height="3" fill="#33335e" />
-        <rect x="12" y="22" width="8" height="1" fill="#2f2f5a" />
+        <rect x="12" y="22" width="8" height="3" fill={sk.dark} />
+        <rect x="12" y="22" width="8" height="1" fill={sk.body} />
         <rect x="14" y="18" width="1" height="3" fill="#e8e8f0" />
         <rect x="17" y="18" width="1" height="3" fill="#e8e8f0" />
-        <rect x="14" y="21" width="1" height="1" fill="#d4a847" />
-        <rect x="17" y="21" width="1" height="1" fill="#d4a847" />
+        <rect x="14" y="21" width="1" height="1" fill={sk.scarf} />
+        <rect x="17" y="21" width="1" height="1" fill={sk.scarf} />
         {/* Hands */}
         <rect x="6" y="25" width="2" height="2" fill="#f0c8a0" />
         <rect x="24" y="25" width="2" height="2" fill="#e0b088" />
@@ -819,6 +823,9 @@ export function RPGWorld() {
   const [gold, setGold] = useState(() => getGold());
   const [level, setLevel] = useState(() => getLevel());
   const [expPct, setExpPct] = useState(() => levelProgress());
+  const [showWardrobe, setShowWardrobe] = useState(false);
+  const [showLibrary, setShowLibrary] = useState(false);
+  const [, setSkinTick] = useState(0);
   const [floats, setFloats] = useState<{ id: number; text: string; color: string; x: number; y: number }[]>([]);
   const floatIdRef = useRef(0);
   const levelRef = useRef(level);
@@ -861,6 +868,9 @@ export function RPGWorld() {
 
   /** Gold changes from anywhere (hotbar sales, etc). */
   useEffect(() => subscribeGold(() => setGold(getGold())), []);
+
+  /** Skin equip → recolor player sprite. */
+  useEffect(() => subscribeSkin(() => setSkinTick((t) => t + 1)), []);
 
   /** Hotbar: use portable items outside battle. */
   const brewItem = useCallback((id: string) => {
@@ -927,6 +937,7 @@ export function RPGWorld() {
   })());
   const visitorsRef = useRef<number | null>(null);
   const periodRef = useRef(period);
+  const weatherRef = useRef(weather);
   const bossAwakeRef = useRef(bossAwake);
   const battleRef = useRef<BattleState | null>(null);
   const dragonDefeatedRef = useRef(dragonDefeated);
@@ -954,9 +965,19 @@ export function RPGWorld() {
   useEffect(() => { fishingRef.current = fishing; }, [fishing]);
   useEffect(() => { visitorsRef.current = visitors; }, [visitors]);
   useEffect(() => { periodRef.current = period; }, [period]);
+  useEffect(() => { weatherRef.current = weather; }, [weather]);
   useEffect(() => { bossAwakeRef.current = bossAwake; }, [bossAwake]);
   useEffect(() => { battleRef.current = battle; }, [battle]);
   useEffect(() => { dragonDefeatedRef.current = dragonDefeated; }, [dragonDefeated]);
+
+  /** Hook zone widens when it rains — weather has gameplay effects. */
+  const getHookZone = () => {
+    const w = weatherRef.current;
+    if (w === "clear") return HOOK_ZONE;
+    const mid = (HOOK_ZONE.start + HOOK_ZONE.end) / 2;
+    const half = (HOOK_ZONE.end - HOOK_ZONE.start) / 2 + 4;
+    return { start: mid - half, end: mid + half };
+  };
 
   /** NPCs with night positions applied; optionally include the boss. */
   const makeActiveList = (night: boolean, includeBoss: boolean): NPC[] => {
@@ -971,7 +992,7 @@ export function RPGWorld() {
         if (night && n.nightPosition) return { ...n, position: n.nightPosition };
         return n;
       });
-    if (includeBoss && bossAwakeRef.current && !dragonDefeatedRef.current) {
+    if (includeBoss && !dragonDefeatedRef.current && (bossAwakeRef.current || weatherRef.current === "storm")) {
       list.push(bossDragon);
     }
     return list;
@@ -1233,7 +1254,10 @@ export function RPGWorld() {
               w === "clear"
                 ? (["rain", "storm", "clear"] as const)
                 : (["clear", "clear", "rain"] as const);
-            return options[Math.floor(Math.random() * options.length)];
+            const next = options[Math.floor(Math.random() * options.length)];
+            if (next === "storm") showToast("⛈ STORM — The Debug Dragon stirs in the clouds...");
+            else if (next === "rain") showToast("🌧 Rain — fish are biting easier!");
+            return next;
           });
         }
         schedule();
@@ -1309,10 +1333,11 @@ export function RPGWorld() {
       judgeStrike();
       return;
     }
-    // Fishing: hook or cancel
+    // Fishing: hook or cancel (rain/storm widens the hook zone)
     if (fishingRef.current && !fishingRef.current.done) {
       const f = fishingRef.current;
-      const hit = f.pos >= HOOK_ZONE.start && f.pos <= HOOK_ZONE.end;
+      const zone = getHookZone();
+      const hit = f.pos >= zone.start && f.pos <= zone.end;
       if (hit) {
         const fish = rollFish(periodRef.current.night);
         const isNew = addFish(fish.id);
@@ -1498,6 +1523,12 @@ export function RPGWorld() {
         notifyNewly(track("portal"));
         showToast("THE PORTAL HUMS — SCROLL TO CONTACT");
         setVisitLink("#contact");
+        return;
+      }
+      if (entity.type === "librarian") {
+        sfx.interact();
+        setShowLibrary(true);
+        notifyNewly(track("dialogue"));
         return;
       }
       let lines = entity.dialogue;
@@ -1690,6 +1721,16 @@ export function RPGWorld() {
           sfx.close();
           fishingRef.current = null;
           setFishing(null);
+          return;
+        }
+        if (showWardrobe) {
+          sfx.close();
+          setShowWardrobe(false);
+          return;
+        }
+        if (showLibrary) {
+          sfx.close();
+          setShowLibrary(false);
           return;
         }
         if (hasMenu) {
@@ -2254,7 +2295,7 @@ export function RPGWorld() {
         {/* Minimap */}
         <Minimap player={playerPos} npcs={minimapNpcs} />
 
-        {/* JRPG HUD — LV / EXP / hearts / gold / time / fish */}
+        {/* JRPG HUD — LV / EXP / hearts / gold / time / fish / status */}
         <div className="absolute top-2 left-2 z-[17] game-border rounded px-2 py-1.5 bg-bg-main/85 flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <span className="retro-font text-[6px] px-1.5 py-0.5 rounded bg-gold/20 border border-gold/50 text-gold font-bold">
@@ -2282,6 +2323,12 @@ export function RPGWorld() {
             {caughtFish.length > 0 && (
               <span className="retro-font text-[5px] text-cyan">
                 🎣 {caughtFish.length}/{FISH.length}
+              </span>
+            )}
+            {siteConfig.availableForWork && (
+              <span className="retro-font text-[5px] text-green-400 flex items-center gap-1" title="Open for work">
+                <span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />
+                HIRE
               </span>
             )}
           </div>
@@ -2413,8 +2460,8 @@ export function RPGWorld() {
               <>
                 <div className="relative h-5 bg-bg-main border-2 border-border rounded-sm overflow-hidden mb-2">
                   <div
-                    className="absolute inset-y-0 bg-xp/20 border-x border-xp/50"
-                    style={{ left: `${HOOK_ZONE.start}%`, width: `${HOOK_ZONE.end - HOOK_ZONE.start}%` }}
+                    className={`absolute inset-y-0 border-x ${weather === "clear" ? "bg-xp/20 border-xp/50" : "bg-cyan/20 border-cyan/60"}`}
+                    style={{ left: `${getHookZone().start}%`, width: `${getHookZone().end - getHookZone().start}%` }}
                   />
                   <div
                     className="absolute inset-y-0 w-1 bg-gold"
@@ -2422,7 +2469,9 @@ export function RPGWorld() {
                   />
                 </div>
                 <p className="retro-font text-[6px] text-text-secondary text-center">
-                  PRESS / TAP E WHEN THE MARKER IS IN THE GREEN
+                  {weather === "clear"
+                    ? "PRESS / TAP E WHEN THE MARKER IS IN THE GREEN"
+                    : "🌧 RAIN BONUS — WIDER HOOK ZONE!"}
                 </p>
               </>
             )}
@@ -2766,6 +2815,7 @@ export function RPGWorld() {
               <div className="space-y-2">
                 {[
                   { label: "RESUME", action: () => setShowMenu(false) },
+                  { label: "WARDROBE", action: () => setShowWardrobe(true) },
                   {
                     label: `JUKEBOX: ${getBgmTrackName()}`,
                     action: () => {
@@ -2789,6 +2839,116 @@ export function RPGWorld() {
                 )}
               </div>
               <p className="retro-font text-[5px] text-text-secondary/40 text-center mt-3">ESC to close</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Wardrobe — buy & equip skins with gold */}
+      <AnimatePresence>
+        {showWardrobe && (
+          <motion.div className="fixed inset-0 z-50 flex items-center justify-center"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="absolute inset-0 bg-bg-main/75" onClick={() => setShowWardrobe(false)} />
+            <div className="dialogue-box rounded-lg p-4 relative z-10 w-[260px]">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="pixel-font text-[10px] text-gold">WARDROBE</h3>
+                <span className="retro-font text-[7px] text-gold">◆{gold}</span>
+              </div>
+              <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+                {SKINS.map((s) => {
+                  const owned = getOwnedSkins().includes(s.id);
+                  const active = getActiveSkin().id === s.id;
+                  return (
+                    <button
+                      key={s.id}
+                      className="w-full text-left rounded border-2 px-2.5 py-2 flex items-center gap-2.5 transition-colors"
+                      style={{
+                        borderColor: active ? "#d4a847" : "#3a4256",
+                        background: active ? "rgba(212,168,71,0.08)" : "transparent",
+                      }}
+                      onClick={() => {
+                        const r = purchaseSkin(s.id, spendGold);
+                        showToast(r.msg);
+                        if (r.ok) sfx.link();
+                        else sfx.close();
+                      }}
+                    >
+                      <span
+                        className="w-5 h-5 rounded-sm border border-border shrink-0"
+                        style={{ background: s.colors.body, boxShadow: `inset 0 -4px 0 ${s.colors.dark}` }}
+                      />
+                      <span className="flex-1 min-w-0">
+                        <span className="retro-font text-[6px] text-cream block">{s.name}</span>
+                        <span className="retro-font text-[5px] text-text-secondary block truncate">{s.desc}</span>
+                      </span>
+                      <span className={`retro-font text-[6px] shrink-0 ${active ? "text-gold" : owned ? "text-xp" : "text-text-secondary"}`}>
+                        {active ? "WORN" : owned ? "OWNED" : `◆${s.price}`}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <button className="game-btn w-full text-[7px] py-2 mt-3" onClick={() => setShowWardrobe(false)}>
+                CLOSE
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Library — Elif's archive of devlogs & updates */}
+      <AnimatePresence>
+        {showLibrary && (
+          <motion.div className="fixed inset-0 z-50 flex items-center justify-center"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="absolute inset-0 bg-bg-main/75" onClick={() => setShowLibrary(false)} />
+            <div className="dialogue-box rounded-lg p-5 relative z-10 w-[320px] max-h-[80vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="pixel-font text-[11px] text-gold">VILLAGE ARCHIVE</h3>
+                <span className="text-lg">📚</span>
+              </div>
+
+              {/* Devlog books */}
+              <div className="mb-5">
+                <h4 className="retro-font text-[8px] text-cream mb-2">DEVLOG</h4>
+                <div className="space-y-2">
+                  {devlog.map((entry, i) => (
+                    <div key={i} className="rounded border border-border/50 px-3 py-2">
+                      <div className="retro-font text-[6px] text-gold mb-1">{entry.date}</div>
+                      <p className="retro-font text-[6px] text-text-secondary leading-relaxed">{entry.entry}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Updates scrolls */}
+              <div>
+                <h4 className="retro-font text-[8px] text-cream mb-2">UPDATES</h4>
+                <div className="space-y-3">
+                  {updates.map((u, i) => (
+                    <div key={i} className="rounded border border-border/50 px-3 py-2">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="retro-font text-[6px] text-gold">v{u.version}</span>
+                        <span className="retro-font text-[5px] text-text-secondary">{u.date}</span>
+                      </div>
+                      <p className="retro-font text-[6px] text-cream mb-1">{u.title}</p>
+                      <ul className="space-y-0.5">
+                        {u.items.map((item, j) => (
+                          <li key={j} className="retro-font text-[5px] text-text-secondary flex gap-1">
+                            <span className="text-gold">•</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <button className="game-btn w-full text-[7px] py-2 mt-4" onClick={() => setShowLibrary(false)}>
+                CLOSE
+              </button>
             </div>
           </motion.div>
         )}

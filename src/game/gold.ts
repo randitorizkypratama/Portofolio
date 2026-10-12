@@ -13,6 +13,13 @@ export function addGold(n: number): number {
   return next;
 }
 
+/** Spends gold if affordable. Returns true on success. */
+export function spendGold(n: number): boolean {
+  if (getGold() < n) return false;
+  addGold(-n);
+  return true;
+}
+
 export function subscribeGold(cb: () => void): () => void {
   window.addEventListener(EVENT, cb);
   return () => window.removeEventListener(EVENT, cb);

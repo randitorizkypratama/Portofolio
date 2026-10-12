@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Download, FileText, User, Trophy, Lock, Volume2, VolumeX, Music, Pause, Monitor, MonitorOff } from "lucide-react";
+import { Download, FileText, User, Trophy, Lock, Volume2, VolumeX, Music, Pause, Monitor, MonitorOff, Image as ImageIcon } from "lucide-react";
 import { siteConfig } from "../data/portfolio";
 import { ScrollReveal } from "./ScrollReveal";
 import {
@@ -10,9 +10,10 @@ import {
   subscribe,
 } from "../game/achievements";
 import { trackAndNotify } from "../game/toast";
-import { isSfxMuted, toggleSfxMuted } from "../game/sfx";
+import { isSfxMuted, toggleSfxMuted, sfx } from "../game/sfx";
 import { isBgmOn, toggleBgm } from "../game/music";
 import { getTitle } from "../game/titles";
+import { downloadCharacterCard } from "../game/characterCard";
 import { ITEMS, getInventory } from "../game/inventory";
 import { useLocale, pick } from "../i18n";
 import { ui } from "../data/content";
@@ -178,6 +179,18 @@ export function PlayerProfile() {
             <User size={12} />
             VIEW PROFILE
           </a>
+
+          {/* Shareable character card */}
+          <button
+            onClick={() => {
+              downloadCharacterCard();
+              sfx.link();
+            }}
+            className="flex items-center justify-center gap-2 w-full py-1.5 retro-font text-[6px] text-text-secondary hover:text-gold border border-transparent hover:border-gold/40 rounded transition-all mb-3"
+          >
+            <ImageIcon size={12} />
+            EXPORT CHARACTER CARD
+          </button>
 
           {/* Sound toggles */}
           <div className="flex gap-2 mb-3">

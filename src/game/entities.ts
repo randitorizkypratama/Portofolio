@@ -11,7 +11,7 @@ export interface NPC {
   position: Position;
   sprite: string;
   dialogue: string[];
-  type: "npc" | "sign" | "quest" | "secret" | "chest" | "shrine" | "portal" | "pumpkin" | "garden" | "cave";
+  type: "npc" | "sign" | "quest" | "secret" | "chest" | "shrine" | "portal" | "pumpkin" | "garden" | "cave" | "librarian";
   /** Moves here at night (if set). */
   nightPosition?: Position;
   /** Only appears at night. */
@@ -95,6 +95,18 @@ export const npcs: NPC[] = [
       "Visit: family-tree-delta-peach.vercel.app",
     ],
     type: "quest",
+  },
+  {
+    id: "npc-librarian",
+    name: "Elif the Librarian",
+    position: { x: 22, y: 7 },
+    sprite: "📚",
+    dialogue: [
+      "Welcome to the Village Archive, traveler.",
+      "Every update, every devlog — bound in books on these shelves.",
+      "Press E to browse the collection.",
+    ],
+    type: "librarian",
   },
   {
     id: "npc-skills",

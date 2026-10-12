@@ -148,6 +148,17 @@ export function Header() {
             </div>
           </div>
 
+          {/* Open for Work badge */}
+          {siteConfig.availableForWork && (
+            <div
+              className="flex items-center gap-1.5 px-2 py-1 rounded border border-green-500/50 bg-green-500/10"
+              title="Available for freelance projects"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+              <span className="retro-font text-[5px] text-green-400 whitespace-nowrap">OPEN FOR WORK</span>
+            </div>
+          )}
+
           <a
             href={siteConfig.cvPath}
             download={siteConfig.cvFileName}
