@@ -123,12 +123,10 @@ export function PlayerProfile() {
         <div className="p-4">
           <div className="flex items-start gap-3 mb-4">
             {/* Avatar */}
-            <motion.img
+            <img
               src="/images/avatar.webp"
               alt={siteConfig.name}
-              className="w-14 h-14 rounded border-2 border-border object-cover shrink-0"
-              animate={{ y: [0, -3, 0] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              className="w-14 h-14 rounded border-2 border-border object-cover shrink-0 anim-bob"
             />
             <div className="min-w-0">
               <h3 className="pixel-font text-[10px] text-cream leading-tight">

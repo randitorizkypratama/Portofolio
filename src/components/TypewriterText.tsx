@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { sfx } from "../game/sfx";
 
+// Phones: typing SFX creates an oscillator per blip — skip them there
+const SFX_ON = typeof window !== "undefined" && window.innerWidth >= 768;
+
 export function TypewriterText({
   text,
   speed = 28,
@@ -20,7 +23,7 @@ export function TypewriterText({
           window.clearInterval(id);
           return c;
         }
-        if (c % 3 === 0) sfx.type();
+        if (SFX_ON && c % 5 === 0) sfx.type();
         return c + 1;
       });
     }, speed);

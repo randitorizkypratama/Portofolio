@@ -25,11 +25,14 @@ export function AboutSection() {
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.3 }}
             >
-              <img
-                src="/images/coding_workspace.gif"
-                alt="Developer workspace at night"
+              <video
+                src="/images/coding_workspace.mp4"
+                aria-label="Developer workspace at night"
                 className="w-full h-auto"
-                loading="lazy"
+                autoPlay
+                muted
+                loop
+                playsInline
               />
 
               {/* Animated code overlay */}
@@ -38,66 +41,41 @@ export function AboutSection() {
                 <div className="absolute top-[15%] left-[25%] w-[50%] h-[40%] bg-primary/5 rounded blur-xl animate-pulse" />
 
                 {/* Code lines appearing */}
-                <motion.div
+                <div
                   className="absolute top-[22%] left-[30%] flex flex-col gap-1"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 }}
                 >
-                  <motion.div
-                    className="h-[3px] rounded bg-primary/40"
-                    animate={{ width: [0, 60, 60, 0] }}
-                    transition={{ duration: 3, repeat: Infinity, repeatDelay: 1 }}
+                  <div
+                    className="h-[3px] rounded bg-primary/40 anim-code-line"
+                    style={{ "--w": "60px", animationDelay: "0s" } as React.CSSProperties}
                   />
-                  <motion.div
-                    className="h-[3px] rounded bg-cyan/30"
-                    animate={{ width: [0, 45, 45, 0] }}
-                    transition={{ duration: 3, repeat: Infinity, repeatDelay: 1, delay: 0.4 }}
+                  <div
+                    className="h-[3px] rounded bg-cyan/30 anim-code-line"
+                    style={{ "--w": "45px", animationDelay: "0.4s" } as React.CSSProperties}
                   />
-                  <motion.div
-                    className="h-[3px] rounded bg-accent/30"
-                    animate={{ width: [0, 70, 70, 0] }}
-                    transition={{ duration: 3, repeat: Infinity, repeatDelay: 1, delay: 0.8 }}
+                  <div
+                    className="h-[3px] rounded bg-accent/30 anim-code-line"
+                    style={{ "--w": "70px", animationDelay: "0.8s" } as React.CSSProperties}
                   />
-                  <motion.div
-                    className="h-[3px] rounded bg-primary/30"
-                    animate={{ width: [0, 35, 35, 0] }}
-                    transition={{ duration: 3, repeat: Infinity, repeatDelay: 1, delay: 1.2 }}
+                  <div
+                    className="h-[3px] rounded bg-primary/30 anim-code-line"
+                    style={{ "--w": "35px", animationDelay: "1.2s" } as React.CSSProperties}
                   />
-                  <motion.div
-                    className="h-[3px] rounded bg-cyan/40"
-                    animate={{ width: [0, 55, 55, 0] }}
-                    transition={{ duration: 3, repeat: Infinity, repeatDelay: 1, delay: 1.6 }}
+                  <div
+                    className="h-[3px] rounded bg-cyan/40 anim-code-line"
+                    style={{ "--w": "55px", animationDelay: "1.6s" } as React.CSSProperties}
                   />
-                </motion.div>
+                </div>
 
                 {/* Blinking cursor */}
-                <motion.div
-                  className="absolute top-[22%] w-[2px] h-[16px] bg-gold"
-                  animate={{
-                    left: ["30%", "30%", "38%", "38%"],
-                    opacity: [1, 1, 1, 0],
-                  }}
-                  transition={{ duration: 2, repeat: Infinity }}
+                <div
+                  className="absolute top-[22%] w-[2px] h-[16px] bg-gold anim-cursor"
                 />
 
                 {/* Typing indicator dots */}
                 <div className="absolute bottom-[30%] right-[20%] flex gap-1">
-                  <motion.div
-                    className="w-1.5 h-1.5 rounded-full bg-xp"
-                    animate={{ opacity: [0.3, 1, 0.3] }}
-                    transition={{ duration: 1.2, repeat: Infinity }}
-                  />
-                  <motion.div
-                    className="w-1.5 h-1.5 rounded-full bg-xp"
-                    animate={{ opacity: [0.3, 1, 0.3] }}
-                    transition={{ duration: 1.2, repeat: Infinity, delay: 0.2 }}
-                  />
-                  <motion.div
-                    className="w-1.5 h-1.5 rounded-full bg-xp"
-                    animate={{ opacity: [0.3, 1, 0.3] }}
-                    transition={{ duration: 1.2, repeat: Infinity, delay: 0.4 }}
-                  />
+                  <div className="w-1.5 h-1.5 rounded-full bg-xp anim-dot" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-xp anim-dot" style={{ animationDelay: "0.2s" }} />
+                  <div className="w-1.5 h-1.5 rounded-full bg-xp anim-dot" style={{ animationDelay: "0.4s" }} />
                 </div>
               </div>
 
@@ -108,12 +86,10 @@ export function AboutSection() {
           {/* Right - Content */}
           <ScrollReveal direction="right" delay={0.1}>
             <div className="flex items-center gap-3 mb-4">
-              <motion.img
+              <img
                 src="/images/avatar.webp"
                 alt={siteConfig.name}
-                className="w-9 h-9 rounded object-cover border-2 border-border"
-                animate={{ y: [0, -3, 0] }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                className="w-9 h-9 rounded object-cover border-2 border-border anim-bob"
               />
               <span className="retro-font text-[8px] text-gold">
                 {pick(ui.aboutMe, lang)}

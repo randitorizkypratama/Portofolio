@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { motion } from "motion/react";
 import { Send, CheckCircle, Loader2 } from "lucide-react";
 import { siteConfig } from "../data/portfolio";
 import { ScrollReveal } from "./ScrollReveal";
@@ -89,27 +88,23 @@ export function ContactSection() {
 
                 {/* Decorative */}
                 <div className="hidden lg:flex items-end gap-4 mt-auto">
-                  <motion.img
+                  <img
                     src="/images/avatar.webp"
                     alt=""
                     aria-hidden="true"
-                    className="w-12 h-12 rounded-lg border-2 border-border"
-                    animate={{ y: [0, -4, 0] }}
-                    transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                    className="w-12 h-12 rounded-lg border-2 border-border anim-bob"
                   />
                   <div className="game-border rounded-lg p-3">
                     <p className="retro-font text-[6px] text-cyan">
                       {pick(ui.thanksForVisiting, lang)}
                     </p>
                   </div>
-                  <motion.img
+                  <img
                     src="/images/decoration.webp"
                     alt=""
                     aria-hidden="true"
-                    className="w-14 h-14 object-contain opacity-50"
+                    className="w-14 h-14 object-contain opacity-50 anim-bob-tilt"
                     loading="lazy"
-                    animate={{ y: [0, -3, 0], rotate: [0, 2, -2, 0] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                   />
                 </div>
               </div>

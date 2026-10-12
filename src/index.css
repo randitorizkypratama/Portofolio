@@ -624,6 +624,59 @@ body.konami-rainbow {
   cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23d0d8e0' d='M20 2h2v2h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h2v1h1v1h1v1h1v1h1v1h-2v-1h-1v-1h-1v-1h-1v-1h-1v-2h-1v-1H9V9H8V8H7V7H6V6H5V5h2v1h1v1h1v1h1v1h1V8h1V7h1V6h1V5h1V4h1V3h1V2z'/%3E%3Cpath fill='%238b5a2b' d='M4 16h2v2H4v2H2v-2h2v-2z'/%3E%3Cpath fill='%23d4a847' d='M6 14h2v2H6z'/%3E%3C/svg%3E") 2 2, crosshair;
 }
 
+/* ── Perf: skip rendering work for off-screen page sections ───── */
+section[id] {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 720px;
+}
+
+/* ── Compositor-friendly replaces for framer infinite loops ───── */
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.anim-bob { animation: bob 2.6s ease-in-out infinite; }
+
+@keyframes bob-tilt {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(2deg); }
+}
+.anim-bob-tilt { animation: bob-tilt 3s ease-in-out infinite; }
+
+@keyframes code-line {
+  0% { width: 0; }
+  18% { width: var(--w); }
+  80% { width: var(--w); }
+  100% { width: 0; }
+}
+.anim-code-line { width: 0; animation: code-line 4s ease-in-out infinite; }
+
+@keyframes cursor-sim {
+  0%, 38% { left: 30%; opacity: 1; }
+  44%, 72% { left: 38%; opacity: 1; }
+  78%, 94% { left: 38%; opacity: 0; }
+  100% { left: 30%; opacity: 1; }
+}
+.anim-cursor { animation: cursor-sim 2s ease-in-out infinite; }
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+.anim-dot { animation: dot-pulse 1.2s ease-in-out infinite; }
+
+@keyframes scroll-bounce {
+  0%, 100% { transform: translate(-50%, 0); }
+  50% { transform: translate(-50%, 6px); }
+}
+.anim-scroll-bounce { animation: scroll-bounce 1.5s ease-in-out infinite; }
+
+/* ── Perf: skip rendering work for off-screen page sections ───── */
+section[id] {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 720px;
+}
+
 /* ── Mobile: kill the heaviest continuous animations ───────────── */
 @media (max-width: 768px) {
   /* Full-screen repaint every frame — not worth it on phones */
@@ -638,6 +691,9 @@ body.konami-rainbow {
   /* Infinite motion loops → static */
   .animate-float { animation: none; }
   .animate-ping { animation: none; }
+  .anim-bob, .anim-bob-tilt, .anim-code-line, .anim-cursor, .anim-dot, .anim-scroll-bounce {
+    animation: none;
+  }
 }
 
 @keyframes confetti-fall {

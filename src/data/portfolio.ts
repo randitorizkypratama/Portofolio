@@ -56,7 +56,7 @@ export const projects: Project[] = [
     color: "#C04BFF",
     url: "https://kpop-tracker-six.vercel.app/",
     status: "completed",
-    screenshot: "/images/project-kpop-tracker-overview.png",
+    screenshot: "/images/project-kpop-tracker-overview.webp",
     architecture:
       "Nuxt 4 SSR with server routes, Turso (libSQL) for persistence, daily auto-sync from Pocamarket at 00:00 WIB, MusicBrainz discography matching for release attribution, scrypt-hashed user sessions.",
   },
@@ -79,7 +79,7 @@ export const projects: Project[] = [
     color: "#35D9F2",
     url: "https://dueldex-web.onrender.com/",
     status: "completed",
-    screenshot: "/images/project-dueldex-overview.png",
+    screenshot: "/images/project-dueldex-overview.webp",
     architecture:
       "Monorepo with Bun workspaces — Elysia API (REST + Swagger) and Nuxt 4 web app. SQLite via Turso for users, decks, and favorites. HMAC-SHA256 JWT auth with bcrypt password hashing. YGOPRODeck API as card data source.",
   },

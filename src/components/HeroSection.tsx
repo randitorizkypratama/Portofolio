@@ -166,13 +166,11 @@ export function HeroSection() {
         </div>
 
         {/* Scroll indicator */}
-        <motion.div
-          className="absolute bottom-6 left-1/2 -translate-x-1/2"
-          animate={{ y: [0, 6, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
+        <div
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 anim-scroll-bounce"
         >
           <ChevronDown size={18} className="text-text-secondary/50" />
-        </motion.div>
+        </div>
       </div>
     </section>
   );

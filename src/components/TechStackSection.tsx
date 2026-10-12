@@ -75,12 +75,10 @@ export function TechStackSection() {
               <p className="text-text-secondary text-sm mb-6">
                 {pick(ui.techToolsIntro, lang)}
               </p>
-              <motion.img
+              <img
                 src="/images/avatar.webp"
                 alt={siteConfig.name}
-                className="w-16 h-16 rounded-lg object-cover border-2 border-border hidden lg:block"
-                animate={{ y: [0, -4, 0] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                className="w-16 h-16 rounded-lg object-cover border-2 border-border hidden lg:block anim-bob"
               />
             </div>
           </ScrollReveal>

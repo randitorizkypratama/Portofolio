@@ -1222,18 +1222,20 @@ export function RPGWorld() {
     return () => cancelAnimationFrame(raf);
   }, [fishing !== null, fishing?.done]);
 
-  // Weather — random rain/storm bursts
+  // Weather — random rain/storm bursts (paused while off-screen)
   useEffect(() => {
     let t: ReturnType<typeof setTimeout>;
     const schedule = () => {
       t = setTimeout(() => {
-        setWeather((w) => {
-          const options =
-            w === "clear"
-              ? (["rain", "storm", "clear"] as const)
-              : (["clear", "clear", "rain"] as const);
-          return options[Math.floor(Math.random() * options.length)];
-        });
+        if (gameActiveRef.current) {
+          setWeather((w) => {
+            const options =
+              w === "clear"
+                ? (["rain", "storm", "clear"] as const)
+                : (["clear", "clear", "rain"] as const);
+            return options[Math.floor(Math.random() * options.length)];
+          });
+        }
         schedule();
       }, 45000 + Math.random() * 60000);
     };
