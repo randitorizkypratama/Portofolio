@@ -23,6 +23,11 @@ export interface Stats {
   gems?: number;
   dailyChest?: boolean;
   brews?: number;
+  crafts?: number;
+  combo?: number;
+  fragments?: number;
+  pets?: number;
+  furniture?: number;
 }
 
 export interface AchievementDef {
@@ -76,6 +81,12 @@ export const ACHIEVEMENT_DEFS: AchievementDef[] = [
   { id: "gardener", name: "Gardener", desc: "Harvest your first crop", check: (s) => (s.harvest ?? 0) >= 1 },
   { id: "gem_miner", name: "Gem Miner", desc: "Mine 10 gems in the Crystal Cavern", check: (s) => (s.gems ?? 0) >= 10 },
   { id: "daily_gift", name: "Daily Gift", desc: "Open the daily gift chest", check: (s) => !!s.dailyChest },
+  { id: "blacksmith", name: "Blacksmith", desc: "Forge your first item", check: (s) => (s.crafts ?? 0) >= 1 },
+  { id: "master_forge", name: "Master Forge", desc: "Craft 10 items", check: (s) => (s.crafts ?? 0) >= 10 },
+  { id: "social_butterfly", name: "Social Butterfly", desc: "Reach a 5-NPC talk combo", check: (s) => (s.combo ?? 0) >= 5 },
+  { id: "archaeologist", name: "Archaeologist", desc: "Find all 5 treasure fragments", check: (s) => (s.fragments ?? 0) >= 5 },
+  { id: "animal_friend", name: "Animal Friend", desc: "Adopt a pet", check: (s) => (s.pets ?? 0) >= 1 },
+  { id: "interior_designer", name: "Interior Designer", desc: "Own 5 pieces of furniture", check: (s) => (s.furniture ?? 0) >= 5 },
   {
     id: "completionist",
     name: "Completionist",
@@ -163,7 +174,12 @@ export type TrackEvent =
   | "harvest"
   | "gems"
   | "dailychest"
-  | "brew";
+  | "brew"
+  | "craft"
+  | "combo"
+  | "fragment"
+  | "pet"
+  | "furniture";
 
 /** Increment a stat; returns ids newly unlocked by this event. */
 export function track(event: TrackEvent, payload?: string): string[] {
@@ -195,6 +211,11 @@ export function track(event: TrackEvent, payload?: string): string[] {
   if (event === "gems") s.gems = (s.gems ?? 0) + (payload ? Number(payload) || 0 : 0);
   if (event === "dailychest") s.dailyChest = true;
   if (event === "brew") s.brews = (s.brews ?? 0) + 1;
+  if (event === "craft") s.crafts = (s.crafts ?? 0) + 1;
+  if (event === "combo") s.combo = Math.max(s.combo ?? 0, payload ? Number(payload) || 0 : 0);
+  if (event === "fragment") s.fragments = (s.fragments ?? 0) + 1;
+  if (event === "pet") s.pets = (s.pets ?? 0) + 1;
+  if (event === "furniture") s.furniture = (s.furniture ?? 0) + 1;
   const after = getUnlockedIds(s);
   const newly = after.filter((id) => !before.has(id));
   if (newly.length) {

@@ -37,6 +37,19 @@ import { plotStage, plantPlot, waterPlot, harvestPlot } from "../game/garden";
 import { getGold, addGold, spendGold, subscribeGold } from "../game/gold";
 import { getLevel, levelProgress } from "../game/level";
 import { SKINS, getActiveSkin, purchaseSkin, getOwnedSkins, subscribeSkin } from "../game/skins";
+import { registerTalk, comboGold, getCombo } from "../game/combo";
+import { getFragments, collectFragment, treasureComplete, subscribeTreasure } from "../game/treasure";
+import { PETS, getActivePet, getOwnedPets, adoptPet, releasePet, subscribePets } from "../game/pets";
+import {
+  SLOTS,
+  FURNITURE,
+  getOwnedFurniture,
+  getPlacedFurniture,
+  buyFurniture,
+  unplaceFurniture,
+  subscribeHouse,
+} from "../game/furniture";
+import { RECIPES, performCraft, recipeCost } from "../game/forge";
 import { Minimap } from "./Minimap";
 import { NPCPortrait } from "./NPCPortrait";
 import { TypewriterText } from "./TypewriterText";
@@ -656,6 +669,31 @@ function NPCSprite({
             <rect x="12" y="11" width="1" height="2" fill="#9b59b6" />
             <rect x="11" y="7" width="1" height="1" fill="#a8e8f8" />
           </>
+        ) : npc.type === "house" ? (
+          <>
+            {/* Cottage */}
+            <rect x="2" y="6" width="12" height="8" fill="#c9a86a" />
+            <rect x="2" y="6" width="12" height="1" fill="#dbbd82" />
+            <path d="M1 7 L8 1 L15 7 Z" fill="#b85c4a" />
+            <path d="M3 7 L8 3 L13 7 Z" fill="#cf6f5b" />
+            <rect x="6" y="9" width="4" height="5" fill="#6b4423" />
+            <rect x="9" y="11" width="1" height="1" fill="#d4a847" />
+            <rect x="3" y="8" width="2" height="2" fill="#74b9ff" />
+            <rect x="11" y="8" width="2" height="2" fill="#74b9ff" />
+            <rect x="12" y="1" width="2" height="3" fill="#8d6e63" />
+          </>
+        ) : npc.type === "dig" ? (
+          <>
+            {/* Buried mound with an X */}
+            <rect x="3" y="11" width="10" height="3" fill="#6b4423" />
+            <rect x="4" y="10" width="8" height="1" fill="#7d5230" />
+            <rect x="5" y="9" width="6" height="1" fill="#8a6242" />
+            <rect x="7" y="5" width="1" height="4" fill="#54331a" />
+            <rect x="9" y="5" width="1" height="4" fill="#54331a" />
+            <rect x="6" y="6" width="1" height="1" fill="#54331a" />
+            <rect x="10" y="6" width="1" height="1" fill="#54331a" />
+            <rect x="8" y="4" width="1" height="1" fill="#74b9ff" />
+          </>
         ) : (
           <>
             {/* Headband */}
@@ -825,6 +863,14 @@ export function RPGWorld() {
   const [expPct, setExpPct] = useState(() => levelProgress());
   const [showWardrobe, setShowWardrobe] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
+  const [showForge, setShowForge] = useState(false);
+  const [showHouse, setShowHouse] = useState(false);
+  const [showPetShop, setShowPetShop] = useState(false);
+  const [photoMode, setPhotoMode] = useState(false);
+  const [combo, setCombo] = useState(0);
+  const [activePet, setActivePet] = useState(() => getActivePet());
+  const [treasureFrag, setTreasureFrag] = useState(() => getFragments());
+  const [, setHouseTick] = useState(0);
   const [, setSkinTick] = useState(0);
   const [floats, setFloats] = useState<{ id: number; text: string; color: string; x: number; y: number }[]>([]);
   const floatIdRef = useRef(0);
@@ -841,6 +887,13 @@ export function RPGWorld() {
 
   const dialogueRef = useRef(dialogue);
   const showMenuRef = useRef(showMenu);
+  /** Modal flags must be refs too — the ESC keydown effect has [] deps. */
+  const showWardrobeRef = useRef(showWardrobe);
+  const showLibraryRef = useRef(showLibrary);
+  const showForgeRef = useRef(showForge);
+  const showHouseRef = useRef(showHouse);
+  const showPetShopRef = useRef(showPetShop);
+  const photoModeRef = useRef(photoMode);
   const playerPosRef = useRef(playerPos);
   const directionRef = useRef(direction);
   const advanceDialogueRef = useRef<(() => void) | null>(null);
@@ -855,6 +908,14 @@ export function RPGWorld() {
       if (!gameActiveRef.current) return;
       setGardenTick((t) => t + 1);
     }, 2000);
+    return () => clearInterval(iv);
+  }, []);
+
+  // NPC combo decays after its 15s window — refresh the HUD counter
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setCombo((c) => (c !== getCombo() ? getCombo() : c));
+    }, 1000);
     return () => clearInterval(iv);
   }, []);
 
@@ -921,6 +982,8 @@ export function RPGWorld() {
   // Pet slime
   const historyRef = useRef<Position[]>([START_POS, START_POS, START_POS]);
   const petPosRef = useRef({ x: START_POS.x, y: START_POS.y });
+  const pet2PosRef = useRef({ x: START_POS.x, y: START_POS.y });
+  const pet2Ref = useRef<HTMLDivElement>(null);
   const petRef = useRef<HTMLDivElement>(null);
   const offsetXRef = useRef(0);
   const offsetYRef = useRef(0);
@@ -1204,6 +1267,17 @@ export function RPGWorld() {
 
   useEffect(() => { dialogueRef.current = dialogue; }, [dialogue]);
   useEffect(() => { showMenuRef.current = showMenu; }, [showMenu]);
+  useEffect(() => { showWardrobeRef.current = showWardrobe; }, [showWardrobe]);
+  useEffect(() => { showLibraryRef.current = showLibrary; }, [showLibrary]);
+  useEffect(() => { showForgeRef.current = showForge; }, [showForge]);
+  useEffect(() => { showHouseRef.current = showHouse; }, [showHouse]);
+  useEffect(() => { showPetShopRef.current = showPetShop; }, [showPetShop]);
+  useEffect(() => { photoModeRef.current = photoMode; }, [photoMode]);
+
+  /** Pet / treasure / house changes → re-render followers & modals. */
+  useEffect(() => subscribePets(() => setActivePet(getActivePet())), []);
+  useEffect(() => subscribeTreasure(() => setTreasureFrag(getFragments())), []);
+  useEffect(() => subscribeHouse(() => setHouseTick((t) => t + 1)), []);
   useEffect(() => { playerPosRef.current = playerPos; }, [playerPos]);
   useEffect(() => { directionRef.current = direction; }, [direction]);
 
@@ -1305,6 +1379,14 @@ export function RPGWorld() {
         if (petRef.current) {
           petRef.current.style.transform = `translate(${(p.x - offsetXRef.current) * TILE_SIZE}px, ${(p.y - offsetYRef.current) * TILE_SIZE}px)`;
         }
+        // Adopted pet trails a little further behind
+        const target2 = hist[Math.max(0, hist.length - 3)];
+        const p2 = pet2PosRef.current;
+        p2.x += (target2.x - p2.x) * 0.12;
+        p2.y += (target2.y - p2.y) * 0.12;
+        if (pet2Ref.current) {
+          pet2Ref.current.style.transform = `translate(${(p2.x - offsetXRef.current) * TILE_SIZE}px, ${(p2.y - offsetYRef.current) * TILE_SIZE}px)`;
+        }
       }
       raf = requestAnimationFrame(tick);
     };
@@ -1325,8 +1407,18 @@ export function RPGWorld() {
   }, []);
 
   const doInteract = useCallback(() => {
-    // Crystal Cavern minigame owns its own input
+    // Crystal Cavern minigame owns its input
     if (caveOpenRef.current) return;
+    // Any overlay modal owns the screen
+    if (
+      showWardrobeRef.current ||
+      showLibraryRef.current ||
+      showForgeRef.current ||
+      showHouseRef.current ||
+      showPetShopRef.current
+    ) {
+      return;
+    }
     // Boss battle: judge a timing strike
     const bt = battleRef.current;
     if (bt && bt.phase === "fight" && bt.timing) {
@@ -1460,6 +1552,85 @@ export function RPGWorld() {
         });
         return;
       }
+      // Treasure hunt — buried fragments + the sealed beach chest
+      if (entity.type === "dig") {
+        if (getOpened().has(entity.id)) {
+          sfx.close();
+          setDialogue({
+            npc: { ...entity, dialogue: ["Just a hole. Whatever was here is in your pocket now."] },
+            lineIndex: 0,
+          });
+          return;
+        }
+        markOpened(entity.id);
+        setOpenedLoot(getOpened());
+        const total = collectFragment();
+        notifyNewly(track("fragment"));
+        sfx.achievement();
+        addGold(20);
+        spawnFloat("+20G", "#74b9ff");
+        showToast(`TREASURE FRAGMENT ${total}/5 FOUND — +20G`);
+        setDialogue({
+          npc: {
+            ...entity,
+            dialogue:
+              total >= 5
+                ? [
+                    `Fragment ${total}/5! That's all of them!`,
+                    "The ancient chest by the eastern shore has unsealed itself...",
+                    "All 5 fragments recovered! +20G each!",
+                  ]
+                : [`You unearth a shimmering map fragment! (${total}/5)`, "+20 gold coins tumble from the soil!"],
+          },
+          lineIndex: 0,
+        });
+        return;
+      }
+      if (entity.id === "chest-treasure") {
+        sfx.interact();
+        if (!treasureComplete()) {
+          setDialogue({
+            npc: {
+              ...entity,
+              dialogue: [
+                `The chest is sealed by 5 locks. Fragments found: ${getFragments()}/5`,
+                "Rumor says map fragments are buried all across the village...",
+              ],
+            },
+            lineIndex: 0,
+          });
+          return;
+        }
+        if (getOpened().has(entity.id)) {
+          setDialogue({
+            npc: { ...entity, dialogue: ["The great chest lies open — picked clean by you, legend."] },
+            lineIndex: 0,
+          });
+          return;
+        }
+        markOpened(entity.id);
+        setOpenedLoot(getOpened());
+        addItem("holy_water", 3);
+        setInv(getInventory());
+        notifyNewly(track("chest"));
+        sfx.achievement();
+        shake(700);
+        addGold(250);
+        spawnFloat("+250G", "#d4a847");
+        showToast("🗝️ SUNKEN TREASURE: ◆250 + 💧 Blessed Water ×3!");
+        setDialogue({
+          npc: {
+            ...entity,
+            dialogue: [
+              "The locks click open — gold light spills across the beach!",
+              "💧 Blessed Water x3",
+              "◆ 250 gold coins",
+            ],
+          },
+          lineIndex: 0,
+        });
+        return;
+      }
       if (entity.type === "chest" || entity.type === "pumpkin") {
         sfx.interact();
         if (entity.id === "chest-daily") {
@@ -1531,6 +1702,24 @@ export function RPGWorld() {
         notifyNewly(track("dialogue"));
         return;
       }
+      if (entity.type === "blacksmith") {
+        sfx.interact();
+        setShowForge(true);
+        notifyNewly(track("dialogue"));
+        return;
+      }
+      if (entity.type === "house") {
+        sfx.open();
+        setShowHouse(true);
+        notifyNewly(track("dialogue"));
+        return;
+      }
+      if (entity.type === "petkeeper") {
+        sfx.interact();
+        setShowPetShop(true);
+        notifyNewly(track("dialogue"));
+        return;
+      }
       let lines = entity.dialogue;
       if (entity.type === "npc" || entity.type === "secret") {
         const h = bumpFriendship(entity.id);
@@ -1542,6 +1731,18 @@ export function RPGWorld() {
           showToast("BEST BUDS — SLIME RIDE UNLOCKED! (R)");
         }
         if (h >= 3 && entity.secretLine) lines = [...lines, entity.secretLine];
+        // Talk combo — rapid NPC-to-NPC streaks pay out gold
+        const c = registerTalk(entity.id);
+        setCombo(c);
+        if (c >= 2) {
+          const bonus = comboGold(c);
+          if (bonus > 0) {
+            addGold(bonus);
+            spawnFloat(`+${bonus}G`, "#ff79c6");
+            notifyNewly(track("combo", String(c)));
+            if (c >= 3) showToast(`${c}× NPC COMBO! +${bonus}G STREAK BONUS!`);
+          }
+        }
       }
       let dlg: NPC = { ...entity, dialogue: lines };
       if (entity.id === "npc-inn") {
@@ -1702,7 +1903,7 @@ export function RPGWorld() {
       const hasDialogue = dialogueRef.current !== null;
       const hasMenu = showMenuRef.current;
 
-      // Escape — always works
+      // Escape — always works (read modal flags via refs: effect has [] deps)
       if (key === "escape") {
         e.preventDefault();
         if (hasDialogue) {
@@ -1723,14 +1924,34 @@ export function RPGWorld() {
           setFishing(null);
           return;
         }
-        if (showWardrobe) {
+        if (showWardrobeRef.current) {
           sfx.close();
           setShowWardrobe(false);
           return;
         }
-        if (showLibrary) {
+        if (showLibraryRef.current) {
           sfx.close();
           setShowLibrary(false);
+          return;
+        }
+        if (showForgeRef.current) {
+          sfx.close();
+          setShowForge(false);
+          return;
+        }
+        if (showHouseRef.current) {
+          sfx.close();
+          setShowHouse(false);
+          return;
+        }
+        if (showPetShopRef.current) {
+          sfx.close();
+          setShowPetShop(false);
+          return;
+        }
+        if (photoModeRef.current) {
+          sfx.close();
+          setPhotoMode(false);
           return;
         }
         if (hasMenu) {
@@ -1742,6 +1963,17 @@ export function RPGWorld() {
         sfx.open();
         showMenuRef.current = true;
         setShowMenu(true);
+        return;
+      }
+
+      // P — photo mode (clean screenshot view)
+      if (key === "p" && !e.repeat) {
+        e.preventDefault();
+        if (hasDialogue || hasMenu) return;
+        const next = !photoModeRef.current;
+        setPhotoMode(next);
+        if (next) sfx.open();
+        else sfx.close();
         return;
       }
 
@@ -1766,8 +1998,19 @@ export function RPGWorld() {
         return;
       }
 
-      // Block movement when dialogue or menu is open
-      if (hasDialogue || hasMenu) return;
+      // Block movement when dialogue, menu, or any modal is open
+      if (
+        hasDialogue ||
+        hasMenu ||
+        showWardrobeRef.current ||
+        showLibraryRef.current ||
+        showForgeRef.current ||
+        showHouseRef.current ||
+        showPetShopRef.current
+      ) {
+        keysRef.current.clear();
+        return;
+      }
 
       if (key === "w" || key === "arrowup") { e.preventDefault(); keysRef.current.add("up"); }
       if (key === "s" || key === "arrowdown") { e.preventDefault(); keysRef.current.add("down"); }
@@ -1795,6 +2038,16 @@ export function RPGWorld() {
     const interval = setInterval(() => {
       if (!gameActiveRef.current) return;
       if (dialogueRef.current || showMenuRef.current || caveOpenRef.current) return;
+      if (
+        showWardrobeRef.current ||
+        showLibraryRef.current ||
+        showForgeRef.current ||
+        showHouseRef.current ||
+        showPetShopRef.current
+      ) {
+        keysRef.current.clear();
+        return;
+      }
       const keys = keysRef.current;
       if (keys.has("up")) movePlayer(0, -1, "up");
       else if (keys.has("down")) movePlayer(0, 1, "down");
@@ -1819,7 +2072,16 @@ export function RPGWorld() {
           if (on) keysRef.current.add(dir);
           else keysRef.current.delete(dir);
         };
-        if (!dialogueRef.current && !showMenuRef.current && !caveOpenRef.current) {
+        if (
+          !dialogueRef.current &&
+          !showMenuRef.current &&
+          !caveOpenRef.current &&
+          !showWardrobeRef.current &&
+          !showLibraryRef.current &&
+          !showForgeRef.current &&
+          !showHouseRef.current &&
+          !showPetShopRef.current
+        ) {
           const ax = gp.axes[0] ?? 0;
           const ay = gp.axes[1] ?? 0;
           set("left", !!gp.buttons[14]?.pressed || ax < -0.4);
@@ -1966,7 +2228,7 @@ export function RPGWorld() {
   const minimapNpcs = useMemo(
     () =>
       makeActiveList(period.night, true)
-        .filter((n) => n.type !== "secret")
+        .filter((n) => n.type !== "secret" && n.type !== "dig")
         .map((n) => ({ id: n.id, x: n.position.x, y: n.position.y, type: n.type })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [period.night],
@@ -2082,6 +2344,7 @@ export function RPGWorld() {
         </div>
 
         {/* Player title */}
+        {!photoMode && (
         <div
           className="absolute pointer-events-none z-[10] text-center"
           style={{
@@ -2098,9 +2361,10 @@ export function RPGWorld() {
             {playerTitle}
           </span>
         </div>
+        )}
 
         {/* Floating gain text (+10G, +6 EXP…) */}
-        {floats.map((f) => (
+        {!photoMode && floats.map((f) => (
           <span
             key={f.id}
             className="float-text"
@@ -2115,6 +2379,7 @@ export function RPGWorld() {
         ))}
 
         {/* Inventory hotbar */}
+        {!photoMode && (
         <div className="absolute bottom-1 left-1/2 -translate-x-1/2 z-[18] flex gap-1 game-border rounded px-1.5 py-1 bg-bg-main/85">
           {([["coffee", "☕"], ["candy", "🍬"], ["holy_water", "💧"]] as const).map(([id, icon], i) => (
             <button
@@ -2133,6 +2398,7 @@ export function RPGWorld() {
             </button>
           ))}
         </div>
+        )}
 
         {/* Footstep dust puffs */}
         {puffs.map((p) => (
@@ -2194,6 +2460,26 @@ export function RPGWorld() {
             <rect x="16" y="17" width="4" height="1" fill="#3a8f48" />
           </svg>
         </div>
+        )}
+
+        {/* Adopted pet companion (trails behind the slime) */}
+        {activePet && !riding && (
+          <div
+            ref={pet2Ref}
+            className="absolute top-0 left-0 z-[8] pointer-events-none flex flex-col items-center justify-center"
+            style={{
+              width: TILE_SIZE,
+              height: TILE_SIZE,
+              transition: "transform 0.2s ease-out",
+            }}
+          >
+            <span className="pet-bounce text-[16px] leading-none" style={{ filter: "drop-shadow(0 2px 2px rgba(0,0,0,0.5))" }}>
+              {activePet.emoji}
+            </span>
+            <span className="retro-font text-[4px] text-cream/70 whitespace-nowrap" style={{ textShadow: "0 1px 2px #000" }}>
+              {activePet.name}
+            </span>
+          </div>
         )}
 
         {/* Day/night tint (based on real local time) */}
@@ -2292,7 +2578,9 @@ export function RPGWorld() {
           </div>
         )}
 
-        {/* Minimap */}
+        {/* Minimap + HUD */}
+        {!photoMode && (
+        <>
         <Minimap player={playerPos} npcs={minimapNpcs} />
 
         {/* JRPG HUD — LV / EXP / hearts / gold / time / fish / status */}
@@ -2332,7 +2620,21 @@ export function RPGWorld() {
               </span>
             )}
           </div>
+          {combo >= 2 && (
+            <div className="flex items-center gap-1.5 border-t border-border/60 pt-1">
+              <span className="retro-font text-[7px] text-pink-400 font-bold animate-bounce">{combo}×</span>
+              <span className="retro-font text-[5px] text-pink-300">NPC COMBO</span>
+            </div>
+          )}
+          {treasureFrag > 0 && treasureFrag < 5 && (
+            <div className="flex items-center gap-1.5 border-t border-border/60 pt-1">
+              <span className="retro-font text-[6px] text-cyan">🗺️</span>
+              <span className="retro-font text-[5px] text-cyan">FRAGMENTS {treasureFrag}/5</span>
+            </div>
+          )}
         </div>
+        </>
+        )}
 
         {/* Weather */}
         {weather !== "clear" && (
@@ -2358,15 +2660,17 @@ export function RPGWorld() {
         )}
 
         {/* Pixel corner accents on viewport frame */}
+        {!photoMode && (
         <div className="absolute inset-0 pointer-events-none z-30">
           <div className="absolute top-0 left-0 w-3 h-3 border-t-[3px] border-l-[3px] border-gold/70" />
           <div className="absolute top-0 right-0 w-3 h-3 border-t-[3px] border-r-[3px] border-gold/70" />
           <div className="absolute bottom-0 left-0 w-3 h-3 border-b-[3px] border-l-[3px] border-gold/70" />
           <div className="absolute bottom-0 right-0 w-3 h-3 border-b-[3px] border-r-[3px] border-gold/70" />
         </div>
+        )}
 
         {/* Interaction prompt */}
-        {nearbyEntity && !dialogue && (
+        {nearbyEntity && !dialogue && !photoMode && (
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20">
             <motion.div
               className="dialogue-box rounded-lg px-4 py-2 flex items-center gap-2"
@@ -2383,7 +2687,7 @@ export function RPGWorld() {
             </motion.div>
           </div>
         )}
-        {!nearbyEntity && !dialogue && facingWater && !fishing && (
+        {!nearbyEntity && !dialogue && facingWater && !fishing && !photoMode && (
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20">
             <motion.div
               className="dialogue-box rounded-lg px-4 py-2 flex items-center gap-2"
@@ -2753,6 +3057,7 @@ export function RPGWorld() {
       </AnimatePresence>
 
       {/* Mobile touch controls */}
+      {!photoMode && (
       <div
         className="lg:hidden w-full max-w-[544px] mx-auto mt-3 px-2 select-none"
         style={{ touchAction: "none" }}
@@ -2794,15 +3099,28 @@ export function RPGWorld() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Controls hint (desktop) */}
+      {!photoMode && (
       <div className="hidden lg:flex gap-4 mt-2 retro-font text-[6px] text-text-secondary/50">
         <span>WASD / Arrows — Move</span>
         <span>E / Space — Interact / Fish / Swim</span>
         <span>1/2/3 — Use Hotbar</span>
         {rideUnlocked && <span className="text-gold/70">R — Ride Slime</span>}
+        <span>P — Photo Mode</span>
         <span>ESC — Menu</span>
       </div>
+      )}
+
+      {/* Photo mode hint */}
+      {photoMode && (
+        <div className="flex justify-center mt-2">
+          <span className="retro-font text-[6px] text-gold/70 animate-pulse">
+            📷 PHOTO MODE — P or ESC to exit
+          </span>
+        </div>
+      )}
 
       {/* Pause menu */}
       <AnimatePresence>
@@ -2947,6 +3265,212 @@ export function RPGWorld() {
               </div>
 
               <button className="game-btn w-full text-[7px] py-2 mt-4" onClick={() => setShowLibrary(false)}>
+                CLOSE
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Blacksmith — crafting bench */}
+      <AnimatePresence>
+        {showForge && (
+          <motion.div className="fixed inset-0 z-50 flex items-center justify-center"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="absolute inset-0 bg-bg-main/75" onClick={() => setShowForge(false)} />
+            <div className="dialogue-box rounded-lg p-4 relative z-10 w-[290px]">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="pixel-font text-[10px] text-gold">⚒️ IRONHAND FORGE</h3>
+                <span className="retro-font text-[7px] text-gold">◆{gold}</span>
+              </div>
+              <div className="space-y-2 mb-3">
+                {RECIPES.map((r) => {
+                  const can = r.inputs.every((i) => !i.item || (inv[i.item] ?? 0) >= 1);
+                  return (
+                    <div key={r.id} className="rounded border border-border/60 px-2.5 py-2">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="retro-font text-[6px] text-cream">{r.icon} {r.name}</span>
+                        <button
+                          className={`retro-font text-[6px] px-2 py-0.5 rounded border transition-colors ${
+                            can ? "border-gold/60 text-gold hover:bg-gold/10" : "border-border text-text-secondary/50 cursor-not-allowed"
+                          }`}
+                          disabled={!can}
+                          onClick={() => {
+                            const res = performCraft(r, {
+                              inv,
+                              gold,
+                              removeItem,
+                              addItem,
+                              spendGold,
+                              addGold,
+                              track,
+                            });
+                            setInv(getInventory());
+                            setGold(getGold());
+                            if (res.ok) {
+                              sfx.achievement();
+                              spawnFloat("CRAFTED!", "#74b9ff");
+                              notifyNewly(res.newly ?? []);
+                            } else {
+                              sfx.close();
+                            }
+                            showToast(res.msg);
+                          }}
+                        >
+                          FORGE
+                        </button>
+                      </div>
+                      <p className="retro-font text-[5px] text-text-secondary">{r.desc}</p>
+                      <p className="retro-font text-[5px] text-gold/70 mt-0.5">{recipeCost(r)}</p>
+                    </div>
+                  );
+                })}
+              </div>
+              <button className="game-btn w-full text-[7px] py-2" onClick={() => setShowForge(false)}>
+                CLOSE
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Player cottage — furniture shop + interior */}
+      <AnimatePresence>
+        {showHouse && (
+          <motion.div className="fixed inset-0 z-50 flex items-center justify-center"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="absolute inset-0 bg-bg-main/75" onClick={() => setShowHouse(false)} />
+            <div className="dialogue-box rounded-lg p-4 relative z-10 w-[320px] max-h-[85vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="pixel-font text-[10px] text-gold">🏠 YOUR COTTAGE</h3>
+                <span className="retro-font text-[7px] text-gold">◆{gold}</span>
+              </div>
+
+              {/* Room layout */}
+              <div className="rounded border-2 border-border bg-[#2a2118] p-2 grid grid-cols-3 gap-1.5 mb-4">
+                {SLOTS.map((slot) => {
+                  const placedId = getPlacedFurniture()[slot.id];
+                  const def = FURNITURE.find((f) => f.id === placedId);
+                  return (
+                    <button
+                      key={slot.id}
+                      className="relative aspect-square rounded border border-dashed border-border/80 bg-black/25 flex flex-col items-center justify-center gap-0.5 hover:border-gold/50 transition-colors"
+                      title={def ? `${def.name} (click to store)` : slot.label}
+                      onClick={() => {
+                        if (placedId) {
+                          unplaceFurniture(slot.id);
+                          sfx.close();
+                          showToast(`${def?.name} moved to storage.`);
+                        }
+                      }}
+                    >
+                      {def ? (
+                        <>
+                          <span className="text-xl leading-none">{def.icon}</span>
+                          <span className="retro-font text-[4px] text-cream/80">{def.name}</span>
+                        </>
+                      ) : (
+                        <span className="retro-font text-[5px] text-text-secondary/50">{slot.label}</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Furniture shop */}
+              <h4 className="retro-font text-[7px] text-cream mb-2">FURNITURE SHOP</h4>
+              <div className="grid grid-cols-2 gap-1.5 mb-3">
+                {FURNITURE.map((f) => {
+                  const owned = getOwnedFurniture().includes(f.id);
+                  return (
+                    <button
+                      key={f.id}
+                      className="rounded border px-2 py-1.5 text-left transition-colors"
+                      style={{ borderColor: owned ? "#8ae6b0" : "#3a4256" }}
+                      onClick={() => {
+                        const res = buyFurniture(f.id, spendGold);
+                        setGold(getGold());
+                        if (res.ok) sfx.link();
+                        else sfx.close();
+                        showToast(res.msg);
+                      }}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <span className="text-sm">{f.icon}</span>
+                        <span className="retro-font text-[5px] text-cream block">{f.name}</span>
+                      </span>
+                      <span className={`retro-font text-[5px] ${owned ? "text-xp" : "text-gold"}`}>
+                        {owned ? "OWNED — CLICK TO PLACE" : `◆${f.price}`}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button className="game-btn w-full text-[7px] py-2" onClick={() => setShowHouse(false)}>
+                LEAVE COTTAGE
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Pet shop — Fauna's rescue shelter */}
+      <AnimatePresence>
+        {showPetShop && (
+          <motion.div className="fixed inset-0 z-50 flex items-center justify-center"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="absolute inset-0 bg-bg-main/75" onClick={() => setShowPetShop(false)} />
+            <div className="dialogue-box rounded-lg p-4 relative z-10 w-[270px]">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="pixel-font text-[10px] text-gold">🐾 PAWS & CLAWS</h3>
+                <span className="retro-font text-[7px] text-gold">◆{gold}</span>
+              </div>
+              <div className="space-y-2 mb-3">
+                {PETS.map((pet) => {
+                  const isActive = activePet?.id === pet.id;
+                  const isOwned = getOwnedPets().includes(pet.id);
+                  return (
+                    <div key={pet.id} className="rounded border px-2.5 py-2 flex items-center gap-2.5"
+                      style={{ borderColor: isActive ? "#d4a847" : "#3a4256" }}>
+                      <span className="text-lg">{pet.emoji}</span>
+                      <span className="flex-1 min-w-0">
+                        <span className="retro-font text-[6px] text-cream block">{pet.name}</span>
+                        <span className="retro-font text-[5px] text-text-secondary block">
+                          {pet.species} · follows you around
+                        </span>
+                      </span>
+                      <button
+                        className={`retro-font text-[6px] px-2 py-1 rounded border shrink-0 transition-colors ${
+                          isActive ? "border-gold text-gold" : "border-xp/60 text-xp hover:bg-xp/10"
+                        }`}
+                        onClick={() => {
+                          const res = adoptPet(pet.id, spendGold);
+                          setGold(getGold());
+                          if (res.ok) sfx.achievement();
+                          else sfx.close();
+                          showToast(res.msg);
+                        }}
+                      >
+                        {isActive ? "ACTIVE" : isOwned ? "SET" : `◆${pet.price}`}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+              {activePet && (
+                <button
+                  className="retro-font text-[6px] text-text-secondary hover:text-hp w-full py-1.5 border border-border/60 hover:border-hp/40 rounded transition-colors mb-3"
+                  onClick={() => {
+                    releasePet();
+                    sfx.close();
+                    showToast(`${activePet.name} is resting at the shelter.`);
+                  }}
+                >
+                  RELEASE {activePet.name.toUpperCase()}
+                </button>
+              )}
+              <button className="game-btn w-full text-[7px] py-2" onClick={() => setShowPetShop(false)}>
                 CLOSE
               </button>
             </div>

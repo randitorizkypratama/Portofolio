@@ -11,7 +11,7 @@ export interface NPC {
   position: Position;
   sprite: string;
   dialogue: string[];
-  type: "npc" | "sign" | "quest" | "secret" | "chest" | "shrine" | "portal" | "pumpkin" | "garden" | "cave" | "librarian";
+  type: "npc" | "sign" | "quest" | "secret" | "chest" | "shrine" | "portal" | "pumpkin" | "garden" | "cave" | "librarian" | "blacksmith" | "house" | "petkeeper" | "dig";
   /** Moves here at night (if set). */
   nightPosition?: Position;
   /** Only appears at night. */
@@ -423,6 +423,86 @@ export const npcs: NPC[] = [
     position: { x: 13, y: 16 },
     sprite: "🎁",
     dialogue: ["A gift chest that restocks every day!"],
+    type: "chest",
+  },
+  {
+    id: "npc-blacksmith",
+    name: "Bruno Ironhand",
+    position: { x: 10, y: 6 },
+    sprite: "⚒️",
+    dialogue: [
+      "Welcome to my forge, traveler.",
+      "Bring me materials and gold — I'll shape them into something useful.",
+      "Press E to open the crafting bench.",
+    ],
+    type: "blacksmith",
+  },
+  {
+    id: "player-house",
+    name: "Your Cottage",
+    position: { x: 5, y: 16 },
+    sprite: "🏠",
+    dialogue: ["Home sweet home. Press E to step inside."],
+    type: "house",
+  },
+  {
+    id: "npc-petkeeper",
+    name: "Fauna the Pet Keeper",
+    position: { x: 27, y: 6 },
+    sprite: "🐾",
+    dialogue: [
+      "Looking for a companion on your journey?",
+      "I rescue strays from the code wilderness.",
+      "Press E to meet the animals.",
+    ],
+    type: "petkeeper",
+  },
+  {
+    id: "dig-1",
+    name: "???",
+    position: { x: 17, y: 3 },
+    sprite: "🪦",
+    dialogue: ["Something glints beneath the soil..."],
+    type: "dig",
+  },
+  {
+    id: "dig-2",
+    name: "???",
+    position: { x: 27, y: 10 },
+    sprite: "🪦",
+    dialogue: ["The earth here has been disturbed..."],
+    type: "dig",
+  },
+  {
+    id: "dig-3",
+    name: "???",
+    position: { x: 3, y: 12 },
+    sprite: "🪦",
+    dialogue: ["A weathered mound of fresh soil..."],
+    type: "dig",
+  },
+  {
+    id: "dig-4",
+    name: "???",
+    position: { x: 8, y: 19 },
+    sprite: "🪦",
+    dialogue: ["Something is buried here..."],
+    type: "dig",
+  },
+  {
+    id: "dig-5",
+    name: "???",
+    position: { x: 16, y: 20 },
+    sprite: "🪦",
+    dialogue: ["The ground hums with old magic..."],
+    type: "dig",
+  },
+  {
+    id: "chest-treasure",
+    name: "Sunken Treasure",
+    position: { x: 24, y: 18 },
+    sprite: "🗿",
+    dialogue: ["A massive chest sealed by ancient tides..."],
     type: "chest",
   },
 ];

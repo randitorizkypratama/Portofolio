@@ -14,6 +14,10 @@ export function getExp(): number {
     (s.candy ?? 0) * 3 +
     (s.friends ?? 0) * 20 +
     (s.brews ?? 0) * 6 +
+    (s.crafts ?? 0) * 7 +
+    (s.pets ?? 0) * 15 +
+    (s.furniture ?? 0) * 10 +
+    (s.fragments ?? 0) * 25 +
     (s.dragon ? 100 : 0) +
     (s.speedrun ? 50 : 0)
   );
