@@ -6,117 +6,180 @@
 <style>
   @page { size: A4; margin: 0; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: #fff; }
   body {
-    font-family: "Segoe UI", Arial, sans-serif;
-    color: #1a1a2e;
-    background: #fff;
-    font-size: 10.5px;
-    line-height: 1.45;
+    font-family: "Inter", "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    color: #1e293b;
+    font-size: 10px;
+    line-height: 1.5;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
-  .page { width: 210mm; min-height: 297mm; padding: 14mm 16mm; }
-  header { border-bottom: 3px solid #6c5ce7; padding-bottom: 10px; margin-bottom: 14px; }
-  h1 { font-size: 26px; color: #6c5ce7; letter-spacing: 1px; }
-  .role { font-size: 12px; color: #d63031; font-weight: 600; margin-top: 2px; text-transform: uppercase; letter-spacing: 1.5px; }
-  .contact { margin-top: 8px; font-size: 9.5px; color: #444; }
-  .contact span { margin-right: 14px; }
+  .page { width: 210mm; min-height: 297mm; padding: 15mm 17mm 12mm; }
+
+  /* ── Header ─────────────────────────────── */
+  header { margin-bottom: 16px; }
+  h1 { font-size: 25px; font-weight: 800; color: #0f172a; letter-spacing: -0.4px; }
+  .role {
+    display: inline-block; margin-top: 3px; font-size: 10.5px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1.6px; color: #4f46e5;
+  }
+  .contact {
+    margin-top: 9px; padding: 7px 12px; background: #f1f5f9; border-radius: 6px;
+    font-size: 9px; color: #475569; display: flex; flex-wrap: wrap; gap: 4px 0;
+  }
+  .contact a { color: #475569; text-decoration: none; }
+  .contact .sep { color: #cbd5e1; margin: 0 9px; }
+
+  /* ── Sections ───────────────────────────── */
   h2 {
-    font-size: 12px; text-transform: uppercase; letter-spacing: 2px;
-    color: #6c5ce7; border-bottom: 1px solid #dfe6e9; padding-bottom: 3px; margin: 14px 0 8px;
+    font-size: 10.5px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 1.4px; color: #0f172a;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 4px;
+    margin: 15px 0 8px;
   }
-  p.summary { color: #333; font-size: 10.5px; }
-  .project { margin-bottom: 9px; }
-  .project h3 { font-size: 11.5px; color: #1a1a2e; }
-  .project h3 .status { font-size: 8.5px; color: #27ae60; font-weight: 600; margin-left: 6px; }
-  .project .url { font-size: 9px; color: #6c5ce7; }
-  .project ul { margin: 3px 0 0 14px; }
-  .project li { margin-bottom: 1.5px; }
-  .tags { margin-top: 3px; font-size: 9px; color: #636e72; }
-  .grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  h2:first-of-type { margin-top: 0; }
+  p.summary { color: #334155; font-size: 10px; }
+
+  /* ── Skills ─────────────────────────────── */
+  .skill-group { display: flex; margin-bottom: 6px; }
+  .skill-group:last-child { margin-bottom: 0; }
+  .skill-label {
+    width: 92px; flex-shrink: 0; font-size: 9px; font-weight: 700;
+    color: #64748b; text-transform: uppercase; letter-spacing: 0.6px; padding-top: 3px;
+  }
+  .skill-items { flex: 1; display: flex; flex-wrap: wrap; gap: 5px; }
   .chip {
-    border: 1px solid #b2bec3; border-radius: 3px; padding: 3px 8px; font-size: 9px; background: #f8f9ff;
+    border: 1px solid #e2e8f0; background: #f8fafc; border-radius: 4px;
+    padding: 2.5px 8px; font-size: 8.5px; font-weight: 600; color: #334155;
   }
-  .chip b { color: #6c5ce7; }
-  .chip small { display: block; color: #636e72; font-size: 7.5px; }
-  .cols { display: flex; gap: 18px; }
-  .cols > div { flex: 1; }
+
+  /* ── Projects ───────────────────────────── */
+  .project { margin-bottom: 11px; break-inside: avoid; }
+  .project:last-child { margin-bottom: 0; }
+  .project-head { display: flex; align-items: baseline; gap: 8px; }
+  .project h3 { font-size: 11px; font-weight: 700; color: #0f172a; }
+  .project .url { font-size: 8.5px; color: #4f46e5; font-weight: 500; }
+  .project .status {
+    font-size: 7.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    color: #15803d; background: #dcfce7; border-radius: 3px; padding: 1px 5px;
+  }
+  .project p.desc { margin-top: 2px; font-size: 9.5px; color: #475569; }
+  .project ul { margin: 4px 0 0 15px; }
+  .project li { font-size: 9.5px; color: #334155; margin-bottom: 1.5px; }
+  .project .tech { margin-top: 4px; font-size: 8.5px; color: #64748b; }
+  .project .tech b { color: #475569; font-weight: 600; }
+
+  /* ── Footer ─────────────────────────────── */
+  .footer {
+    margin-top: 18px; padding-top: 8px; border-top: 1px solid #e2e8f0;
+    font-size: 8px; color: #94a3b8; text-align: center;
+  }
 </style>
 </head>
 <body>
 <div class="page">
+
   <header>
-    <h1>FIXDIRILOE</h1>
+    <h1>FixDiriloe</h1>
     <div class="role">Frontend Developer</div>
     <div class="contact">
-      <span>Indonesia</span>
-      <span>hello@fixdiriloe.dev</span>
-      <span>github.com/fixdiriloe</span>
-      <span>linkedin.com/in/fixdiriloe</span>
+      <span>Indonesia</span><span class="sep">·</span>
+      <span>hello@fixdiriloe.dev</span><span class="sep">·</span>
+      <span>github.com/fixdiriloe</span><span class="sep">·</span>
+      <span>linkedin.com/in/fixdiriloe</span><span class="sep">·</span>
       <span>x.com/fixdiriloe</span>
     </div>
   </header>
 
   <h2>Profile</h2>
   <p class="summary">
-    Web developer who loves turning ideas into interactive experiences. Focused on modern web
-    technologies, clean code, and pixel-perfect designs. I build modern web applications with a focus
-    on clean code, performance, and great user experience — turning complex problems into simple,
-    beautiful, and intuitive solutions.
+    Frontend developer specializing in modern Vue &amp; Nuxt applications. I turn complex problems
+    into clean, fast, and intuitive products — with strong attention to performance, type safety,
+    and UX detail. Recent work includes a 16,000+ item collectibles database, real-time market
+    analytics, and interactive data visualizations shipped to production.
   </p>
 
-  <h2>Featured Projects</h2>
+  <h2>Core Skills</h2>
+  <div class="skill-group">
+    <div class="skill-label">Frontend</div>
+    <div class="skill-items">
+      <span class="chip">Nuxt</span>
+      <span class="chip">Vue 3</span>
+      <span class="chip">TypeScript</span>
+      <span class="chip">Tailwind CSS</span>
+    </div>
+  </div>
+  <div class="skill-group">
+    <div class="skill-label">Backend &amp; Data</div>
+    <div class="skill-items">
+      <span class="chip">Bun</span>
+      <span class="chip">Elysia</span>
+      <span class="chip">Drizzle ORM</span>
+      <span class="chip">Turso (libSQL)</span>
+      <span class="chip">Zod</span>
+      <span class="chip">JWT Auth</span>
+    </div>
+  </div>
+  <div class="skill-group">
+    <div class="skill-label">Tools &amp; QA</div>
+    <div class="skill-items">
+      <span class="chip">Vercel</span>
+      <span class="chip">Vitest</span>
+      <span class="chip">HuggingFace</span>
+      <span class="chip">REST APIs</span>
+      <span class="chip">CI/CD</span>
+    </div>
+  </div>
+
+  <h2>Selected Projects</h2>
 
   <div class="project">
-    <h3>HIBIKISHOP PC <span class="status">COMPLETED</span></h3>
-    <div class="url">https://kpop-tracker-six.vercel.app/</div>
-    <p>Full-stack K-Pop photocard database with 16,200+ cards, faceted filters, price tracking, collection binder, and release timeline.</p>
+    <div class="project-head">
+      <h3>HIBIKISHOP PC</h3>
+      <span class="status">Completed</span>
+      <span class="url">kpop-tracker-six.vercel.app</span>
+    </div>
+    <p class="desc">Full-stack collectibles marketplace database with live price tracking and user collections.</p>
     <ul>
-      <li>16,200+ photocards with faceted filters (group, member, card type, store, price)</li>
-      <li>Top price movers — biggest drops and risers over the last 36 hours</li>
-      <li>Collection binder with wishlist/owned tracking, command palette, ID/EN toggle</li>
-      <li>Daily auto-sync from Pocamarket + MusicBrainz / Apple Music enrichment</li>
+      <li>Built a 16,200+ item catalog with faceted search (group, member, type, store, price)</li>
+      <li>Daily automated price-sync pipeline with 36-hour market-movers analytics</li>
+      <li>Per-user collection binder with wishlist tracking, command palette, and bilingual ID/EN UI</li>
     </ul>
-    <div class="tags">Nuxt 4 · Vue 3 · Tailwind · Turso · Vercel Cron</div>
+    <div class="tech"><b>Tech:</b> Nuxt 4 · Vue 3 · Tailwind CSS · Turso · Vercel Cron</div>
   </div>
 
   <div class="project">
-    <h3>DuelDex <span class="status">COMPLETED</span></h3>
-    <div class="url">https://dueldex-web.onrender.com/</div>
-    <p>Full-stack Yu-Gi-Oh! card explorer and smart deck builder with synergy scoring and archetype detection.</p>
+    <div class="project-head">
+      <h3>DuelDex</h3>
+      <span class="status">Completed</span>
+      <span class="url">dueldex-web.onrender.com</span>
+    </div>
+    <p class="desc">Card explorer and intelligent deck builder with format-legal recommendations.</p>
     <ul>
-      <li>Full-text search with filters (type, attribute, level, archetype, ATK/DEF)</li>
-      <li>Smart deck recommendation with synergy explanations</li>
-      <li>TCG banlist enforcement, per-user favorites, JWT auth</li>
+      <li>Smart deck generation with synergy scoring and archetype detection</li>
+      <li>Full-text search with advanced filters (type, attribute, level, ATK/DEF)</li>
+      <li>TCG banlist enforcement, JWT authentication, and per-user favorites</li>
     </ul>
-    <div class="tags">Nuxt 4 · Elysia · Bun · Turso · JWT Auth</div>
+    <div class="tech"><b>Tech:</b> Nuxt 4 · Elysia · Bun · Turso · JWT</div>
   </div>
 
   <div class="project">
-    <h3>Family Tree <span class="status">COMPLETED</span></h3>
-    <div class="url">https://family-tree-delta-peach.vercel.app/</div>
-    <p>Family genealogy management app — 4-step wizard, interactive D3 tree charts, birthdays, roles, and export.</p>
+    <div class="project-head">
+      <h3>Family Tree</h3>
+      <span class="status">Completed</span>
+      <span class="url">family-tree-delta-peach.vercel.app</span>
+    </div>
+    <p class="desc">Genealogy platform for managing and visualizing family relationships across generations.</p>
     <ul>
-      <li>Dashboard with family statistics, gender ratio, average age</li>
-      <li>Interactive tree visualization (family-chart / D3)</li>
-      <li>Role-based access control, multi-language (ID, EN, Sunda), CSV export, dark mode</li>
+      <li>Interactive D3-based tree visualization with family statistics dashboards</li>
+      <li>Role-based access control (admin/editor) and trilingual support (ID, EN, Sunda)</li>
+      <li>Guided 4-step creation wizard, birthday calendar, CSV export, dark mode</li>
     </ul>
-    <div class="tags">Nuxt 3 · Vue 3 · Drizzle · Turso · Tailwind</div>
+    <div class="tech"><b>Tech:</b> Nuxt 3 · Vue 3 · Drizzle ORM · Turso · Tailwind CSS</div>
   </div>
 
-  <h2>Tech Stack</h2>
-  <div class="grid">
-    <div class="chip"><b>Nuxt</b><small>Vue Framework, SSR</small></div>
-    <div class="chip"><b>Vue 3</b><small>Reactive UI</small></div>
-    <div class="chip"><b>Bun</b><small>Runtime, Bundler</small></div>
-    <div class="chip"><b>Tailwind CSS</b><small>Utility-First Styling</small></div>
-    <div class="chip"><b>TypeScript</b><small>Type Safety</small></div>
-    <div class="chip"><b>Drizzle ORM</b><small>Type-Safe Queries</small></div>
-    <div class="chip"><b>Turso</b><small>Edge SQLite</small></div>
-    <div class="chip"><b>Elysia</b><small>Bun Web Framework</small></div>
-    <div class="chip"><b>HuggingFace</b><small>AI/ML Image Search</small></div>
-    <div class="chip"><b>Zod</b><small>Schema Validation</small></div>
-    <div class="chip"><b>Vercel</b><small>Deployment</small></div>
-    <div class="chip"><b>Vitest</b><small>Unit Testing</small></div>
-  </div>
+  <div class="footer">FixDiriloe · Frontend Developer · Indonesia · References available upon request</div>
 </div>
 </body>
 </html>
